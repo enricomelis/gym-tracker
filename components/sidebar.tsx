@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   ChevronLeft,
 } from "lucide-react";
+import { useEffect } from "react";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -29,6 +30,13 @@ export default function Sidebar({
   toggleSidebar: () => void;
 }) {
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (isSidebarOpen) {
+      toggleSidebar();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   return (
     <aside
