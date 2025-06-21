@@ -67,8 +67,8 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Questa azione non può essere annullata. L'atleta verrà eliminato
-              definitivamente.
+              Questa azione non può essere annullata. L&apos;atleta verrà
+              eliminato definitivamente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
