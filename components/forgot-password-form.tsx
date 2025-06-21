@@ -58,8 +58,8 @@ export function ForgotPasswordForm({
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Se ti sei registrato con email e password, riceverai un'email per
-              il reset.
+              Se ti sei registrato con email e password, riceverai un&apos;email
+              per il reset.
             </p>
           </CardContent>
         </Card>

@@ -17,7 +17,7 @@ export default function Page() {
                 Grazie per esserti registrato!
               </CardTitle>
               <CardDescription>
-                Controlla la tua email per confermare l'account
+                Controlla la tua email per confermare l&apos;account
               </CardDescription>
             </CardHeader>
             <CardContent>

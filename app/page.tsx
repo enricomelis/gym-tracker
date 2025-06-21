@@ -20,7 +20,7 @@ export default function Home() {
               Benvenuto in Gym Tracker
             </h1>
             <p>
-              Questa è la pagina principale. Accedi per entrare nell'area
+              Questa è la pagina principale. Accedi per entrare nell&apos;area
               riservata.
             </p>
           </main>
