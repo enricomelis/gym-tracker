@@ -25,10 +25,6 @@ export default function Home() {
             </p>
           </main>
         </div>
-
-        <footer className="mx-auto flex w-full items-center justify-center gap-8 border-t py-16 text-center text-xs">
-          <p>Sviluppato con Next.js e Supabase</p>
-        </footer>
       </div>
     </main>
   );
