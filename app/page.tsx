@@ -1,4 +1,5 @@
 import { AuthButton } from "@/components/auth-button";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
 
@@ -11,7 +12,10 @@ export default function Home() {
             <div className="flex items-center gap-5 font-semibold">
               <Link href={"/"}>Gym Tracker</Link>
             </div>
-            {hasEnvVars && <AuthButton />}
+            <div className="flex items-center gap-4">
+              <ThemeSwitcher />
+              {hasEnvVars && <AuthButton />}
+            </div>
           </div>
         </nav>
         <div className="flex max-w-5xl flex-1 flex-col gap-20 p-5">

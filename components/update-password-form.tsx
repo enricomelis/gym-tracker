@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 export function UpdatePasswordForm({
   className,
@@ -33,8 +34,11 @@ export function UpdatePasswordForm({
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+      toast({
+        title: "Successo",
+        description: "La tua password è stata aggiornata con successo.",
+      });
+      router.push("/dashboard");
     } catch (error: unknown) {
       setError(
         error instanceof Error ? error.message : "Si è verificato un errore",
