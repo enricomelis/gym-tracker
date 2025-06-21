@@ -37,6 +37,28 @@ Questo documento delinea il piano di sviluppo per la web app GymTracker, uno str
 
 ---
 
+### Fase 1.5: Creazione Dashboard Dinamica e UI
+
+**Obiettivo:** Sostituire la navigazione statica con una dashboard dinamica, stabilizzare l'autenticazione e rifinire l'interfaccia utente.
+
+1.  **Routing Dinamico e Struttura:**
+
+    - ✅ Creazione di un route group `(protected)` per le pagine autenticate.
+    - ✅ Implementazione di una dashboard dinamica in `/dashboard` basata sul ruolo.
+    - ✅ Creazione di pagine placeholder per le sezioni future (`/atleti`, etc.).
+
+2.  **Stabilizzazione Autenticazione:**
+
+    - ✅ Risoluzione di errori critici aggiornando la gestione delle sessioni Supabase a `@supabase/ssr`.
+    - ✅ Correzione del recupero dati per allinearlo allo schema reale del DB.
+
+3.  **Rifinitura Interfaccia Utente (UI):**
+    - ✅ Implementazione di una sidebar a scomparsa con modalità "overlay" su tutti i dispositivi.
+    - ✅ Riorganizzazione dell'header per un layout più pulito e un titolo centrato.
+    - ✅ Miglioramento della UX con indicatori di caricamento e spaziatura aumentata.
+
+---
+
 ### Fase 2: Sviluppo Funzionalità Core - Programmazione
 
 **Obiettivo:** Dare ai coach gli strumenti per gestire i propri atleti e programmare gli allenamenti su base settimanale e giornaliera.

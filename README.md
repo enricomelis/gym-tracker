@@ -12,7 +12,8 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
 - [x] Configurazione dell'ambiente di sviluppo (Tailwind CSS, Prettier)
 - [x] Integrazione con il backend Supabase
 - [x] Creazione dello schema del database
-- [ ] Implementazione del sistema di autenticazione per utenti
+- [x] Implementazione del sistema di autenticazione per tecnici
+- [x] Creazione della UI shell dell'applicazione (layout protetto, header, sidebar navigabile)
 
 ### 🚧 Fase 2: Funzionalità Core di Programmazione
 
