@@ -4,7 +4,7 @@ import CoachDashboard from "@/components/coach-dashboard";
 import AthleteDashboard from "@/components/athlete-dashboard";
 
 export default async function DashboardPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -14,26 +14,39 @@ export default async function DashboardPage() {
     redirect("/auth/login");
   }
 
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const [coachRes, athleteRes] = await Promise.all([
+    supabase
+      .from("coaches")
+      .select("id", { count: "exact", head: true })
+      .eq("supabase_id", user.id),
+    supabase
+      .from("athletes")
+      .select("id", { count: "exact", head: true })
+      .eq("supabase_id", user.id),
+  ]);
 
-  if (error || !profile) {
-    // Handle error or profile not found
-    // For now, redirect or show a generic error
-    console.error("Error fetching profile:", error);
-    return <div>Could not load dashboard. Profile not found.</div>;
+  if (coachRes.error) {
+    console.error("Error fetching coach profile:", coachRes.error);
+    return <div>Errore nel caricamento del profilo tecnico.</div>;
   }
 
-  if (profile.role === "coach") {
+  if (athleteRes.error) {
+    console.error("Error fetching athlete profile:", athleteRes.error);
+    return <div>Errore nel caricamento del profilo atleta.</div>;
+  }
+
+  if (coachRes.count !== null && coachRes.count > 0) {
     return <CoachDashboard />;
   }
 
-  if (profile.role === "athlete") {
+  if (athleteRes.count !== null && athleteRes.count > 0) {
     return <AthleteDashboard />;
   }
 
-  return <div>Unknown role.</div>;
+  return (
+    <div>
+      Il tuo utente non ha un ruolo assegnato (né tecnico, né atleta). Contatta
+      l'amministratore.
+    </div>
+  );
 }

@@ -33,7 +33,7 @@ Questo documento delinea il piano di sviluppo per la web app GymTracker, uno str
 
 4.  **Autenticazione e Profili Utente:**
     - Adeguamento stilistico e funzionale delle pagine di `login`, `signup` e `password_reset` già fornite dal template, per allinearle al design dell'app.
-    - ✅ Implementazione di un meccanismo (es. trigger Postgres su `auth.users`) che, dopo la registrazione di un nuovo utente, crei un record corrispondente nella tabella `coaches` in base al ruolo scelto durante il signup.
+    - Implementazione di un meccanismo (es. trigger Postgres su `auth.users`) che, dopo la registrazione di un nuovo utente, crei un record corrispondente nella tabella `coaches` in base al ruolo scelto durante il signup.
 
 ---
 
