@@ -16,16 +16,18 @@ export default function Home() {
         </nav>
         <div className="flex max-w-5xl flex-1 flex-col gap-20 p-5">
           <main className="flex flex-1 flex-col gap-6 px-4">
-            <h1 className="mb-4 text-xl font-medium">Welcome to Gym Tracker</h1>
+            <h1 className="mb-4 text-xl font-medium">
+              Benvenuto in Gym Tracker
+            </h1>
             <p>
-              This is the main page. You can log in to access the protected
-              area.
+              Questa è la pagina principale. Accedi per entrare nell'area
+              riservata.
             </p>
           </main>
         </div>
 
         <footer className="mx-auto flex w-full items-center justify-center gap-8 border-t py-16 text-center text-xs">
-          <p>Powered by Next.js and Supabase</p>
+          <p>Sviluppato con Next.js e Supabase</p>
         </footer>
       </div>
     </main>
