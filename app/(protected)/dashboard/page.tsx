@@ -46,7 +46,7 @@ export default async function DashboardPage() {
   return (
     <div>
       Il tuo utente non ha un ruolo assegnato (né tecnico, né atleta). Contatta
-      l'amministratore.
+      l&apos;amministratore.
     </div>
   );
 }

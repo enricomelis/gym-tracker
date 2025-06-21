@@ -5,13 +5,14 @@ import { createClient } from "@/lib/supabase/client";
 import Header from "@/components/header";
 import Sidebar from "@/components/sidebar";
 import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
