@@ -10,8 +10,8 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
 
 - [x] Inizializzazione del progetto Next.js
 - [x] Configurazione dell'ambiente di sviluppo (Tailwind CSS, Prettier)
-- [ ] Integrazione con il backend Supabase
-- [ ] Creazione dello schema del database
+- [x] Integrazione con il backend Supabase
+- [x] Creazione dello schema del database
 - [ ] Implementazione del sistema di autenticazione per utenti
 
 ### 🚧 Fase 2: Funzionalità Core di Programmazione
