@@ -167,11 +167,11 @@ export default function WeeklyPlanner({
 
       <div className="relative max-h-[calc(100vh-200px)] overflow-auto rounded-md border">
         <Table className="min-w-max">
-          <TableHeader className="sticky top-0 z-40 cursor-default bg-background">
+          <TableHeader className="sticky top-0 z-10 cursor-default bg-background">
             <TableRow className="hover:bg-transparent">
               <TableHead
                 rowSpan={2}
-                className="sticky left-0 z-50 w-40 border-r bg-inherit align-middle"
+                className="sticky left-0 z-20 w-40 border-r bg-inherit align-middle"
               >
                 Settimana
               </TableHead>
