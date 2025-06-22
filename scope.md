@@ -65,20 +65,21 @@ Questo documento delinea il piano di sviluppo per la web app GymTracker, uno str
 
 1.  **Dashboard Coach:**
 
-    - Creazione di una dashboard principale per il coach.
+    - ✅ Creazione di una dashboard principale per il coach.
     - La dashboard mostrerà una sintesi dell'attività odierna (es. allenamento pianificato, atleti che si allenano oggi) e includerà alcuni grafici riepilogativi veloci (es. volume settimanale).
 
 2.  **Gestione Atleti (Route Dedicata):**
 
-    - Creazione di una nuova sezione/rotta dedicata (es. `/atleti`).
-    - In questa sezione, il coach potrà visualizzare la lista completa dei propri atleti.
-    - Implementazione delle funzionalità per associare un nuovo atleta a un coach e gestire le anagrafiche (atleti, società, competizioni).
+    - ✅ Creazione di una nuova sezione dedicata (es. `/atleti`).
+    - ✅ In questa sezione, il coach potrà visualizzare la lista completa dei propri atleti.
+    - ✅ Implementazione delle funzionalità per associare un nuovo atleta a un coach e gestire le anagrafiche (atleti, società, competizioni).
 
 3.  **Programmazione Settimanale (`apparatus_weekly_goals`):**
 
-    - Sviluppo di un'interfaccia a calendario (vista settimanale) per ogni atleta selezionato.
-    - Creazione di un form per inserire e modificare gli obiettivi settimanali per ogni attrezzo, popolando la tabella `apparatus_weekly_goals`.
-    - CRUD per i `weekly_goal_presets` per permettere ai coach di salvare e riutilizzare template di programmazione settimanale.
+    - ✅ Sviluppo di una dashboard di pianificazione annuale con vista a matrice.
+    - ✅ L'interfaccia permette di visualizzare i dati aggregati per tutte le settimane dell'anno e di navigare tra gli anni.
+    - ✅ Cliccando su una settimana, si apre una modale con un form per inserire, modificare e cancellare gli obiettivi settimanali per ogni attrezzo, popolando la tabella `apparatus_weekly_goals`.
+    - [ ] CRUD per i `weekly_goal_presets` per permettere ai coach di salvare e riutilizzare template di programmazione settimanale.
 
 4.  **Programmazione Giornaliera (`daily_routines`):**
     - Interfaccia per definire le routine di allenamento giornaliere per un atleta, direttamente dalla vista settimanale.

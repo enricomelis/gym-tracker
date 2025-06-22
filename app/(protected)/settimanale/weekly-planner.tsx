@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
 import {
   getYear,
   startOfYear,
@@ -9,6 +9,9 @@ import {
   format,
   startOfWeek,
   endOfWeek,
+  getISOWeeksInYear,
+  startOfISOWeek,
+  endOfISOWeek,
 } from "date-fns";
 import { it } from "date-fns/locale";
 import React from "react";
@@ -62,21 +65,30 @@ const apparatusList: Array<WeeklyGoal["apparatus"]> = [
   "HB",
 ];
 
-function getWeekDateRange(year: number, weekNumber: number) {
-  const firstDayOfYear = startOfYear(new Date(year, 0, 1));
-  const weekStartDate = startOfWeek(
-    add(firstDayOfYear, { weeks: weekNumber - 1 }),
-    { weekStartsOn: 1 },
+const getWeekDateRange = (year: number, weekNumber: number) => {
+  const yearStart = new Date(year, 0, 1);
+  const weekStartOffset = (weekNumber - 1) * 7;
+  const dateWithOffset = new Date(
+    yearStart.setDate(yearStart.getDate() + weekStartOffset),
   );
-  const weekEndDate = endOfWeek(weekStartDate, { weekStartsOn: 1 });
 
-  const startMonth = format(weekStartDate, "MMM", { locale: it });
-  const endMonth = format(weekEndDate, "MMM", { locale: it });
+  const startDate = startOfISOWeek(dateWithOffset);
+  const endDate = endOfISOWeek(dateWithOffset);
 
-  const dateRange = `${format(weekStartDate, "d")} ${startMonth} - ${format(weekEndDate, "d")} ${endMonth}`;
+  // Handle edge case where the first week of a year might belong to the previous year
+  if (getYear(startDate) < year && weekNumber === 1) {
+    const realStartDate = new Date(year, 0, 1);
+    return `${format(realStartDate, "dd MMM")} - ${format(endDate, "dd MMM")}`;
+  }
 
-  return dateRange;
-}
+  // Handle edge case where the last week of a year might belong to the next year
+  if (getYear(endDate) > year) {
+    const realEndDate = new Date(year, 11, 31);
+    return `${format(startDate, "dd MMM")} - ${format(realEndDate, "dd MMM")}`;
+  }
+
+  return `${format(startDate, "dd MMM")} - ${format(endDate, "dd MMM")}`;
+};
 
 export default function WeeklyPlanner({
   athletes,
@@ -92,19 +104,24 @@ export default function WeeklyPlanner({
   const [year, setYear] = useState(getYear(new Date()));
   const [groupedGoals, setGroupedGoals] = useState<GroupedGoals>({});
   const [editingWeek, setEditingWeek] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
+  const weeksInYear = getISOWeeksInYear(year);
+  const weeks = Array.from({ length: weeksInYear }, (_, i) => i + 1);
+
+  const fetchGoals = useCallback(async () => {
     if (!selectedAthleteId) return;
 
-    const fetchAllGoals = async () => {
-      setIsFetching(true);
-      const goals = await getGroupedWeeklyGoals(selectedAthleteId, year);
-      setGroupedGoals(goals);
-      setIsFetching(false);
-    };
-
-    fetchAllGoals();
+    setIsFetching(true);
+    const goals = await getGroupedWeeklyGoals(selectedAthleteId, year);
+    setGroupedGoals(goals);
+    setIsFetching(false);
   }, [selectedAthleteId, year]);
+
+  useEffect(() => {
+    fetchGoals();
+  }, [fetchGoals]);
 
   const handleSave = async () => {
     setEditingWeek(null);
@@ -114,11 +131,9 @@ export default function WeeklyPlanner({
     setIsFetching(false);
   };
 
-  const weeks = Array.from({ length: 52 }, (_, i) => i + 1);
-
   return (
     <div className="space-y-4">
-      <div className="flex gap-4">
+      <div className="flex items-center justify-between gap-4">
         <Select onValueChange={setSelectedAthleteId} value={selectedAthleteId}>
           <SelectTrigger className="w-full md:w-[200px]">
             <SelectValue placeholder="Seleziona Atleta" />
@@ -131,16 +146,32 @@ export default function WeeklyPlanner({
             ))}
           </SelectContent>
         </Select>
-        {/* Year selector can be added here in the future */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setYear(year - 1)}
+          >
+            &lt;
+          </Button>
+          <span className="w-24 text-center font-semibold">{year}</span>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setYear(year + 1)}
+          >
+            &gt;
+          </Button>
+        </div>
       </div>
 
-      <div className="overflow-x-auto rounded-md border">
+      <div className="relative max-h-[calc(100vh-200px)] overflow-auto rounded-md border">
         <Table className="min-w-max">
-          <TableHeader>
-            <TableRow>
+          <TableHeader className="sticky top-0 z-40 cursor-default bg-background">
+            <TableRow className="hover:bg-transparent">
               <TableHead
                 rowSpan={2}
-                className="sticky left-0 top-0 z-30 w-40 border-r bg-background align-middle"
+                className="sticky left-0 z-50 w-40 border-r bg-inherit align-middle"
               >
                 Settimana
               </TableHead>
@@ -148,42 +179,27 @@ export default function WeeklyPlanner({
                 <TableHead
                   key={app}
                   colSpan={3}
-                  className="sticky top-0 z-20 border-r bg-background text-center"
+                  className="border-r text-center"
                 >
                   {app}
                 </TableHead>
               ))}
-              <TableHead
-                rowSpan={2}
-                className="sticky top-0 z-20 border-r bg-background"
-              >
+              <TableHead rowSpan={2} className="border-r">
                 Macrociclo
               </TableHead>
-              <TableHead
-                rowSpan={2}
-                className="sticky top-0 z-20 border-r bg-background"
-              >
+              <TableHead rowSpan={2} className="border-r">
                 Microciclo
               </TableHead>
-              <TableHead
-                rowSpan={2}
-                className="sticky top-0 z-20 bg-background"
-              >
-                Evento
-              </TableHead>
+              <TableHead rowSpan={2}>Evento</TableHead>
             </TableRow>
-            <TableRow>
+            <TableRow className="hover:bg-transparent">
               {apparatusList.map((app) => (
                 <React.Fragment key={app}>
-                  <TableHead className="sticky top-10 z-20 bg-background text-center">
-                    V
-                  </TableHead>
-                  <TableHead className="sticky top-10 z-20 bg-background text-center">
+                  <TableHead className="text-center">V</TableHead>
+                  <TableHead className="text-center">
                     {app === "VT" ? "B" : "U"}
                   </TableHead>
-                  <TableHead className="sticky top-10 z-20 border-r bg-background text-center">
-                    P
-                  </TableHead>
+                  <TableHead className="border-r text-center">P</TableHead>
                 </React.Fragment>
               ))}
             </TableRow>

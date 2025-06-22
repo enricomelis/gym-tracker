@@ -18,10 +18,10 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
 ### 🚧 Fase 2: Funzionalità Core di Programmazione
 
 - [ ] **Gestione Atleti:** Una sezione dedicata per gestire le anagrafiche degli atleti e delle competizioni.
-  - [ ] Atleti
-  - [ ] Competizioni
+  - [x] Atleti
+  - [ ] Competizioni + Modifica al db: Ogni Gara deve avere un Nome.
 - [ ] **Programmazione Settimanale:** Uno strumento visuale, basato su calendario, per definire gli obiettivi di allenamento per ogni atleta e per ogni attrezzo.
-  - [ ] Inserimento della programmazione
+  - [x] Inserimento della programmazione
   - [ ] Molteplici modalità di visualizzazione
 - [ ] **Pianificazione Giornaliera:** La possibilità di creare esercizi dettagliati per ogni sessione di allenamento.
 - [ ] **Dashboard del Coach:** Una vista centrale per avere tutto sotto controllo, con la pianificazione del giorno e dati riepilogativi.
