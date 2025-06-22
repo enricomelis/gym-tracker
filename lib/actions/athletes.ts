@@ -147,3 +147,18 @@ export async function deleteAthlete(athleteId: string) {
   revalidatePath("/atleti");
   return { success: true };
 }
+
+export async function getCompetitions() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("competitions")
+    .select("id, location, date")
+    .order("date", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching competitions:", error);
+    return [];
+  }
+
+  return data;
+}

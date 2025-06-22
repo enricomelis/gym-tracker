@@ -160,7 +160,7 @@ Table apparatus_weekly_goals {
   macro macro_enum [not null]
   micro micro_enum [not null]
   camp text
-  competition_id uuid [not null, ref: > competitions.id]
+  competition_id uuid [ref: > competitions.id]
   exercise_volume int [not null, note: '>0']
   dismount_volume int [not null, note: '>=0']
   target_penalty numeric [not null, note: '0-10']
