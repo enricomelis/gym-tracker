@@ -1,17 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import {
-  getYear,
-  format,
-  getISOWeeksInYear,
-  startOfISOWeek,
-  endOfISOWeek,
-} from "date-fns";
+import { getYear, format } from "date-fns";
 import React from "react";
 
 import type { WeeklyGoal } from "@/lib/actions/planning";
 import { getGroupedWeeklyGoals } from "@/lib/actions/planning";
+import { getWeeksInYear, getWeekDateRange } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -59,31 +54,6 @@ const apparatusList: Array<WeeklyGoal["apparatus"]> = [
   "HB",
 ];
 
-const getWeekDateRange = (year: number, weekNumber: number) => {
-  const yearStart = new Date(year, 0, 1);
-  const weekStartOffset = (weekNumber - 1) * 7;
-  const dateWithOffset = new Date(
-    yearStart.setDate(yearStart.getDate() + weekStartOffset),
-  );
-
-  const startDate = startOfISOWeek(dateWithOffset);
-  const endDate = endOfISOWeek(dateWithOffset);
-
-  // Handle edge case where the first week of a year might belong to the previous year
-  if (getYear(startDate) < year && weekNumber === 1) {
-    const realStartDate = new Date(year, 0, 1);
-    return `${format(realStartDate, "dd MMM")} - ${format(endDate, "dd MMM")}`;
-  }
-
-  // Handle edge case where the last week of a year might belong to the next year
-  if (getYear(endDate) > year) {
-    const realEndDate = new Date(year, 11, 31);
-    return `${format(startDate, "dd MMM")} - ${format(realEndDate, "dd MMM")}`;
-  }
-
-  return `${format(startDate, "dd MMM")} - ${format(endDate, "dd MMM")}`;
-};
-
 export default function WeeklyPlanner({
   athletes,
   competitions,
@@ -99,7 +69,7 @@ export default function WeeklyPlanner({
   const [groupedGoals, setGroupedGoals] = useState<GroupedGoals>({});
   const [editingWeek, setEditingWeek] = useState<number | null>(null);
 
-  const weeksInYear = getISOWeeksInYear(year);
+  const weeksInYear = getWeeksInYear(year);
   const weeks = Array.from({ length: weeksInYear }, (_, i) => i + 1);
 
   const fetchGoals = useCallback(async () => {
@@ -155,7 +125,8 @@ export default function WeeklyPlanner({
       </div>
 
       <div className="relative max-h-[calc(100vh-200px)] overflow-auto rounded-md border">
-        <Table className="min-w-max">
+        {/* Desktop Table */}
+        <Table className="hidden min-w-max md:table">
           <TableHeader className="sticky top-0 z-10 cursor-default bg-background">
             <TableRow className="hover:bg-transparent">
               <TableHead
@@ -276,6 +247,57 @@ export default function WeeklyPlanner({
             )}
           </TableBody>
         </Table>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden">
+          {isFetching ? (
+            <div className="h-48 p-4 text-center">Caricamento...</div>
+          ) : (
+            weeks.map((week) => {
+              const weekGoals = groupedGoals[week] || [];
+              const firstGoal = weekGoals[0];
+
+              const eventDisplay: React.ReactNode[] = [];
+              if (firstGoal?.competition_id) {
+                const competition = competitions.find(
+                  (c) => c.id === firstGoal.competition_id,
+                );
+                if (competition) {
+                  eventDisplay.push(
+                    <span key="comp" className="font-semibold">
+                      {competition.location}
+                    </span>,
+                  );
+                }
+              }
+              if (firstGoal?.camp) {
+                eventDisplay.push(<span key="camp">{firstGoal.camp}</span>);
+              }
+
+              return (
+                <div
+                  key={week}
+                  className="cursor-pointer border-b p-4 hover:bg-muted/50"
+                  onClick={() => setEditingWeek(week)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-bold">Sett. {week}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {getWeekDateRange(year, week)}
+                    </div>
+                  </div>
+                  {eventDisplay.length > 0 && (
+                    <div className="mt-2 space-y-1 text-sm">
+                      {eventDisplay.map((event, index) => (
+                        <div key={index}>{event}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       <Dialog
