@@ -53,7 +53,6 @@ export async function upsertWeeklyGoals(goals: Omit<WeeklyGoal, "id">[]) {
     return { error: error.message };
   }
 
-  revalidatePath("/settimanale");
   return { success: true, data };
 }
 
@@ -105,6 +104,5 @@ export async function deleteWeeklyGoals(
     return { error: error.message };
   }
 
-  revalidatePath("/settimanale");
   return { success: true };
 }

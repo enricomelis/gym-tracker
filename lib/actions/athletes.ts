@@ -38,7 +38,12 @@ export async function getSocieties() {
   return data;
 }
 
-function getCategory(dateOfBirth: string): "Allievi" | "Junior" | "Senior" {
+function getCategory(
+  dateOfBirth: string | null,
+): "Allievi" | "Junior" | "Senior" {
+  if (!dateOfBirth) {
+    return "Senior";
+  }
   const birthDate = new Date(dateOfBirth);
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();

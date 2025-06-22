@@ -1,19 +1,13 @@
 "use client";
 
-import { useState, useEffect, useTransition, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   getYear,
-  startOfYear,
-  getWeek,
-  add,
   format,
-  startOfWeek,
-  endOfWeek,
   getISOWeeksInYear,
   startOfISOWeek,
   endOfISOWeek,
 } from "date-fns";
-import { it } from "date-fns/locale";
 import React from "react";
 
 import type { WeeklyGoal } from "@/lib/actions/planning";
@@ -104,8 +98,6 @@ export default function WeeklyPlanner({
   const [year, setYear] = useState(getYear(new Date()));
   const [groupedGoals, setGroupedGoals] = useState<GroupedGoals>({});
   const [editingWeek, setEditingWeek] = useState<number | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const weeksInYear = getISOWeeksInYear(year);
   const weeks = Array.from({ length: weeksInYear }, (_, i) => i + 1);
@@ -125,10 +117,7 @@ export default function WeeklyPlanner({
 
   const handleSave = async () => {
     setEditingWeek(null);
-    setIsFetching(true);
-    const goals = await getGroupedWeeklyGoals(selectedAthleteId, year);
-    setGroupedGoals(goals);
-    setIsFetching(false);
+    await fetchGoals();
   };
 
   return (
