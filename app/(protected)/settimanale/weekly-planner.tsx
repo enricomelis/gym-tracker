@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getYear, format } from "date-fns";
+import { getYear } from "date-fns";
 import React from "react";
 
 import type { WeeklyGoal } from "@/lib/actions/planning";
