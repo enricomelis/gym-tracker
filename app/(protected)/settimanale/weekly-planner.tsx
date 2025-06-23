@@ -30,12 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import WeeklyGoalForm from "./weekly-goal-form";
-
-type Athlete = {
-  id: string;
-  first_name: string;
-  last_name: string;
-};
+import { type Athlete } from "@/lib/actions/athletes";
 
 type Competition = {
   id: string;
@@ -63,7 +58,7 @@ export default function WeeklyPlanner({
 }) {
   const [isFetching, setIsFetching] = useState(false);
   const [selectedAthleteId, setSelectedAthleteId] = useState<string>(
-    athletes[0].id,
+    athletes[0]?.id || "",
   );
   const [year, setYear] = useState(getYear(new Date()));
   const [groupedGoals, setGroupedGoals] = useState<GroupedGoals>({});
@@ -88,6 +83,10 @@ export default function WeeklyPlanner({
   const handleSave = async () => {
     setEditingWeek(null);
     await fetchGoals();
+  };
+
+  const handleCloseDialog = () => {
+    setEditingWeek(null);
   };
 
   return (
@@ -302,7 +301,7 @@ export default function WeeklyPlanner({
 
       <Dialog
         open={editingWeek !== null}
-        onOpenChange={(isOpen) => !isOpen && setEditingWeek(null)}
+        onOpenChange={(isOpen) => !isOpen && handleCloseDialog()}
       >
         <DialogContent className="max-w-4xl">
           <DialogHeader>

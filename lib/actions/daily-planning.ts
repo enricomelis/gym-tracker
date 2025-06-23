@@ -51,12 +51,12 @@ const volumeMultipliers: Record<DailyRoutine["type"], number> = {
 };
 
 const executionPenaltyMap: Record<DailyRoutine["target_execution"], number> = {
-  "A+": 0,
-  A: 1,
-  "B+": 2,
-  B: 3,
-  "C+": 4,
-  C: 5,
+  "A+": 1.4,
+  A: 1.6,
+  "B+": 1.8,
+  B: 2.0,
+  "C+": 2.2,
+  C: 2.5,
 };
 
 export async function getDailyTrainings(
@@ -141,7 +141,7 @@ export async function getDailyTrainings(
         const multiplier = volumeMultipliers[routine.type] ?? 0;
         totalVolume += routineBaseVolume * multiplier * routine.quantity;
 
-        const penalty = executionPenaltyMap[routine.target_execution] ?? 5;
+        const penalty = executionPenaltyMap[routine.target_execution];
         const CoE = (10 - penalty) / 10;
         const intensity =
           routine.target_sets > 0

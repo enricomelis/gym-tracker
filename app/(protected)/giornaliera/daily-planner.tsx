@@ -23,11 +23,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format, getDaysInMonth, getISOWeek } from "date-fns";
+import { format, getDaysInMonth, getISOWeek, startOfToday } from "date-fns";
 import { it } from "date-fns/locale";
 import DailyRoutineForm from "./daily-routine-form";
 import { PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 interface DailyPlannerProps {
   athletes: Athlete[];
@@ -56,6 +57,14 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTraining, setSelectedTraining] =
     useState<EnrichedTrainingSession | null>(null);
+  const [showPastEvents, setShowPastEvents] = useState(false);
+
+  const formatItalianDate = (date: Date) => {
+    const dayOfWeek = format(date, "EEEE", { locale: it });
+    const dayOfMonth = format(date, "d");
+    const month = format(date, "MMMM", { locale: it });
+    return `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}, ${dayOfMonth} ${month.charAt(0).toUpperCase() + month.slice(1)}`;
+  };
 
   const fetchTrainings = async () => {
     if (!selectedAthleteId) return;
@@ -104,7 +113,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
 
   const years = useMemo(() => {
     const current = new Date().getFullYear();
-    return Array.from({ length: 5 }, (_, i) => current - i);
+    return Array.from({ length: 5 }, (_, i) => current - 2 + i);
   }, []);
 
   const months = useMemo(() => {
@@ -119,6 +128,19 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
     { length: daysInMonth },
     (_, i) => new Date(currentYear, currentMonth - 1, i + 1),
   );
+
+  const visibleDays = useMemo(() => {
+    if (showPastEvents) {
+      return allDaysInMonth;
+    }
+    const today = startOfToday();
+    return allDaysInMonth.filter((day) => day >= today);
+  }, [allDaysInMonth, showPastEvents]);
+
+  const hasPastEvents = useMemo(() => {
+    const today = startOfToday();
+    return allDaysInMonth.some((day) => day < today);
+  }, [allDaysInMonth]);
 
   const trainingsByDate = useMemo(() => {
     const map = new Map<string, EnrichedTrainingSession[]>();
@@ -198,6 +220,14 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
         </Select>
       </div>
 
+      {hasPastEvents && !showPastEvents && (
+        <div className="my-4 text-center">
+          <Button variant="secondary" onClick={() => setShowPastEvents(true)}>
+            Carica allenamenti precedenti
+          </Button>
+        </div>
+      )}
+
       <div className="mt-6 overflow-x-auto">
         {isPending ? (
           <p className="text-center">Caricamento...</p>
@@ -223,7 +253,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
               )}
             </TableHeader>
             <TableBody>
-              {allDaysInMonth.map((day) => {
+              {visibleDays.map((day) => {
                 const dateKey = format(day, "yyyy-MM-dd");
                 const sessionsForDay = trainingsByDate.get(dateKey) || [];
 
@@ -232,9 +262,13 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                   if (sessionsForDay.length === 0) {
                     return (
                       <TableRow key={dateKey}>
-                        <TableCell>{getISOWeek(day)}</TableCell>
+                        <TableCell>
+                          <Link href="/settimanale" className="underline">
+                            {getISOWeek(day)}
+                          </Link>
+                        </TableCell>
                         <TableCell className="flex items-center gap-2">
-                          {format(day, "EEEE, d MMMM", { locale: it })}
+                          {formatItalianDate(day)}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -244,8 +278,8 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                             <PlusCircle className="h-4 w-4" />
                           </Button>
                         </TableCell>
-                        <TableCell>-</TableCell>
-                        <TableCell>-</TableCell>
+                        <TableCell />
+                        <TableCell />
                       </TableRow>
                     );
                   }
@@ -255,11 +289,17 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                       onClick={() => handleEdit(training)}
                       className="cursor-pointer hover:bg-muted/50"
                     >
-                      <TableCell>{training.week_number}</TableCell>
+                      <TableCell>
+                        <Link
+                          href="/settimanale"
+                          className="underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {training.week_number}
+                        </Link>
+                      </TableCell>
                       <TableCell className="flex items-center gap-2">
-                        {format(new Date(training.date), "EEEE, d MMMM", {
-                          locale: it,
-                        })}
+                        {formatItalianDate(new Date(training.date))}
                         <Badge variant="secondary">{`#${training.session_number}`}</Badge>
                         {index === sessionsForDay.length - 1 && (
                           <Button
@@ -287,9 +327,13 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                   if (sessionsForDay.length === 0) {
                     return (
                       <TableRow key={dateKey}>
-                        <TableCell>{getISOWeek(day)}</TableCell>
+                        <TableCell>
+                          <Link href="/settimanale" className="underline">
+                            {getISOWeek(day)}
+                          </Link>
+                        </TableCell>
                         <TableCell className="flex items-center gap-2">
-                          {format(day, "EEEE, d MMMM", { locale: it })}
+                          {formatItalianDate(day)}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -299,7 +343,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                             <PlusCircle className="h-4 w-4" />
                           </Button>
                         </TableCell>
-                        <TableCell colSpan={4}>-</TableCell>
+                        <TableCell colSpan={4} />
                       </TableRow>
                     );
                   }
@@ -315,13 +359,17 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                         className="cursor-pointer hover:bg-muted/50"
                       >
                         <TableCell className="align-top">
-                          {training.week_number}
+                          <Link
+                            href="/settimanale"
+                            className="underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {training.week_number}
+                          </Link>
                         </TableCell>
                         <TableCell className="flex items-start gap-2 align-top">
                           <div className="flex items-center gap-2">
-                            {format(new Date(training.date), "EEEE, d MMMM", {
-                              locale: it,
-                            })}
+                            {formatItalianDate(new Date(training.date))}
                             <Badge variant="secondary">{`#${training.session_number}`}</Badge>
                             {sessionIndex === sessionsForDay.length - 1 && (
                               <Button
@@ -381,9 +429,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                             </TableCell>
                           </>
                         ) : (
-                          <TableCell colSpan={4} className="text-center">
-                            -
-                          </TableCell>
+                          <TableCell colSpan={4} className="text-center" />
                         )}
                       </TableRow>
                     );

@@ -92,6 +92,10 @@ export default function DailyRoutineForm({
     },
   });
 
+  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+    event.target.select();
+  };
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "routines",
@@ -227,11 +231,13 @@ export default function DailyRoutineForm({
                   {...control.register(`routines.${index}.quantity`)}
                   placeholder="Quantità"
                   type="number"
+                  onFocus={handleFocus}
                 />
                 <Input
                   {...control.register(`routines.${index}.target_sets`)}
                   placeholder="N. Salite"
                   type="number"
+                  onFocus={handleFocus}
                 />
                 <Controller
                   name={`routines.${index}.target_execution`}
