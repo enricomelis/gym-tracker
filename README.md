@@ -53,10 +53,17 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 #### app/settimanale - Mobile
 
-- [ ] Overflow del bottone per il cambio anno
-- [ ] Overflow del form per inserimento programmazione che ne impossibilita l'utilizzo
+- [ ] Overflow del bottone per il cambio anno.
+- [ ] Overflow del form per inserimento programmazione che ne impossibilita l'utilizzo.
 
 ### Back-end
 
+#### Database Schema
+
 - [ ] Modificare relazione Atleti-Allenamenti. Dovrebbe essere Molti-a-Molti.
-- [ ] RLS non attiva
+- [ ] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
+- [ ] RLS non attiva.
+
+#### app/giornaliera
+
+- [ ] Il calcolo dell'intensità media è sbagliato.

@@ -274,15 +274,25 @@ export async function createEmptyTrainingSession(
 export async function deleteDailyTraining(sessionId: string) {
   const supabase = await createClient();
 
-  // The database is configured with cascading delete.
-  // Deleting the training_session will also delete all associated daily_routines.
-  const { error } = await supabase
+  // First, delete all daily routines associated with the session
+  const { error: routinesError } = await supabase
+    .from("daily_routines")
+    .delete()
+    .eq("session_id", sessionId);
+
+  if (routinesError) {
+    console.error("Error deleting daily routines:", routinesError);
+    return { error: "Could not delete associated exercises" };
+  }
+
+  // Then, delete the training session itself
+  const { error: sessionError } = await supabase
     .from("training_sessions")
     .delete()
     .eq("id", sessionId);
 
-  if (error) {
-    console.error("Error deleting training session:", error);
+  if (sessionError) {
+    console.error("Error deleting training session:", sessionError);
     return { error: "Could not delete training session" };
   }
 

@@ -304,20 +304,21 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                     );
                   }
 
-                  return sessionsForDay.flatMap((training, sessionIndex) => {
-                    const routinesForSession = training.routines.filter(
+                  return sessionsForDay.map((training, sessionIndex) => {
+                    const routinesForApparatus = training.routines.filter(
                       (r) => r.apparatus === selectedApparatus,
                     );
-
-                    if (routinesForSession.length === 0) {
-                      return (
-                        <TableRow
-                          key={training.id}
-                          onClick={() => handleEdit(training)}
-                          className="cursor-pointer hover:bg-muted/50"
-                        >
-                          <TableCell>{training.week_number}</TableCell>
-                          <TableCell className="flex items-center gap-2">
+                    return (
+                      <TableRow
+                        key={training.id}
+                        onClick={() => handleEdit(training)}
+                        className="cursor-pointer hover:bg-muted/50"
+                      >
+                        <TableCell className="align-top">
+                          {training.week_number}
+                        </TableCell>
+                        <TableCell className="flex items-start gap-2 align-top">
+                          <div className="flex items-center gap-2">
                             {format(new Date(training.date), "EEEE, d MMMM", {
                               locale: it,
                             })}
@@ -338,54 +339,54 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                                 <PlusCircle className="h-4 w-4" />
                               </Button>
                             )}
+                          </div>
+                        </TableCell>
+                        {routinesForApparatus.length > 0 ? (
+                          <>
+                            <TableCell className="align-top">
+                              <div className="flex flex-col">
+                                {routinesForApparatus.map((r) => (
+                                  <div key={r.id} className="h-8">
+                                    {r.type}
+                                  </div>
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell className="align-top">
+                              <div className="flex flex-col">
+                                {routinesForApparatus.map((r) => (
+                                  <div key={r.id} className="h-8">
+                                    {r.quantity}
+                                  </div>
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell className="align-top">
+                              <div className="flex flex-col">
+                                {routinesForApparatus.map((r) => (
+                                  <div key={r.id} className="h-8">
+                                    {r.target_sets}
+                                  </div>
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell className="align-top">
+                              <div className="flex flex-col">
+                                {routinesForApparatus.map((r) => (
+                                  <div key={r.id} className="h-8">
+                                    {r.target_execution}
+                                  </div>
+                                ))}
+                              </div>
+                            </TableCell>
+                          </>
+                        ) : (
+                          <TableCell colSpan={4} className="text-center">
+                            -
                           </TableCell>
-                          <TableCell colSpan={4}>-</TableCell>
-                        </TableRow>
-                      );
-                    }
-
-                    return routinesForSession.map((routine, routineIndex) => (
-                      <TableRow
-                        key={routine.id}
-                        onClick={() => handleEdit(training)}
-                        className="cursor-pointer hover:bg-muted/50"
-                      >
-                        <TableCell>
-                          {routineIndex === 0 ? training.week_number : ""}
-                        </TableCell>
-                        <TableCell className="flex items-center gap-2">
-                          {routineIndex === 0
-                            ? format(new Date(training.date), "EEEE, d MMMM", {
-                                locale: it,
-                              })
-                            : ""}
-                          {routineIndex === 0 && (
-                            <Badge variant="secondary">{`#${training.session_number}`}</Badge>
-                          )}
-                          {routineIndex === 0 &&
-                            sessionIndex === sessionsForDay.length - 1 && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCreateSession(
-                                    day,
-                                    sessionsForDay.length + 1,
-                                  );
-                                }}
-                              >
-                                <PlusCircle className="h-4 w-4" />
-                              </Button>
-                            )}
-                        </TableCell>
-                        <TableCell>{routine.type}</TableCell>
-                        <TableCell>{routine.quantity}</TableCell>
-                        <TableCell>{routine.target_sets}</TableCell>
-                        <TableCell>{routine.target_execution}</TableCell>
+                        )}
                       </TableRow>
-                    ));
+                    );
                   });
                 }
               })}
