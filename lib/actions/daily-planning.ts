@@ -181,59 +181,39 @@ const dailyRoutineSchema = z.object({
 });
 
 const formSchema = z.object({
-  athlete_id: z.string().uuid(),
-  date: z.string(),
-  session_number: z.coerce.number().min(1),
+  session_id: z.string().uuid(),
   routines: z.array(dailyRoutineSchema),
 });
 
 export async function saveDailyRoutine(formData: unknown) {
   const supabase = await createClient();
-
   const parsed = formSchema.safeParse(formData);
 
   if (!parsed.success) {
+    console.error("Invalid form data", parsed.error);
     return { error: "Invalid form data" };
   }
 
-  const { athlete_id, date, session_number, routines } = parsed.data;
-
-  // Convert date string to Date object for week calculation
-  const dateObj = new Date(date);
-  const week_number = getWeek(dateObj, { weekStartsOn: 1 });
-  const year = dateObj.getFullYear();
+  const { session_id, routines } = parsed.data;
 
   try {
     const { data: session, error: sessionError } = await supabase
       .from("training_sessions")
-      .upsert(
-        {
-          athlete_id,
-          date,
-          session_number,
-          week_number,
-          year,
-        },
-        {
-          onConflict: "training_sessions_athlete_id_date_session_number_key",
-          ignoreDuplicates: false,
-        },
-      )
-      .select("id")
+      .select("athlete_id")
+      .eq("id", session_id)
       .single();
 
     if (sessionError || !session) {
-      console.error("Error upserting training session:", sessionError);
-      return { error: "Could not save training session" };
+      return { error: "Training session not found" };
     }
 
-    const sessionId = session.id;
+    const { athlete_id } = session;
 
-    // Delete routines that are not in the new list
+    // Delete existing routines for this session
     const { error: deleteError } = await supabase
       .from("daily_routines")
       .delete()
-      .eq("session_id", sessionId);
+      .eq("session_id", session_id);
 
     if (deleteError) {
       console.error("Error deleting old routines:", deleteError);
@@ -243,7 +223,7 @@ export async function saveDailyRoutine(formData: unknown) {
     if (routines.length > 0) {
       const routinesToInsert = routines.map((routine) => ({
         ...routine,
-        session_id: sessionId,
+        session_id,
         athlete_id,
       }));
 
@@ -262,6 +242,33 @@ export async function saveDailyRoutine(formData: unknown) {
     console.error("Error saving daily routine:", error);
     return { error: "An error occurred while saving the routine" };
   }
+}
+
+export async function createEmptyTrainingSession(
+  athleteId: string,
+  date: string,
+  sessionNumber: number,
+) {
+  const supabase = await createClient();
+
+  const dateObj = new Date(date);
+  const week_number = getWeek(dateObj, { weekStartsOn: 1 });
+  const year = dateObj.getFullYear();
+
+  const { error } = await supabase.from("training_sessions").insert({
+    athlete_id: athleteId,
+    date,
+    session_number: sessionNumber,
+    week_number,
+    year,
+  });
+
+  if (error) {
+    console.error("Error creating empty session:", error);
+    return { error: "Could not create training session" };
+  }
+
+  return { success: true };
 }
 
 export async function deleteDailyTraining(sessionId: string) {

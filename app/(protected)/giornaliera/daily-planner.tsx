@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import {
   EnrichedTrainingSession,
   getDailyTrainings,
+  createEmptyTrainingSession,
 } from "@/lib/actions/daily-planning";
 import { type Athlete } from "@/lib/actions/athletes";
 import {
@@ -26,6 +27,7 @@ import { format, getDaysInMonth, getISOWeek } from "date-fns";
 import { it } from "date-fns/locale";
 import DailyRoutineForm from "./daily-routine-form";
 import { PlusCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface DailyPlannerProps {
   athletes: Athlete[];
@@ -54,10 +56,6 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTraining, setSelectedTraining] =
     useState<EnrichedTrainingSession | null>(null);
-  const [newTrainingInfo, setNewTrainingInfo] = useState<{
-    date: Date;
-    sessionNumber: number;
-  } | null>(null);
 
   const fetchTrainings = async () => {
     if (!selectedAthleteId) return;
@@ -77,20 +75,28 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
 
   const handleEdit = (training: EnrichedTrainingSession) => {
     setSelectedTraining(training);
-    setNewTrainingInfo(null);
     setIsFormOpen(true);
   };
 
-  const handleAddNewSession = (date: Date, sessionNumber: number) => {
-    setSelectedTraining(null);
-    setNewTrainingInfo({ date, sessionNumber });
-    setIsFormOpen(true);
+  const handleCreateSession = async (date: Date, sessionNumber: number) => {
+    startTransition(async () => {
+      const result = await createEmptyTrainingSession(
+        selectedAthleteId,
+        format(date, "yyyy-MM-dd"),
+        sessionNumber,
+      );
+      if (result.success) {
+        fetchTrainings();
+      } else {
+        // TODO: Handle error with a toast
+        console.error(result.error);
+      }
+    });
   };
 
   const handleCloseForm = (shouldRefetch = false) => {
     setIsFormOpen(false);
     setSelectedTraining(null);
-    setNewTrainingInfo(null);
     if (shouldRefetch) {
       fetchTrainings();
     }
@@ -225,16 +231,21 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                   // SUMMARY VIEW
                   if (sessionsForDay.length === 0) {
                     return (
-                      <TableRow
-                        key={dateKey}
-                        onClick={() => handleAddNewSession(day, 1)}
-                        className="cursor-pointer"
-                      >
+                      <TableRow key={dateKey}>
                         <TableCell>{getISOWeek(day)}</TableCell>
-                        <TableCell>
+                        <TableCell className="flex items-center gap-2">
                           {format(day, "EEEE, d MMMM", { locale: it })}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => handleCreateSession(day, 1)}
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                          </Button>
                         </TableCell>
-                        <TableCell colSpan={2}>-</TableCell>
+                        <TableCell>-</TableCell>
+                        <TableCell>-</TableCell>
                       </TableRow>
                     );
                   }
@@ -242,25 +253,22 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                     <TableRow
                       key={training.id}
                       onClick={() => handleEdit(training)}
-                      className="cursor-pointer"
+                      className="cursor-pointer hover:bg-muted/50"
                     >
-                      <TableCell>
-                        {index === 0 ? training.week_number : ""}
-                      </TableCell>
+                      <TableCell>{training.week_number}</TableCell>
                       <TableCell className="flex items-center gap-2">
-                        {index === 0
-                          ? format(new Date(training.date), "EEEE, d MMMM", {
-                              locale: it,
-                            })
-                          : ""}
-                        {index === 0 && (
+                        {format(new Date(training.date), "EEEE, d MMMM", {
+                          locale: it,
+                        })}
+                        <Badge variant="secondary">{`#${training.session_number}`}</Badge>
+                        {index === sessionsForDay.length - 1 && (
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleAddNewSession(
+                              handleCreateSession(
                                 day,
                                 sessionsForDay.length + 1,
                               );
@@ -276,67 +284,109 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                   ));
                 } else {
                   // APPARATUS-SPECIFIC VIEW
-                  const routinesForApparatus = sessionsForDay.flatMap(
-                    (training) =>
-                      training.routines
-                        .filter((r) => r.apparatus === selectedApparatus)
-                        .map((routine) => ({
-                          ...routine,
-                          parentTraining: training,
-                        })),
-                  );
-
-                  if (routinesForApparatus.length === 0) {
+                  if (sessionsForDay.length === 0) {
                     return (
-                      <TableRow
-                        key={dateKey}
-                        onClick={() => handleAddNewSession(day, 1)}
-                        className="cursor-pointer"
-                      >
+                      <TableRow key={dateKey}>
                         <TableCell>{getISOWeek(day)}</TableCell>
-                        <TableCell>
+                        <TableCell className="flex items-center gap-2">
                           {format(day, "EEEE, d MMMM", { locale: it })}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => handleCreateSession(day, 1)}
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                         <TableCell colSpan={4}>-</TableCell>
                       </TableRow>
                     );
                   }
-                  return routinesForApparatus.map((routine, index) => (
-                    <TableRow
-                      key={routine.id}
-                      onClick={() => handleEdit(routine.parentTraining)}
-                      className="cursor-pointer"
-                    >
-                      <TableCell>
-                        {index === 0 ? getISOWeek(day) : ""}
-                      </TableCell>
-                      <TableCell className="flex items-center gap-2">
-                        {index === 0
-                          ? format(day, "EEEE, d MMMM", { locale: it })
-                          : ""}
-                        {index === 0 && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddNewSession(
-                                day,
-                                sessionsForDay.length + 1,
-                              );
-                            }}
-                          >
-                            <PlusCircle className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </TableCell>
-                      <TableCell>{routine.type}</TableCell>
-                      <TableCell>{routine.quantity}</TableCell>
-                      <TableCell>{routine.target_sets}</TableCell>
-                      <TableCell>{routine.target_execution}</TableCell>
-                    </TableRow>
-                  ));
+
+                  return sessionsForDay.flatMap((training, sessionIndex) => {
+                    const routinesForSession = training.routines.filter(
+                      (r) => r.apparatus === selectedApparatus,
+                    );
+
+                    if (routinesForSession.length === 0) {
+                      return (
+                        <TableRow
+                          key={training.id}
+                          onClick={() => handleEdit(training)}
+                          className="cursor-pointer hover:bg-muted/50"
+                        >
+                          <TableCell>{training.week_number}</TableCell>
+                          <TableCell className="flex items-center gap-2">
+                            {format(new Date(training.date), "EEEE, d MMMM", {
+                              locale: it,
+                            })}
+                            <Badge variant="secondary">{`#${training.session_number}`}</Badge>
+                            {sessionIndex === sessionsForDay.length - 1 && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCreateSession(
+                                    day,
+                                    sessionsForDay.length + 1,
+                                  );
+                                }}
+                              >
+                                <PlusCircle className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                          <TableCell colSpan={4}>-</TableCell>
+                        </TableRow>
+                      );
+                    }
+
+                    return routinesForSession.map((routine, routineIndex) => (
+                      <TableRow
+                        key={routine.id}
+                        onClick={() => handleEdit(training)}
+                        className="cursor-pointer hover:bg-muted/50"
+                      >
+                        <TableCell>
+                          {routineIndex === 0 ? training.week_number : ""}
+                        </TableCell>
+                        <TableCell className="flex items-center gap-2">
+                          {routineIndex === 0
+                            ? format(new Date(training.date), "EEEE, d MMMM", {
+                                locale: it,
+                              })
+                            : ""}
+                          {routineIndex === 0 && (
+                            <Badge variant="secondary">{`#${training.session_number}`}</Badge>
+                          )}
+                          {routineIndex === 0 &&
+                            sessionIndex === sessionsForDay.length - 1 && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCreateSession(
+                                    day,
+                                    sessionsForDay.length + 1,
+                                  );
+                                }}
+                              >
+                                <PlusCircle className="h-4 w-4" />
+                              </Button>
+                            )}
+                        </TableCell>
+                        <TableCell>{routine.type}</TableCell>
+                        <TableCell>{routine.quantity}</TableCell>
+                        <TableCell>{routine.target_sets}</TableCell>
+                        <TableCell>{routine.target_execution}</TableCell>
+                      </TableRow>
+                    ));
+                  });
                 }
               })}
             </TableBody>
@@ -347,10 +397,6 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
         isOpen={isFormOpen}
         onClose={handleCloseForm}
         trainingData={selectedTraining}
-        athleteId={selectedAthleteId}
-        year={currentYear}
-        month={currentMonth}
-        newTrainingInfo={newTrainingInfo}
       />
     </div>
   );

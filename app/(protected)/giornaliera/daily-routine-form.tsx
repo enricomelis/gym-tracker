@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { it } from "date-fns/locale";
 
 import {
   Dialog,
@@ -60,10 +61,7 @@ const routineSchema = z
   });
 
 const formSchema = z.object({
-  date: z.string().min(1, "La data è richiesta"),
-  session_number: z.coerce
-    .number()
-    .min(1, "Il numero della sessione è richiesto"),
+  session_id: z.string().uuid(),
   routines: z.array(routineSchema),
 });
 
@@ -73,24 +71,15 @@ interface DailyRoutineFormProps {
   isOpen: boolean;
   onClose: (shouldRefetch?: boolean) => void;
   trainingData: EnrichedTrainingSession | null;
-  athleteId: string;
-  year: number;
-  month: number;
-  newTrainingInfo?: { date: Date; sessionNumber: number } | null;
 }
 
 export default function DailyRoutineForm({
   isOpen,
   onClose,
   trainingData,
-  athleteId,
-  year,
-  month,
-  newTrainingInfo,
 }: DailyRoutineFormProps) {
   const { toast } = useToast();
   const {
-    register,
     control,
     handleSubmit,
     reset,
@@ -98,8 +87,7 @@ export default function DailyRoutineForm({
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: "",
-      session_number: 1,
+      session_id: "",
       routines: [],
     },
   });
@@ -112,52 +100,33 @@ export default function DailyRoutineForm({
   useEffect(() => {
     if (isOpen && trainingData) {
       reset({
-        date: trainingData.date.split("T")[0],
-        session_number: trainingData.session_number,
-        routines: trainingData.routines,
-      });
-    } else if (isOpen && newTrainingInfo) {
-      reset({
-        date: format(newTrainingInfo.date, "yyyy-MM-dd"),
-        session_number: newTrainingInfo.sessionNumber,
-        routines: [],
-      });
-    } else if (isOpen) {
-      reset({
-        date: format(new Date(year, month - 1, 1), "yyyy-MM-dd"),
-        session_number: 1,
-        routines: [],
+        session_id: trainingData.id,
+        routines: trainingData.routines || [],
       });
     }
-  }, [isOpen, trainingData, reset, year, month, newTrainingInfo]);
+  }, [isOpen, trainingData, reset]);
 
   const onSubmit = async (data: FormData) => {
-    const parsedData = formSchema.safeParse(data);
-    if (!parsedData.success) {
-      toast({
-        title: "Errore di validazione",
-        description:
-          "Controlla i dati inseriti. Tutti i campi sono obbligatori.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!trainingData) return;
 
     const payload = {
-      ...parsedData.data,
-      athlete_id: athleteId,
+      session_id: trainingData.id,
+      routines: data.routines,
     };
+
     const result = await saveDailyRoutine(payload);
     if (result.error) {
       toast({
         title: "Errore",
-        description: `Impossibile salvare l'allenamento: ${result.error}`,
+        description: `Impossibile salvare le modifiche: ${result.error}`,
         variant: "destructive",
+        duration: 1000,
       });
     } else {
       toast({
         title: "Successo",
         description: "Allenamento salvato con successo.",
+        duration: 1000,
       });
       onClose(true);
     }
@@ -171,40 +140,33 @@ export default function DailyRoutineForm({
         title: "Errore",
         description: `Impossibile eliminare l'allenamento: ${result.error}`,
         variant: "destructive",
+        duration: 1000,
       });
     } else {
       toast({
         title: "Successo",
         description: "Allenamento eliminato con successo.",
+        duration: 1000,
       });
       onClose(true);
     }
   };
 
+  if (!trainingData) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={() => onClose()}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>
-            {trainingData ? "Modifica Allenamento" : "Nuovo Allenamento"}
+            Modifica Allenamento -{" "}
+            {format(new Date(trainingData.date), "EEEE, d MMMM", {
+              locale: it,
+            })}{" "}
+            (Sessione {trainingData.session_number})
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <Label htmlFor="date">Data</Label>
-              <Input id="date" type="date" {...register("date")} />
-            </div>
-            <div>
-              <Label htmlFor="session_number">Sessione N.</Label>
-              <Input
-                id="session_number"
-                type="number"
-                {...register("session_number")}
-              />
-            </div>
-          </div>
-
           <h3 className="border-t pt-4 text-lg font-semibold">Esercizi</h3>
           <div className="max-h-64 space-y-4 overflow-y-auto pr-2">
             <div className="grid grid-cols-1 items-center gap-2 p-2 md:grid-cols-6">
@@ -262,12 +224,12 @@ export default function DailyRoutineForm({
                   )}
                 />
                 <Input
-                  {...register(`routines.${index}.quantity`)}
+                  {...control.register(`routines.${index}.quantity`)}
                   placeholder="Quantità"
                   type="number"
                 />
                 <Input
-                  {...register(`routines.${index}.target_sets`)}
+                  {...control.register(`routines.${index}.target_sets`)}
                   placeholder="N. Salite"
                   type="number"
                 />
@@ -321,17 +283,11 @@ export default function DailyRoutineForm({
           </Button>
 
           <DialogFooter className="pt-4">
-            {trainingData && (
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleDelete}
-              >
-                Elimina
-              </Button>
-            )}
+            <Button type="button" variant="destructive" onClick={handleDelete}>
+              Elimina Allenamento
+            </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Salvataggio..." : "Salva"}
+              {isSubmitting ? "Salvataggio..." : "Salva Modifiche"}
             </Button>
           </DialogFooter>
         </form>
