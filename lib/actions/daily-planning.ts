@@ -198,61 +198,70 @@ export async function saveDailyRoutine(formData: unknown) {
 
   const { athlete_id, date, session_number, routines } = parsed.data;
 
-  // 1. Upsert training session to get a session ID
-  const { data: sessionData, error: sessionError } = await supabase
-    .from("training_sessions")
-    .upsert(
-      {
-        athlete_id,
-        date,
-        session_number,
-        week_number: getWeek(new Date(date), { weekStartsOn: 1 }),
-        year: new Date(date).getFullYear(),
-      },
-      { onConflict: "athlete_id, date, session_number" },
-    )
-    .select("id")
-    .single();
+  // Convert date string to Date object for week calculation
+  const dateObj = new Date(date);
+  const week_number = getWeek(dateObj, { weekStartsOn: 1 });
+  const year = dateObj.getFullYear();
 
-  if (sessionError || !sessionData) {
-    console.error("Error upserting training session:", sessionError);
-    return { error: "Could not save training session" };
-  }
+  try {
+    const { data: session, error: sessionError } = await supabase
+      .from("training_sessions")
+      .upsert(
+        {
+          athlete_id,
+          date,
+          session_number,
+          week_number,
+          year,
+        },
+        {
+          onConflict: "training_sessions_athlete_id_date_session_number_key",
+          ignoreDuplicates: false,
+        },
+      )
+      .select("id")
+      .single();
 
-  const sessionId = sessionData.id;
+    if (sessionError || !session) {
+      console.error("Error upserting training session:", sessionError);
+      return { error: "Could not save training session" };
+    }
 
-  // 2. Delete all existing routines for this session
-  const { error: deleteError } = await supabase
-    .from("daily_routines")
-    .delete()
-    .eq("session_id", sessionId);
+    const sessionId = session.id;
 
-  if (deleteError) {
-    console.error("Error deleting old routines:", deleteError);
-    return { error: "Could not update routines" };
-  }
+    // Delete routines that are not in the new list
+    const { error: deleteError } = await supabase
+      .from("daily_routines")
+      .delete()
+      .eq("session_id", sessionId);
 
-  // 3. Insert new routines if there are any
-  if (routines.length > 0) {
-    const routinesToInsert = routines.map(
-      (routine: z.infer<typeof dailyRoutineSchema>) => ({
+    if (deleteError) {
+      console.error("Error deleting old routines:", deleteError);
+      return { error: "Could not update routines" };
+    }
+
+    if (routines.length > 0) {
+      const routinesToInsert = routines.map((routine) => ({
         ...routine,
         session_id: sessionId,
         athlete_id,
-      }),
-    );
+      }));
 
-    const { error: insertError } = await supabase
-      .from("daily_routines")
-      .insert(routinesToInsert);
+      const { error: insertError } = await supabase
+        .from("daily_routines")
+        .insert(routinesToInsert);
 
-    if (insertError) {
-      console.error("Error inserting new routines:", insertError);
-      return { error: "Could not save new routines" };
+      if (insertError) {
+        console.error("Error inserting routines:", insertError);
+        return { error: "Could not insert routines" };
+      }
     }
-  }
 
-  return { success: true };
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving daily routine:", error);
+    return { error: "An error occurred while saving the routine" };
+  }
 }
 
 export async function deleteDailyTraining(sessionId: string) {

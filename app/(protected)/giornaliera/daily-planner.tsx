@@ -22,9 +22,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format } from "date-fns";
+import { format, getDaysInMonth, getISOWeek } from "date-fns";
 import { it } from "date-fns/locale";
 import DailyRoutineForm from "./daily-routine-form";
+import { PlusCircle } from "lucide-react";
 
 interface DailyPlannerProps {
   athletes: Athlete[];
@@ -49,11 +50,14 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
   const [selectedApparatus, setSelectedApparatus] =
     useState<string>("Tutti gli Attrezzi");
   const [trainings, setTrainings] = useState<EnrichedTrainingSession[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTraining, setSelectedTraining] =
     useState<EnrichedTrainingSession | null>(null);
+  const [newTrainingInfo, setNewTrainingInfo] = useState<{
+    date: Date;
+    sessionNumber: number;
+  } | null>(null);
 
   const fetchTrainings = async () => {
     if (!selectedAthleteId) return;
@@ -73,18 +77,23 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
 
   const handleEdit = (training: EnrichedTrainingSession) => {
     setSelectedTraining(training);
+    setNewTrainingInfo(null);
     setIsFormOpen(true);
   };
 
-  const handleAddNew = () => {
+  const handleAddNewSession = (date: Date, sessionNumber: number) => {
     setSelectedTraining(null);
+    setNewTrainingInfo({ date, sessionNumber });
     setIsFormOpen(true);
   };
 
-  const handleCloseForm = () => {
+  const handleCloseForm = (shouldRefetch = false) => {
     setIsFormOpen(false);
     setSelectedTraining(null);
-    fetchTrainings(); // Refetch data after form is closed
+    setNewTrainingInfo(null);
+    if (shouldRefetch) {
+      fetchTrainings();
+    }
   };
 
   const years = useMemo(() => {
@@ -99,6 +108,28 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
     }));
   }, []);
 
+  const daysInMonth = getDaysInMonth(new Date(currentYear, currentMonth - 1));
+  const allDaysInMonth = Array.from(
+    { length: daysInMonth },
+    (_, i) => new Date(currentYear, currentMonth - 1, i + 1),
+  );
+
+  const trainingsByDate = useMemo(() => {
+    const map = new Map<string, EnrichedTrainingSession[]>();
+    trainings.forEach((training) => {
+      const dateKey = format(new Date(training.date), "yyyy-MM-dd");
+      if (!map.has(dateKey)) {
+        map.set(dateKey, []);
+      }
+      map.get(dateKey)!.push(training);
+    });
+    // sort sessions within each day
+    map.forEach((sessions) => {
+      sessions.sort((a, b) => a.session_number - b.session_number);
+    });
+    return map;
+  }, [trainings]);
+
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-4">
@@ -110,19 +141,6 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
             {athletes.map((athlete) => (
               <SelectItem key={athlete.id} value={athlete.id}>
                 {athlete.first_name} {athlete.last_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedApparatus} onValueChange={setSelectedApparatus}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Seleziona Attrezzo" />
-          </SelectTrigger>
-          <SelectContent>
-            {APPARATUS_OPTIONS.map((opt) => (
-              <SelectItem key={opt} value={opt}>
-                {opt}
               </SelectItem>
             ))}
           </SelectContent>
@@ -159,7 +177,19 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
             ))}
           </SelectContent>
         </Select>
-        <Button onClick={handleAddNew}>Aggiungi Allenamento</Button>
+
+        <Select value={selectedApparatus} onValueChange={setSelectedApparatus}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Seleziona Attrezzo" />
+          </SelectTrigger>
+          <SelectContent>
+            {APPARATUS_OPTIONS.map((opt) => (
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="mt-6 overflow-x-auto">
@@ -168,75 +198,147 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
         ) : (
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="w-[150px]">Giorno</TableHead>
-                <TableHead className="w-[100px]">Settimana</TableHead>
-                {selectedApparatus === "Tutti gli Attrezzi" ? (
-                  <>
-                    <TableHead>Volume Totale</TableHead>
-                    <TableHead>Intensità Media</TableHead>
-                  </>
-                ) : (
-                  <>
-                    <TableHead>Tipo di Salita</TableHead>
-                    <TableHead>Quantità</TableHead>
-                    <TableHead>Numero di Salite</TableHead>
-                    <TableHead>Esecuzione</TableHead>
-                  </>
-                )}
-              </TableRow>
+              {selectedApparatus === "Tutti gli Attrezzi" ? (
+                <TableRow>
+                  <TableHead className="w-[100px]">Settimana</TableHead>
+                  <TableHead className="w-[250px]">Giorno</TableHead>
+                  <TableHead>Volume Totale</TableHead>
+                  <TableHead>Intensità Media</TableHead>
+                </TableRow>
+              ) : (
+                <TableRow>
+                  <TableHead className="w-[100px]">Settimana</TableHead>
+                  <TableHead className="w-[250px]">Giorno</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Quantità</TableHead>
+                  <TableHead>N. Salite</TableHead>
+                  <TableHead>Esecuzione</TableHead>
+                </TableRow>
+              )}
             </TableHeader>
             <TableBody>
-              {trainings.length > 0 ? (
-                trainings.map((training) =>
-                  selectedApparatus === "Tutti gli Attrezzi" ? (
+              {allDaysInMonth.map((day) => {
+                const dateKey = format(day, "yyyy-MM-dd");
+                const sessionsForDay = trainingsByDate.get(dateKey) || [];
+
+                if (selectedApparatus === "Tutti gli Attrezzi") {
+                  // SUMMARY VIEW
+                  if (sessionsForDay.length === 0) {
+                    return (
+                      <TableRow
+                        key={dateKey}
+                        onClick={() => handleAddNewSession(day, 1)}
+                        className="cursor-pointer"
+                      >
+                        <TableCell>{getISOWeek(day)}</TableCell>
+                        <TableCell>
+                          {format(day, "EEEE, d MMMM", { locale: it })}
+                        </TableCell>
+                        <TableCell colSpan={2}>-</TableCell>
+                      </TableRow>
+                    );
+                  }
+                  return sessionsForDay.map((training, index) => (
                     <TableRow
                       key={training.id}
                       onClick={() => handleEdit(training)}
                       className="cursor-pointer"
                     >
                       <TableCell>
-                        {format(new Date(training.date), "EEEE, d MMMM", {
-                          locale: it,
-                        })}
+                        {index === 0 ? training.week_number : ""}
                       </TableCell>
-                      <TableCell>{training.week_number}</TableCell>
+                      <TableCell className="flex items-center gap-2">
+                        {index === 0
+                          ? format(new Date(training.date), "EEEE, d MMMM", {
+                              locale: it,
+                            })
+                          : ""}
+                        {index === 0 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddNewSession(
+                                day,
+                                sessionsForDay.length + 1,
+                              );
+                            }}
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
                       <TableCell>{training.total_volume}</TableCell>
                       <TableCell>{training.average_intensity}</TableCell>
                     </TableRow>
-                  ) : (
-                    training.routines
-                      .filter((r) => r.apparatus === selectedApparatus)
-                      .map((routine) => (
-                        <TableRow
-                          key={routine.id}
-                          onClick={() => handleEdit(training)}
-                          className="cursor-pointer"
-                        >
-                          <TableCell>
-                            {format(new Date(training.date), "EEEE, d MMMM", {
-                              locale: it,
-                            })}
-                          </TableCell>
-                          <TableCell>{training.week_number}</TableCell>
-                          <TableCell>{routine.type}</TableCell>
-                          <TableCell>{routine.quantity}</TableCell>
-                          <TableCell>{routine.target_sets}</TableCell>
-                          <TableCell>{routine.target_execution}</TableCell>
-                        </TableRow>
-                      ))
-                  ),
-                )
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={selectedApparatus === "Tutti gli Attrezzi" ? 4 : 6}
-                    className="h-24 text-center"
-                  >
-                    Nessun allenamento trovato per questo mese.
-                  </TableCell>
-                </TableRow>
-              )}
+                  ));
+                } else {
+                  // APPARATUS-SPECIFIC VIEW
+                  const routinesForApparatus = sessionsForDay.flatMap(
+                    (training) =>
+                      training.routines
+                        .filter((r) => r.apparatus === selectedApparatus)
+                        .map((routine) => ({
+                          ...routine,
+                          parentTraining: training,
+                        })),
+                  );
+
+                  if (routinesForApparatus.length === 0) {
+                    return (
+                      <TableRow
+                        key={dateKey}
+                        onClick={() => handleAddNewSession(day, 1)}
+                        className="cursor-pointer"
+                      >
+                        <TableCell>{getISOWeek(day)}</TableCell>
+                        <TableCell>
+                          {format(day, "EEEE, d MMMM", { locale: it })}
+                        </TableCell>
+                        <TableCell colSpan={4}>-</TableCell>
+                      </TableRow>
+                    );
+                  }
+                  return routinesForApparatus.map((routine, index) => (
+                    <TableRow
+                      key={routine.id}
+                      onClick={() => handleEdit(routine.parentTraining)}
+                      className="cursor-pointer"
+                    >
+                      <TableCell>
+                        {index === 0 ? getISOWeek(day) : ""}
+                      </TableCell>
+                      <TableCell className="flex items-center gap-2">
+                        {index === 0
+                          ? format(day, "EEEE, d MMMM", { locale: it })
+                          : ""}
+                        {index === 0 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddNewSession(
+                                day,
+                                sessionsForDay.length + 1,
+                              );
+                            }}
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                      <TableCell>{routine.type}</TableCell>
+                      <TableCell>{routine.quantity}</TableCell>
+                      <TableCell>{routine.target_sets}</TableCell>
+                      <TableCell>{routine.target_execution}</TableCell>
+                    </TableRow>
+                  ));
+                }
+              })}
             </TableBody>
           </Table>
         )}
@@ -248,6 +350,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
         athleteId={selectedAthleteId}
         year={currentYear}
         month={currentMonth}
+        newTrainingInfo={newTrainingInfo}
       />
     </div>
   );

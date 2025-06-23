@@ -5,6 +5,7 @@ import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 
 import {
   Dialog,
@@ -45,13 +46,18 @@ const ROUTINE_TYPES = [
 ] as const;
 const EXECUTION_TYPES = ["A+", "A", "B+", "B", "C+", "C"] as const;
 
-const routineSchema = z.object({
-  apparatus: z.enum(APPARATUS_TYPES),
-  type: z.enum(ROUTINE_TYPES),
-  quantity: z.coerce.number().min(1, "La quantità è richiesta"),
-  target_sets: z.coerce.number().min(1, "Le salite sono richieste"),
-  target_execution: z.enum(EXECUTION_TYPES),
-});
+const routineSchema = z
+  .object({
+    apparatus: z.enum(APPARATUS_TYPES),
+    type: z.enum(ROUTINE_TYPES),
+    quantity: z.coerce.number().min(1, "La quantità è richiesta"),
+    target_sets: z.coerce.number().min(1, "Le salite sono richieste"),
+    target_execution: z.enum(EXECUTION_TYPES),
+  })
+  .refine((data) => data.target_sets >= data.quantity, {
+    message: "Le salite devono essere uguali o superiori alla quantità",
+    path: ["target_sets"],
+  });
 
 const formSchema = z.object({
   date: z.string().min(1, "La data è richiesta"),
@@ -65,11 +71,12 @@ type FormData = z.infer<typeof formSchema>;
 
 interface DailyRoutineFormProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (shouldRefetch?: boolean) => void;
   trainingData: EnrichedTrainingSession | null;
   athleteId: string;
   year: number;
   month: number;
+  newTrainingInfo?: { date: Date; sessionNumber: number } | null;
 }
 
 export default function DailyRoutineForm({
@@ -79,6 +86,7 @@ export default function DailyRoutineForm({
   athleteId,
   year,
   month,
+  newTrainingInfo,
 }: DailyRoutineFormProps) {
   const { toast } = useToast();
   const {
@@ -108,14 +116,20 @@ export default function DailyRoutineForm({
         session_number: trainingData.session_number,
         routines: trainingData.routines,
       });
+    } else if (isOpen && newTrainingInfo) {
+      reset({
+        date: format(newTrainingInfo.date, "yyyy-MM-dd"),
+        session_number: newTrainingInfo.sessionNumber,
+        routines: [],
+      });
     } else if (isOpen) {
       reset({
-        date: new Date(year, month - 1, 1).toISOString().split("T")[0],
+        date: format(new Date(year, month - 1, 1), "yyyy-MM-dd"),
         session_number: 1,
         routines: [],
       });
     }
-  }, [isOpen, trainingData, reset, year, month]);
+  }, [isOpen, trainingData, reset, year, month, newTrainingInfo]);
 
   const onSubmit = async (data: FormData) => {
     const parsedData = formSchema.safeParse(data);
@@ -137,7 +151,7 @@ export default function DailyRoutineForm({
     if (result.error) {
       toast({
         title: "Errore",
-        description: `Impossibile salvare l&apos;allenamento: ${result.error}`,
+        description: `Impossibile salvare l'allenamento: ${result.error}`,
         variant: "destructive",
       });
     } else {
@@ -145,7 +159,7 @@ export default function DailyRoutineForm({
         title: "Successo",
         description: "Allenamento salvato con successo.",
       });
-      onClose();
+      onClose(true);
     }
   };
 
@@ -155,7 +169,7 @@ export default function DailyRoutineForm({
     if (result.error) {
       toast({
         title: "Errore",
-        description: `Impossibile eliminare l&apos;allenamento: ${result.error}`,
+        description: `Impossibile eliminare l'allenamento: ${result.error}`,
         variant: "destructive",
       });
     } else {
@@ -163,7 +177,7 @@ export default function DailyRoutineForm({
         title: "Successo",
         description: "Allenamento eliminato con successo.",
       });
-      onClose();
+      onClose(true);
     }
   };
 
@@ -193,6 +207,13 @@ export default function DailyRoutineForm({
 
           <h3 className="border-t pt-4 text-lg font-semibold">Esercizi</h3>
           <div className="max-h-64 space-y-4 overflow-y-auto pr-2">
+            <div className="grid grid-cols-1 items-center gap-2 p-2 md:grid-cols-6">
+              <Label className="font-semibold">Attrezzo</Label>
+              <Label className="font-semibold">Tipo</Label>
+              <Label className="font-semibold">Quantità</Label>
+              <Label className="font-semibold">N. Salite</Label>
+              <Label className="font-semibold">Esecuzione</Label>
+            </div>
             {fields.map((field, index) => (
               <div
                 key={field.id}
