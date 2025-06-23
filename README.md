@@ -42,3 +42,20 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
 - [ ] **Dashboard dei Progressi:** Grafici e report per visualizzare e analizzare i progressi di ogni atleta nel tempo.
 - [ ] **Gestione Competizioni:** Strumenti per tracciare la partecipazione e i risultati nelle gare.
 - [ ] **Progressive Web App (PWA):** Per un'esperienza d'uso ancora più integrata su dispositivi mobili.
+
+---
+
+## Problematiche Note (Known Issues)
+
+Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non ancora risolti. La loro risoluzione è pianificata per il futuro, ma non rappresenta una priorità immediata.
+
+### Front-end
+
+#### app/settimanale - Mobile
+
+- [ ] Overflow del bottone per il cambio anno
+- [ ] Overflow del form per inserimento programmazione che ne impossibilita l'utilizzo
+
+### Back-end
+
+- [ ] RLS non attiva
