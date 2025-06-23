@@ -58,4 +58,5 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 ### Back-end
 
+- [ ] Modificare relazione Atleti-Allenamenti. Dovrebbe essere Molti-a-Molti.
 - [ ] RLS non attiva
