@@ -82,9 +82,13 @@ Questo documento delinea il piano di sviluppo per la web app GymTracker, uno str
     - [ ] CRUD per i `weekly_goal_presets` per permettere ai coach di salvare e riutilizzare template di programmazione settimanale.
 
 4.  **Programmazione Giornaliera (`daily_routines`):**
-    - Interfaccia per definire le routine di allenamento giornaliere per un atleta, direttamente dalla vista settimanale.
-    - Form per creare e modificare le `daily_routines` per ogni attrezzo previsto nella sessione.
-    - CRUD per i `daily_routine_presets` per velocizzare la creazione delle routine giornaliere.
+    - ✅ Creazione di un'interfaccia dedicata per la programmazione giornaliera, con vista mensile.
+    - ✅ Possibilità di navigare tra mesi e anni.
+    - ✅ Logica di creazione separata per le sessioni di allenamento e gli esercizi, per una maggiore stabilità.
+    - ✅ Form modale per inserire e modificare le `daily_routines` (esercizi) per ogni sessione.
+    - ✅ Visualizzazione a tabella che mostra tutte le sessioni del mese, con la possibilità di aggiungere sessioni multiple per lo stesso giorno.
+    - ✅ Vista dettagliata per attrezzo, che mostra tutti gli esercizi pertinenti per ogni sessione.
+    - [ ] CRUD per i `daily_routine_presets` per velocizzare la creazione delle routine giornaliere.
 
 ---
 

@@ -23,7 +23,7 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
 - [ ] **Programmazione Settimanale:** Uno strumento visuale, basato su calendario, per definire gli obiettivi di allenamento per ogni atleta e per ogni attrezzo.
   - [x] Inserimento della programmazione
   - [ ] Molteplici modalità di visualizzazione
-- [ ] **Pianificazione Giornaliera:** La possibilità di creare esercizi dettagliati per ogni sessione di allenamento.
+- [x] **Pianificazione Giornaliera:** La possibilità di creare esercizi dettagliati per ogni sessione di allenamento.
 - [ ] **Dashboard del Coach:** Una vista centrale per avere tutto sotto controllo, con la pianificazione del giorno e dati riepilogativi.
 - [ ] **Presets:** Possibilità di salvare dei preset per le programmazioni, in modo da facilitare l'inserimento da parte del tecnico (esempio: creare un preset per un microciclo d'urto)
   - [ ] Settimanale
