@@ -69,26 +69,32 @@ export async function getDailyTrainings(
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
 
-  const { data: sessions, error: sessionsError } = await supabase
-    .from("training_sessions")
+  const { data: joins, error: sessionsError } = await supabase
+    .from("athlete_training_sessions")
     .select(
       `
-      id,
-      date,
-      session_number,
-      daily_routines (*)
+      training_sessions (
+        id,
+        date,
+        session_number,
+        daily_routines (*)
+      )
     `,
     )
     .eq("athlete_id", athleteId)
-    .gte("date", startDate.toISOString())
-    .lte("date", endDate.toISOString())
-    .order("date", { ascending: true })
-    .order("session_number", { ascending: true });
+    .gte("training_sessions.date", startDate.toISOString())
+    .lte("training_sessions.date", endDate.toISOString());
 
   if (sessionsError) {
     console.error("Error fetching training sessions:", sessionsError);
     return [];
   }
+
+  // Definisco il tipo per la join
+  type JoinResult = { training_sessions: TrainingSession[] };
+  const sessions = ((joins as JoinResult[]) ?? []).flatMap(
+    (join) => join.training_sessions ?? [],
+  );
 
   // Fetch all weekly goals for the given year and athlete to calculate volume
   const { data: weeklyGoals, error: weeklyGoalsError } = await supabase
@@ -114,9 +120,7 @@ export async function getDailyTrainings(
     });
   }
 
-  const typedSessions = sessions as TrainingSession[];
-
-  const trainingSessions: EnrichedTrainingSession[] = typedSessions.map(
+  const trainingSessions: EnrichedTrainingSession[] = sessions.map(
     (session) => {
       let totalVolume = 0;
       let totalWeightedIntensity = 0;
@@ -138,10 +142,15 @@ export async function getDailyTrainings(
           routineBaseVolume = weeklyGoal.exercise;
         }
 
-        const multiplier = volumeMultipliers[routine.type] ?? 0;
+        const multiplier =
+          volumeMultipliers[routine.type as keyof typeof volumeMultipliers] ??
+          0;
         totalVolume += routineBaseVolume * multiplier * routine.quantity;
 
-        const penalty = executionPenaltyMap[routine.target_execution];
+        const penalty =
+          executionPenaltyMap[
+            routine.target_execution as keyof typeof executionPenaltyMap
+          ];
         const CoE = (10 - penalty) / 10;
         const intensity =
           routine.target_sets > 0
@@ -197,17 +206,18 @@ export async function saveDailyRoutine(formData: unknown) {
   const { session_id, routines } = parsed.data;
 
   try {
-    const { data: session, error: sessionError } = await supabase
-      .from("training_sessions")
+    // Recupera athlete_id dalla join table
+    const { data: join, error: joinError } = await supabase
+      .from("athlete_training_sessions")
       .select("athlete_id")
-      .eq("id", session_id)
+      .eq("training_session_id", session_id)
       .single();
 
-    if (sessionError || !session) {
-      return { error: "Training session not found" };
+    if (joinError || !join) {
+      return { error: "Athlete for session not found" };
     }
 
-    const { athlete_id } = session;
+    const athlete_id = join.athlete_id;
 
     // Delete existing routines for this session
     const { error: deleteError } = await supabase
@@ -255,17 +265,34 @@ export async function createEmptyTrainingSession(
   const week_number = getWeek(dateObj, { weekStartsOn: 1 });
   const year = dateObj.getFullYear();
 
-  const { error } = await supabase.from("training_sessions").insert({
-    athlete_id: athleteId,
-    date,
-    session_number: sessionNumber,
-    week_number,
-    year,
-  });
+  // 1. Crea la sessione
+  const { data, error } = await supabase
+    .from("training_sessions")
+    .insert({
+      date,
+      session_number: sessionNumber,
+      week_number,
+      year,
+    })
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || !data) {
     console.error("Error creating empty session:", error);
     return { error: "Could not create training session" };
+  }
+
+  // 2. Crea la join
+  const { error: joinError } = await supabase
+    .from("athlete_training_sessions")
+    .insert({
+      athlete_id: athleteId,
+      training_session_id: data.id,
+    });
+
+  if (joinError) {
+    console.error("Error creating join:", joinError);
+    return { error: "Could not link athlete to session" };
   }
 
   return { success: true };
@@ -274,18 +301,16 @@ export async function createEmptyTrainingSession(
 export async function deleteDailyTraining(sessionId: string) {
   const supabase = await createClient();
 
-  // First, delete all daily routines associated with the session
-  const { error: routinesError } = await supabase
-    .from("daily_routines")
+  // 1. Elimina tutte le daily routines associate con la sessione
+  await supabase.from("daily_routines").delete().eq("session_id", sessionId);
+
+  // 2. Elimina la join con l'atleta
+  await supabase
+    .from("athlete_training_sessions")
     .delete()
-    .eq("session_id", sessionId);
+    .eq("training_session_id", sessionId);
 
-  if (routinesError) {
-    console.error("Error deleting daily routines:", routinesError);
-    return { error: "Could not delete associated exercises" };
-  }
-
-  // Then, delete the training session itself
+  // 3. Elimina la sessione
   const { error: sessionError } = await supabase
     .from("training_sessions")
     .delete()

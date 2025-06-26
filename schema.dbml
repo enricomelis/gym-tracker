@@ -118,12 +118,21 @@ Table athletes_competitions {
 
 Table training_sessions {
   id uuid [pk, not null, default: 'gen_random_uuid()']
-  athlete_id uuid [not null, ref: > athletes.id]
   week_number int [not null, note: '1-52']
   year int [not null, note: '2020-2100']
   date date [not null]
   session_number int [not null, note: '>=1']
   notes text
+}
+
+Table athlete_training_sessions {
+  id uuid [pk, not null, default: 'gen_random_uuid()']
+  athlete_id uuid [not null, ref: > athletes.id]
+  training_session_id uuid [not null, ref: > training_sessions.id]
+  Note: 'Relazione molti-a-molti tra atleti e sessioni di allenamento'
+  indexes {
+    (athlete_id, training_session_id) [unique]
+  }
 }
 
 Table apparatus_sessions {
