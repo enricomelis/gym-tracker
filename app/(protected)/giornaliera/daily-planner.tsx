@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo, useTransition } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useTransition,
+  useCallback,
+} from "react";
 import {
   Select,
   SelectContent,
@@ -66,7 +72,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
     return `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}, ${dayOfMonth} ${month.charAt(0).toUpperCase() + month.slice(1)}`;
   };
 
-  const fetchTrainings = async () => {
+  const fetchTrainings = useCallback(() => {
     if (!selectedAthleteId) return;
     startTransition(async () => {
       const data = await getDailyTrainings(
@@ -76,28 +82,36 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
       );
       setTrainings(data);
     });
-  };
+  }, [selectedAthleteId, currentYear, currentMonth]);
 
   useEffect(() => {
     fetchTrainings();
-  }, [selectedAthleteId, currentYear, currentMonth]);
+  }, [fetchTrainings]);
 
   const handleEdit = (training: EnrichedTrainingSession) => {
     setSelectedTraining(training);
     setIsFormOpen(true);
   };
 
-  const handleCreateSession = async (date: Date, sessionNumber: number) => {
+  const handleCreateSession = async (date: Date) => {
+    const dateKey = format(date, "yyyy-MM-dd");
+    const sessionsForDay = trainingsByDate.get(dateKey) || [];
+    // Trova il massimo session_number già presente per quel giorno
+    const maxSessionNumber = sessionsForDay.reduce(
+      (max, s) => Math.max(max, s.session_number),
+      0,
+    );
+    const nextSessionNumber = maxSessionNumber + 1;
+
     startTransition(async () => {
       const result = await createEmptyTrainingSession(
         selectedAthleteId,
         format(date, "yyyy-MM-dd"),
-        sessionNumber,
+        nextSessionNumber,
       );
       if (result.success) {
         fetchTrainings();
       } else {
-        // TODO: Handle error with a toast
         console.error(result.error);
       }
     });
@@ -145,7 +159,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
   const trainingsByDate = useMemo(() => {
     const map = new Map<string, EnrichedTrainingSession[]>();
     trainings.forEach((training) => {
-      const dateKey = format(new Date(training.date), "yyyy-MM-dd");
+      const dateKey = training.date;
       if (!map.has(dateKey)) {
         map.set(dateKey, []);
       }
@@ -273,7 +287,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6"
-                            onClick={() => handleCreateSession(day, 1)}
+                            onClick={() => handleCreateSession(day)}
                           >
                             <PlusCircle className="h-4 w-4" />
                           </Button>
@@ -308,10 +322,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                             className="h-6 w-6"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleCreateSession(
-                                day,
-                                sessionsForDay.length + 1,
-                              );
+                              handleCreateSession(day);
                             }}
                           >
                             <PlusCircle className="h-4 w-4" />
@@ -338,7 +349,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6"
-                            onClick={() => handleCreateSession(day, 1)}
+                            onClick={() => handleCreateSession(day)}
                           >
                             <PlusCircle className="h-4 w-4" />
                           </Button>
@@ -378,10 +389,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                                 className="h-6 w-6"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleCreateSession(
-                                    day,
-                                    sessionsForDay.length + 1,
-                                  );
+                                  handleCreateSession(day);
                                 }}
                               >
                                 <PlusCircle className="h-4 w-4" />

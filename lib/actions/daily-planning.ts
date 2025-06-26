@@ -69,6 +69,9 @@ export async function getDailyTrainings(
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
 
+  const startDateStr = startDate.toISOString().slice(0, 10);
+  const endDateStr = endDate.toISOString().slice(0, 10);
+
   const { data: joins, error: sessionsError } = await supabase
     .from("athlete_training_sessions")
     .select(
@@ -82,8 +85,8 @@ export async function getDailyTrainings(
     `,
     )
     .eq("athlete_id", athleteId)
-    .gte("training_sessions.date", startDate.toISOString())
-    .lte("training_sessions.date", endDate.toISOString());
+    .gte("training_sessions.date", startDateStr)
+    .lte("training_sessions.date", endDateStr);
 
   if (sessionsError) {
     console.error("Error fetching training sessions:", sessionsError);
@@ -122,12 +125,10 @@ export async function getDailyTrainings(
 
   const trainingSessions: EnrichedTrainingSession[] = sessions.map(
     (session) => {
+      const weekNumber = getWeek(new Date(session.date), { weekStartsOn: 1 });
+
       let totalVolume = 0;
-      let totalWeightedIntensity = 0;
-      let totalSets = 0;
-      const weekNumber = getWeek(new Date(session.date), {
-        weekStartsOn: 1,
-      });
+      const routineIntensities: number[] = [];
 
       for (const routine of session.daily_routines) {
         const weeklyGoalKey = `${weekNumber}-${routine.apparatus}`;
@@ -135,36 +136,31 @@ export async function getDailyTrainings(
 
         if (!weeklyGoal) continue;
 
-        let routineBaseVolume = 0;
-        if (routine.type === "U") {
-          routineBaseVolume = weeklyGoal.dismount;
-        } else {
-          routineBaseVolume = weeklyGoal.exercise;
-        }
+        const routineBaseVolume =
+          routine.type === "U" ? weeklyGoal.dismount : weeklyGoal.exercise;
 
         const multiplier =
           volumeMultipliers[routine.type as keyof typeof volumeMultipliers] ??
           0;
-        totalVolume += routineBaseVolume * multiplier * routine.quantity;
-
         const penalty =
           executionPenaltyMap[
             routine.target_execution as keyof typeof executionPenaltyMap
           ];
         const CoE = (10 - penalty) / 10;
-        const intensity =
-          routine.target_sets > 0
-            ? (routine.quantity * CoE) / routine.target_sets
-            : 0;
 
-        if (!isNaN(intensity)) {
-          totalWeightedIntensity += intensity * routine.target_sets;
-          totalSets += routine.target_sets;
-        }
+        const volume = routineBaseVolume * multiplier * routine.quantity;
+        totalVolume += volume;
+
+        const sets = routine.target_sets;
+        const intensity = sets > 0 ? (volume * CoE) / sets : 0;
+        routineIntensities.push(intensity);
       }
 
       const averageIntensity =
-        totalSets > 0 ? totalWeightedIntensity / totalSets : 0;
+        routineIntensities.length > 0
+          ? routineIntensities.reduce((a, b) => a + b, 0) /
+            routineIntensities.length
+          : 0;
 
       return {
         id: session.id,

@@ -63,10 +63,8 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 #### Database Schema
 
-- [ ] Modificare relazione Atleti-Allenamenti. Dovrebbe essere Molti-a-Molti.
+- [ ] Modificare relazione Atleti-Allenamenti.
+  - [x] Dovrebbe essere Molti-a-Molti.
+  - [ ] Il 30 Giugno 2025 crea problemi. Non vengono mostrati gli allenamenti e non funziona l'incremento per il `session_number`.
 - [ ] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
 - [ ] RLS non attiva.
-
-#### app/giornaliera
-
-- [x] Il calcolo dell'intensità media è sbagliato.
