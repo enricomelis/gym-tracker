@@ -11,10 +11,11 @@ import {
   BarChart2,
   LayoutDashboard,
   ChevronLeft,
+  Dumbbell,
 } from "lucide-react";
 import { useEffect } from "react";
 
-const navLinks = [
+const coachLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/atleti", label: "Atleti", icon: Users },
   { href: "/settimanale", label: "Settimanale", icon: Calendar },
@@ -25,9 +26,11 @@ const navLinks = [
 export default function Sidebar({
   isSidebarOpen,
   toggleSidebar,
+  role,
 }: {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
+  role: "coach" | "athlete";
 }) {
   const pathname = usePathname();
 
@@ -37,6 +40,16 @@ export default function Sidebar({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
+  // Link per atleti
+  const athleteLinks = [
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/settimanale", label: "Settimanale", icon: Calendar },
+    { href: "/giornaliera", label: "Giornaliera", icon: ClipboardList },
+    { href: "/allenamenti", label: "Allenamenti", icon: Dumbbell }, // Placeholder
+  ];
+
+  const linksToShow = role === "athlete" ? athleteLinks : coachLinks;
 
   return (
     <aside
@@ -55,7 +68,7 @@ export default function Sidebar({
         <hr className="border-t border-muted" />
       </div>
       <nav className="flex flex-col gap-3 p-4">
-        {navLinks.map(({ href, label, icon: Icon }) => {
+        {linksToShow.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
           return (
             <Button
