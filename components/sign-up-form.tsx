@@ -35,6 +35,7 @@ export function SignUpForm({
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [registrationNumber, setRegistrationNumber] = useState("");
   const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -50,7 +51,7 @@ export function SignUpForm({
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -62,7 +63,28 @@ export function SignUpForm({
           },
         },
       });
-      if (error) throw error;
+      if (signUpError) throw signUpError;
+
+      // Se atleta, collega il profilo tramite RPC
+      if (role === "athlete") {
+        const user = data.user;
+        if (!user) {
+          setError("Errore nella creazione dell'utente. Riprova.");
+          setIsLoading(false);
+          return;
+        }
+        const { error: rpcError } = await supabase.rpc("link_athlete_to_user", {
+          registration_number: registrationNumber,
+          user_id: user.id,
+        });
+        if (rpcError) {
+          setError(
+            rpcError.message || "Errore nel collegamento del profilo atleta.",
+          );
+          setIsLoading(false);
+          return;
+        }
+      }
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -134,6 +156,18 @@ export function SignUpForm({
                   </SelectContent>
                 </Select>
               </div>
+              {role === "athlete" && (
+                <div className="grid gap-2">
+                  <Label htmlFor="registration-number">Numero di Tessera</Label>
+                  <Input
+                    id="registration-number"
+                    required
+                    value={registrationNumber}
+                    onChange={(e) => setRegistrationNumber(e.target.value)}
+                    placeholder="Inserisci il numero di tessera"
+                  />
+                </div>
+              )}
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>

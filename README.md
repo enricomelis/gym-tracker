@@ -54,12 +54,20 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 ### Front-end
 
+#### app
+
+- [ ] Fare in modo che il login venga salvato.
+
 #### app/settimanale - Mobile
 
 - [ ] Overflow del bottone per il cambio anno.
 - [ ] Overflow del form per inserimento programmazione che ne impossibilita l'utilizzo.
 
 ### Back-end
+
+#### URLs
+
+- [ ] Dopo la corretta conferma dell'email, il redirect va cambiato dalla Dashboard Supabase.
 
 #### Database Schema
 
