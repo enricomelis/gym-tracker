@@ -73,7 +73,7 @@ export default function DashboardLayout({
       <div className="flex h-screen items-center justify-center">
         <p>
           Il tuo utente non ha un ruolo assegnato (né tecnico, né atleta).
-          Contatta l'amministratore.
+          Contatta l&#39;amministratore.
         </p>
       </div>
     );

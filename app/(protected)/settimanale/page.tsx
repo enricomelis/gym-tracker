@@ -65,5 +65,5 @@ export default async function SettimanalePage() {
   }
 
   // Nessun ruolo valido
-  return <div>Ruolo non riconosciuto. Contatta l'amministratore.</div>;
+  return <div>Ruolo non riconosciuto. Contatta l&#39;amministratore.</div>;
 }
