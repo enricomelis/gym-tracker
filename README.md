@@ -35,7 +35,7 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
 
 ### 🤸🏻‍♂️ Fase 3: Esecuzione Allenamento e Tracking
 
-- [ ] **Auth per Atleti:** Possibilità per gli atleti di creare un account, inserire i dati, fornire feedback e visualizzare il proprio andamento in tempo reale.
+- [x] **Auth per Atleti:** Possibilità per gli atleti di creare un account, inserire i dati, fornire feedback e visualizzare il proprio andamento in tempo reale.
 - [ ] **Modalità Allenamento "Live":** Un'interfaccia ottimizzata per l'inserimento rapido dei dati durante l'allenamento, direttamente dalla palestra.
 - [ ] **Storico Allenamenti:** Un archivio completo e facilmente consultabile di tutte le sessioni di allenamento svolte.
 
@@ -64,6 +64,10 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 - [ ] Overflow del form per inserimento programmazione che ne impossibilita l'utilizzo.
 
 ### Back-end
+
+#### Fetching
+
+- [ ] Adesso la gestione dei ruoli non è robusta. Si può modificare creando un prop specifico "role" in futuro.
 
 #### URLs
 

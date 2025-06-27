@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getYear } from "date-fns";
+import { getYear, getWeek } from "date-fns";
 import React from "react";
 
 import type { WeeklyGoal } from "@/lib/actions/planning";
@@ -67,6 +67,17 @@ export default function WeeklyPlanner({
   const weeksInYear = getWeeksInYear(year);
   const weeks = Array.from({ length: weeksInYear }, (_, i) => i + 1);
 
+  const isReadOnly = athletes.length === 1;
+  const currentWeek = (() => {
+    const today = new Date();
+    if (year !== today.getFullYear()) return null;
+    const week =
+      getWeeksInYear(today.getFullYear()) === weeksInYear
+        ? getWeek(today, { weekStartsOn: 1 })
+        : null;
+    return week;
+  })();
+
   const fetchGoals = useCallback(async () => {
     if (!selectedAthleteId) return;
 
@@ -92,18 +103,27 @@ export default function WeeklyPlanner({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
-        <Select onValueChange={setSelectedAthleteId} value={selectedAthleteId}>
-          <SelectTrigger className="w-full md:w-[200px]">
-            <SelectValue placeholder="Seleziona Atleta" />
-          </SelectTrigger>
-          <SelectContent>
-            {athletes.map((athlete) => (
-              <SelectItem key={athlete.id} value={athlete.id}>
-                {`${athlete.first_name} ${athlete.last_name}`}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {isReadOnly ? (
+          <div className="w-full rounded border bg-muted px-3 py-2 text-center font-semibold md:w-[200px]">
+            {athletes[0]?.first_name} {athletes[0]?.last_name}
+          </div>
+        ) : (
+          <Select
+            onValueChange={setSelectedAthleteId}
+            value={selectedAthleteId}
+          >
+            <SelectTrigger className="w-full md:w-[200px]">
+              <SelectValue placeholder="Seleziona Atleta" />
+            </SelectTrigger>
+            <SelectContent>
+              {athletes.map((athlete) => (
+                <SelectItem key={athlete.id} value={athlete.id}>
+                  {`${athlete.first_name} ${athlete.last_name}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -195,11 +215,20 @@ export default function WeeklyPlanner({
                   eventDisplay.push(<span key="camp">{firstGoal.camp}</span>);
                 }
 
+                const isCurrent = isReadOnly && currentWeek === week;
                 return (
                   <TableRow
                     key={week}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => setEditingWeek(week)}
+                    className={
+                      isReadOnly
+                        ? isCurrent
+                          ? "bg-muted font-bold"
+                          : ""
+                        : "cursor-pointer hover:bg-muted/50"
+                    }
+                    onClick={() => {
+                      if (!isReadOnly) setEditingWeek(week);
+                    }}
                   >
                     <TableCell className="sticky left-0 z-10 border-r bg-background font-medium">
                       <div>Sett. {week}</div>
@@ -273,11 +302,20 @@ export default function WeeklyPlanner({
                 eventDisplay.push(<span key="camp">{firstGoal.camp}</span>);
               }
 
+              const isCurrent = isReadOnly && currentWeek === week;
               return (
                 <div
                   key={week}
-                  className="cursor-pointer border-b p-4 hover:bg-muted/50"
-                  onClick={() => setEditingWeek(week)}
+                  className={
+                    isReadOnly
+                      ? isCurrent
+                        ? "border-b bg-muted p-4 font-bold"
+                        : "border-b p-4"
+                      : "cursor-pointer border-b p-4 hover:bg-muted/50"
+                  }
+                  onClick={() => {
+                    if (!isReadOnly) setEditingWeek(week);
+                  }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="font-bold">Sett. {week}</div>
@@ -299,28 +337,30 @@ export default function WeeklyPlanner({
         </div>
       </div>
 
-      <Dialog
-        open={editingWeek !== null}
-        onOpenChange={(isOpen) => !isOpen && handleCloseDialog()}
-      >
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>
-              Programmazione Settimana {editingWeek}, {year}
-            </DialogTitle>
-          </DialogHeader>
-          {editingWeek !== null && (
-            <WeeklyGoalForm
-              athleteId={selectedAthleteId}
-              year={year}
-              weekNumber={editingWeek}
-              initialGoals={groupedGoals[editingWeek] || []}
-              competitions={competitions}
-              onSave={handleSave}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {!isReadOnly && (
+        <Dialog
+          open={editingWeek !== null}
+          onOpenChange={(isOpen) => !isOpen && handleCloseDialog()}
+        >
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>
+                Programmazione Settimana {editingWeek}, {year}
+              </DialogTitle>
+            </DialogHeader>
+            {editingWeek !== null && (
+              <WeeklyGoalForm
+                athleteId={selectedAthleteId}
+                year={year}
+                weekNumber={editingWeek}
+                initialGoals={groupedGoals[editingWeek] || []}
+                competitions={competitions}
+                onSave={handleSave}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

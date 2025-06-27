@@ -172,21 +172,33 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
     return map;
   }, [trainings]);
 
+  const isReadOnly = athletes.length === 1;
+  const today = startOfToday();
+
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-4">
-        <Select value={selectedAthleteId} onValueChange={setSelectedAthleteId}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Seleziona Atleta" />
-          </SelectTrigger>
-          <SelectContent>
-            {athletes.map((athlete) => (
-              <SelectItem key={athlete.id} value={athlete.id}>
-                {athlete.first_name} {athlete.last_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {isReadOnly ? (
+          <div className="w-[180px] rounded border bg-muted px-3 py-2 text-center font-semibold">
+            {athletes[0]?.first_name} {athletes[0]?.last_name}
+          </div>
+        ) : (
+          <Select
+            value={selectedAthleteId}
+            onValueChange={setSelectedAthleteId}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Seleziona Atleta" />
+            </SelectTrigger>
+            <SelectContent>
+              {athletes.map((athlete) => (
+                <SelectItem key={athlete.id} value={athlete.id}>
+                  {athlete.first_name} {athlete.last_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
         <Select
           value={String(currentMonth)}
@@ -270,12 +282,20 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
               {visibleDays.map((day) => {
                 const dateKey = format(day, "yyyy-MM-dd");
                 const sessionsForDay = trainingsByDate.get(dateKey) || [];
+                const isCurrentDay =
+                  isReadOnly &&
+                  format(day, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
 
                 if (selectedApparatus === "Tutti gli Attrezzi") {
                   // SUMMARY VIEW
                   if (sessionsForDay.length === 0) {
                     return (
-                      <TableRow key={dateKey}>
+                      <TableRow
+                        key={dateKey}
+                        className={
+                          isCurrentDay ? "bg-muted font-bold" : undefined
+                        }
+                      >
                         <TableCell>
                           <Link href="/settimanale" className="underline">
                             {getISOWeek(day)}
@@ -283,14 +303,16 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                         </TableCell>
                         <TableCell className="flex items-center gap-2">
                           {formatItalianDate(day)}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => handleCreateSession(day)}
-                          >
-                            <PlusCircle className="h-4 w-4" />
-                          </Button>
+                          {!isReadOnly && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => handleCreateSession(day)}
+                            >
+                              <PlusCircle className="h-4 w-4" />
+                            </Button>
+                          )}
                         </TableCell>
                         <TableCell />
                         <TableCell />
@@ -300,8 +322,16 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                   return sessionsForDay.map((training, index) => (
                     <TableRow
                       key={training.id}
-                      onClick={() => handleEdit(training)}
-                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => {
+                        if (!isReadOnly) handleEdit(training);
+                      }}
+                      className={
+                        isReadOnly
+                          ? isCurrentDay
+                            ? "bg-muted font-bold"
+                            : undefined
+                          : "cursor-pointer hover:bg-muted/50"
+                      }
                     >
                       <TableCell>
                         <Link
@@ -315,7 +345,7 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                       <TableCell className="flex items-center gap-2">
                         {formatItalianDate(new Date(training.date))}
                         <Badge variant="secondary">{`#${training.session_number}`}</Badge>
-                        {index === sessionsForDay.length - 1 && (
+                        {!isReadOnly && index === sessionsForDay.length - 1 && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -337,7 +367,12 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                   // APPARATUS-SPECIFIC VIEW
                   if (sessionsForDay.length === 0) {
                     return (
-                      <TableRow key={dateKey}>
+                      <TableRow
+                        key={dateKey}
+                        className={
+                          isCurrentDay ? "bg-muted font-bold" : undefined
+                        }
+                      >
                         <TableCell>
                           <Link href="/settimanale" className="underline">
                             {getISOWeek(day)}
@@ -345,14 +380,16 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                         </TableCell>
                         <TableCell className="flex items-center gap-2">
                           {formatItalianDate(day)}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => handleCreateSession(day)}
-                          >
-                            <PlusCircle className="h-4 w-4" />
-                          </Button>
+                          {!isReadOnly && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => handleCreateSession(day)}
+                            >
+                              <PlusCircle className="h-4 w-4" />
+                            </Button>
+                          )}
                         </TableCell>
                         <TableCell colSpan={4} />
                       </TableRow>
@@ -366,8 +403,16 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                     return (
                       <TableRow
                         key={training.id}
-                        onClick={() => handleEdit(training)}
-                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => {
+                          if (!isReadOnly) handleEdit(training);
+                        }}
+                        className={
+                          isReadOnly
+                            ? isCurrentDay
+                              ? "bg-muted font-bold"
+                              : undefined
+                            : "cursor-pointer hover:bg-muted/50"
+                        }
                       >
                         <TableCell className="align-top">
                           <Link
@@ -382,19 +427,20 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
                           <div className="flex items-center gap-2">
                             {formatItalianDate(new Date(training.date))}
                             <Badge variant="secondary">{`#${training.session_number}`}</Badge>
-                            {sessionIndex === sessionsForDay.length - 1 && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCreateSession(day);
-                                }}
-                              >
-                                <PlusCircle className="h-4 w-4" />
-                              </Button>
-                            )}
+                            {!isReadOnly &&
+                              sessionIndex === sessionsForDay.length - 1 && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCreateSession(day);
+                                  }}
+                                >
+                                  <PlusCircle className="h-4 w-4" />
+                                </Button>
+                              )}
                           </div>
                         </TableCell>
                         {routinesForApparatus.length > 0 ? (

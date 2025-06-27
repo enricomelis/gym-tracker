@@ -69,7 +69,7 @@ export default async function AtletiPage() {
                     {formatDate(athlete.date_of_birth)}
                   </p>
                   <p>
-                    <strong>Matricola:</strong> {athlete.registration_number}
+                    <strong>Tessera:</strong> {athlete.registration_number}
                   </p>
                   <p>
                     <strong>Categoria:</strong> {athlete.category}
