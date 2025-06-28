@@ -80,3 +80,9 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
   - [ ] Il 30 Giugno 2025 crea problemi. Non vengono mostrati gli allenamenti e non funziona l'incremento per il `session_number`.
 - [ ] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
 - [ ] RLS non attiva.
+
+## Gestione dei Branch
+
+- main: production
+- development: preview
+  - allenamenti: feature (interfaccia per inserimento carico)
