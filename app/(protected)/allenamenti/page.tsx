@@ -1,7 +1,139 @@
-export default function AllenamentiPage() {
+import ApparatusCard from "@/components/apparatus-card";
+import { createClient } from "@/lib/supabase/server";
+import { getWeek } from "date-fns";
+
+const APPARATUS = ["FX", "PH", "SR", "VT", "PB", "HB"];
+
+// Define types for TrainingSession and Join
+type TrainingSession = {
+  id: string;
+  date: string;
+  session_number: number;
+};
+
+type Join = {
+  training_session_id: string;
+  training_sessions: TrainingSession[];
+};
+
+async function getTodaySessions(athleteId: string, todayStr: string) {
+  const supabase = await createClient();
+  // Find all training_sessions for today for this athlete
+  const { data: joins } = await supabase
+    .from("athlete_training_sessions")
+    .select(`training_session_id, training_sessions (id, date, session_number)`)
+    .eq("athlete_id", athleteId);
+
+  // Filter for today's sessions
+  const sessions = (joins ?? [])
+    .flatMap((j: Join) => j.training_sessions)
+    .filter((s: TrainingSession) => s && s.date === todayStr);
+  // Sort by session_number
+  sessions.sort(
+    (a: TrainingSession, b: TrainingSession) =>
+      a.session_number - b.session_number,
+  );
+  return sessions;
+}
+
+async function getApparatusSessionsWithSets(sessionId: string) {
+  const supabase = await createClient();
+  // Get all apparatus_sessions for this session
+  const { data: apparatusSessions } = await supabase
+    .from("apparatus_sessions")
+    .select("*")
+    .eq("training_session_id", sessionId);
+
+  // For each apparatus_session, get its training_sets
+  const apparatusWithSets = await Promise.all(
+    APPARATUS.map(async (app) => {
+      const session = (apparatusSessions ?? []).find(
+        (a) => a.apparatus === app,
+      );
+      if (!session) return { apparatus: app, session: null, sets: [] };
+      const { data: sets } = await supabase
+        .from("training_sets")
+        .select("*")
+        .eq("apparatus_session_id", session.id);
+      return { apparatus: app, session, sets: sets ?? [] };
+    }),
+  );
+  return apparatusWithSets;
+}
+
+export default async function AllenamentiPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return <div>Utente non trovato.</div>;
+
+  // Get athlete
+  const { data: athlete } = await supabase
+    .from("athletes")
+    .select("id, first_name, last_name")
+    .eq("supabase_id", user.id)
+    .single();
+  if (!athlete) return <div>Atleta non trovato.</div>;
+
+  // Get today's date
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+
+  // Get all today's sessions
+  const sessions = await getTodaySessions(athlete.id, todayStr);
+  if (sessions.length === 0) {
+    return <div>Nessun allenamento trovato per oggi.</div>;
+  }
+
+  // For now, select the first session (add switcher later)
+  const selectedSession = sessions[0];
+  const apparatusData = await getApparatusSessionsWithSets(selectedSession.id);
+
+  // Calcola weekNumber e year dalla data della sessione
+  const weekNumber = getWeek(new Date(selectedSession.date), {
+    weekStartsOn: 1,
+  });
+  const year = new Date(selectedSession.date).getFullYear();
+
+  // Format date as DD/MM/YYYY
+  function formatDate(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleDateString("it-IT");
+  }
+
   return (
     <div>
-      <h1 className="text-2xl font-bold">Allenamenti</h1>
+      <h1 className="mb-4 text-2xl font-bold">
+        Allenamento di oggi - {formatDate(selectedSession.date)} (Allenamento
+        {" #"}
+        {selectedSession.session_number})
+      </h1>
+      {sessions.length > 1 && (
+        <div className="mb-4">
+          {/* TODO: session switcher */}
+          <span>Seleziona sessione: </span>
+          {sessions.map((s: TrainingSession) => (
+            <span key={s.id} className="mr-2">
+              Sessione {s.session_number}
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {apparatusData.map((data) => (
+          <ApparatusCard
+            key={data.apparatus}
+            apparatus={data.apparatus}
+            session={data.session}
+            sets={data.sets}
+            trainingSessionId={selectedSession.id}
+            athleteId={athlete.id}
+            weekNumber={weekNumber}
+            year={year}
+          />
+        ))}
+      </div>
     </div>
   );
 }
