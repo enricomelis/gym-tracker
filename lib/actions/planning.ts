@@ -105,3 +105,25 @@ export async function deleteWeeklyGoals(
 
   return { success: true };
 }
+
+export async function getWeeklyGoalForApparatus(
+  athleteId: string,
+  apparatus: string,
+  weekNumber: number,
+  year: number,
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("apparatus_weekly_goals")
+    .select("*")
+    .eq("athlete_id", athleteId)
+    .eq("apparatus", apparatus)
+    .eq("week_number", weekNumber)
+    .eq("year", year)
+    .maybeSingle();
+  if (error) {
+    console.error("Error fetching weekly goal for apparatus:", error);
+    return null;
+  }
+  return data;
+}
