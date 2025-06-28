@@ -37,6 +37,9 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
 
 - [x] **Auth per Atleti:** Possibilità per gli atleti di creare un account, inserire i dati, fornire feedback e visualizzare il proprio andamento in tempo reale.
 - [ ] **Modalità Allenamento "Live":** Un'interfaccia ottimizzata per l'inserimento rapido dei dati durante l'allenamento, direttamente dalla palestra.
+  - [x] Interfaccia per inserire sessioni all'attrezzo e singole salite
+  - [ ] Inserire anche la penalità precisa per ogni salita.
+  - [ ] Fare in modo che l'inserimento di ogni salita calcoli automaticamente se è "di Intensità" o "di Base" in base a delle regole arbitrarie.
 - [ ] **Storico Allenamenti:** Un archivio completo e facilmente consultabile di tutte le sessioni di allenamento svolte.
 
 ### 📊 Fase 4: Analisi e Funzionalità Avanzate
