@@ -88,4 +88,4 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 - main: production
 - development: preview
-  - allenamenti: feature (interfaccia per inserimento carico)
+  - [x] allenamenti: feature (interfaccia per inserimento carico)
