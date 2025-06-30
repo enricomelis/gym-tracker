@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -102,7 +103,7 @@ export default function WeeklyPlanner({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
+      <div className="sticky top-0 z-30 flex items-center justify-between gap-4 py-2">
         {isReadOnly ? (
           <div className="w-full rounded border bg-muted px-3 py-2 text-center font-semibold md:w-[200px]">
             {athletes[0]?.first_name} {athletes[0]?.last_name}
@@ -118,24 +119,30 @@ export default function WeeklyPlanner({
             <SelectContent>
               {athletes.map((athlete) => (
                 <SelectItem key={athlete.id} value={athlete.id}>
-                  {`${athlete.first_name} ${athlete.last_name}`}
+                  <span className="truncate">{athlete.first_name}</span>
+                  <span className="hidden truncate md:inline">
+                    {" "}
+                    {athlete.last_name}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         )}
-        <div className="flex items-center gap-2">
+        <div className="flex w-full min-w-0 items-center gap-2 md:w-auto">
           <Button
             variant="outline"
-            size="icon"
+            className="aspect-square h-6 w-6 md:h-10 md:w-10"
             onClick={() => setYear(year - 1)}
           >
             &lt;
           </Button>
-          <span className="w-24 text-center font-semibold">{year}</span>
+          <span className="flex-1 truncate text-center font-semibold md:w-24">
+            {year}
+          </span>
           <Button
             variant="outline"
-            size="icon"
+            className="aspect-square h-6 w-6 md:h-10 md:w-10"
             onClick={() => setYear(year + 1)}
           >
             &gt;
@@ -342,11 +349,15 @@ export default function WeeklyPlanner({
           open={editingWeek !== null}
           onOpenChange={(isOpen) => !isOpen && handleCloseDialog()}
         >
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="w-full max-w-full overflow-y-auto p-2 sm:max-w-lg sm:p-6 md:max-w-2xl lg:max-w-4xl">
             <DialogHeader>
               <DialogTitle>
                 Programmazione Settimana {editingWeek}, {year}
               </DialogTitle>
+              <DialogDescription>
+                Compila i campi per la settimana selezionata. Tutti i dati
+                possono essere modificati in seguito.
+              </DialogDescription>
             </DialogHeader>
             {editingWeek !== null && (
               <WeeklyGoalForm
