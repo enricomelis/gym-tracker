@@ -63,8 +63,8 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 #### app/settimanale - Mobile
 
-- [ ] Overflow del bottone per il cambio anno.
-- [ ] Overflow del form per inserimento programmazione che ne impossibilita l'utilizzo.
+- [x] Overflow del bottone per il cambio anno.
+- [x] Overflow del form per inserimento programmazione che ne impossibilita l'utilizzo.
 
 ### Back-end
 

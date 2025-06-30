@@ -103,7 +103,7 @@ export default function WeeklyPlanner({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
+      <div className="sticky top-0 z-30 flex items-center justify-between gap-4 py-2">
         {isReadOnly ? (
           <div className="w-full rounded border bg-muted px-3 py-2 text-center font-semibold md:w-[200px]">
             {athletes[0]?.first_name} {athletes[0]?.last_name}
@@ -132,7 +132,7 @@ export default function WeeklyPlanner({
         <div className="flex w-full min-w-0 items-center gap-2 md:w-auto">
           <Button
             variant="outline"
-            size="icon"
+            className="aspect-square h-6 w-6 md:h-10 md:w-10"
             onClick={() => setYear(year - 1)}
           >
             &lt;
@@ -142,7 +142,7 @@ export default function WeeklyPlanner({
           </span>
           <Button
             variant="outline"
-            size="icon"
+            className="aspect-square h-6 w-6 md:h-10 md:w-10"
             onClick={() => setYear(year + 1)}
           >
             &gt;
