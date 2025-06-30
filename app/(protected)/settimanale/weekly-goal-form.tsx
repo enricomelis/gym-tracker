@@ -195,7 +195,7 @@ export default function WeeklyGoalForm({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="max-h-[70vh] space-y-4 overflow-y-auto md:max-h-none md:overflow-visible">
       {/* Weekly Settings */}
       <div className="grid grid-cols-1 gap-4 rounded-lg border bg-card p-4 text-card-foreground shadow-sm md:grid-cols-2">
         <div>
@@ -271,7 +271,76 @@ export default function WeeklyGoalForm({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile: blocchi in colonna */}
+      <div className="space-y-6 md:hidden">
+        {weeklyGoals.map((goal) => (
+          <div
+            key={goal.apparatus}
+            className="space-y-3 rounded border bg-card p-4 shadow-sm"
+          >
+            <div className="mb-2 text-base font-semibold">{goal.apparatus}</div>
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                Volume Esercizi
+              </label>
+              <Input
+                type="number"
+                value={goal.exercise_volume}
+                onFocus={handleFocus}
+                onChange={(e) =>
+                  handleApparatusGoalChange(
+                    goal.apparatus,
+                    "exercise_volume",
+                    parseInt(e.target.value) || 0,
+                  )
+                }
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                {goal.apparatus === "VT" ? "Volume Basi" : "Volume Uscite"}
+              </label>
+              <Input
+                type="number"
+                value={
+                  goal.apparatus === "VT"
+                    ? (goal.base_volume ?? 0)
+                    : goal.dismount_volume
+                }
+                onFocus={handleFocus}
+                onChange={(e) =>
+                  handleApparatusGoalChange(
+                    goal.apparatus,
+                    goal.apparatus === "VT" ? "base_volume" : "dismount_volume",
+                    parseInt(e.target.value) || 0,
+                  )
+                }
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                Penalità Target
+              </label>
+              <Input
+                type="number"
+                step="0.1"
+                value={goal.target_penalty}
+                onFocus={handleFocus}
+                onChange={(e) =>
+                  handleApparatusGoalChange(
+                    goal.apparatus,
+                    "target_penalty",
+                    parseFloat(e.target.value) || 0,
+                  )
+                }
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: tabella */}
+      <div className="hidden overflow-x-auto md:block">
         <Table>
           <TableHeader>
             <TableRow>

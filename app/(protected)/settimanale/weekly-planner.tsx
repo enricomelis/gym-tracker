@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -348,11 +349,15 @@ export default function WeeklyPlanner({
           open={editingWeek !== null}
           onOpenChange={(isOpen) => !isOpen && handleCloseDialog()}
         >
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="w-full max-w-full overflow-y-auto p-2 sm:max-w-lg sm:p-6 md:max-w-2xl lg:max-w-4xl">
             <DialogHeader>
               <DialogTitle>
                 Programmazione Settimana {editingWeek}, {year}
               </DialogTitle>
+              <DialogDescription>
+                Compila i campi per la settimana selezionata. Tutti i dati
+                possono essere modificati in seguito.
+              </DialogDescription>
             </DialogHeader>
             {editingWeek !== null && (
               <WeeklyGoalForm
