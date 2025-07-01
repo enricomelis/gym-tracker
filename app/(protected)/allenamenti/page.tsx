@@ -3,10 +3,13 @@
 import { useState, useEffect } from "react";
 import ApparatusCard from "@/components/apparatus-card";
 import { getWeek } from "date-fns";
-import Link from "next/link";
 import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
 import AllenamentoSwitcher from "@/components/allenamento-switcher";
 import { getBrowserClient } from "@/lib/supabase/client";
+import type {
+  ApparatusSession,
+  TrainingSet,
+} from "@/components/apparatus-card";
 
 const APPARATUS = ["FX", "PH", "SR", "VT", "PB", "HB"];
 
@@ -20,6 +23,19 @@ type AthleteType = {
   id: string;
   first_name: string;
   last_name: string;
+};
+
+// Supabase join type between athlete_training_sessions and training_sessions
+type AthleteTrainingSessionJoin = {
+  training_session_id: string;
+  training_sessions: TrainingSession[];
+};
+
+// Define a type representing the apparatus data structure returned by Supabase
+type ApparatusData = {
+  apparatus: string;
+  session: ApparatusSession | null;
+  sets: TrainingSet[];
 };
 
 async function fetchUserAndAthletes() {
@@ -65,8 +81,9 @@ async function fetchTodaySessions(athleteId: string, todayStr: string) {
     .from("athlete_training_sessions")
     .select(`training_session_id, training_sessions (id, date, session_number)`)
     .eq("athlete_id", athleteId);
-  const sessions = (joins ?? [])
-    .flatMap((j: any) => j.training_sessions)
+
+  const sessions = ((joins ?? []) as AthleteTrainingSessionJoin[])
+    .flatMap((j) => j.training_sessions)
     .filter((s: TrainingSession) => s && s.date === todayStr);
   sessions.sort(
     (a: TrainingSession, b: TrainingSession) =>
@@ -75,7 +92,9 @@ async function fetchTodaySessions(athleteId: string, todayStr: string) {
   return sessions;
 }
 
-async function fetchApparatusSessionsWithSets(sessionId: string) {
+async function fetchApparatusSessionsWithSets(
+  sessionId: string,
+): Promise<ApparatusData[]> {
   const supabase = getBrowserClient();
   const { data: apparatusSessions } = await supabase
     .from("apparatus_sessions")
@@ -84,14 +103,15 @@ async function fetchApparatusSessionsWithSets(sessionId: string) {
   const apparatusWithSets = await Promise.all(
     APPARATUS.map(async (app) => {
       const session = (apparatusSessions ?? []).find(
-        (a) => a.apparatus === app,
-      );
+        (a: { apparatus: string }) => a.apparatus === app,
+      ) as ApparatusSession | undefined;
+
       if (!session) return { apparatus: app, session: null, sets: [] };
       const { data: sets } = await supabase
         .from("training_sets")
         .select("*")
         .eq("apparatus_session_id", session.id);
-      return { apparatus: app, session, sets: sets ?? [] };
+      return { apparatus: app, session, sets: (sets ?? []) as TrainingSet[] };
     }),
   );
   return apparatusWithSets;
@@ -105,7 +125,7 @@ export default function AllenamentiPage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null,
   );
-  const [apparatusData, setApparatusData] = useState<any[]>([]);
+  const [apparatusData, setApparatusData] = useState<ApparatusData[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
