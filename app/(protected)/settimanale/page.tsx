@@ -1,9 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { getServerClient } from "@/lib/supabase/server";
 import { getAthletesForCoach, getCompetitions } from "@/lib/actions/athletes";
 import WeeklyPlanner from "./weekly-planner";
+import { getUserRole } from "@/lib/role";
 
 export default async function SettimanalePage() {
-  const supabase = await createClient();
+  const supabase = await getServerClient();
 
   const {
     data: { user },
@@ -13,17 +14,25 @@ export default async function SettimanalePage() {
     return <div>Utente non trovato.</div>;
   }
 
-  // Prova a vedere se è un coach
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", user.id)
-    .single();
+  const role = await getUserRole(supabase, user.id);
 
-  if (coach && !coachError) {
+  if (role === "coach") {
+    // Fetch coach id
+    const { data: coach, error: coachError } = await supabase
+      .from("coaches")
+      .select("id")
+      .eq("supabase_id", user.id)
+      .single();
+
+    if (coachError || !coach) {
+      return <div>Errore nel caricamento del profilo tecnico.</div>;
+    }
+
     // Coach: mostra tutti i suoi atleti
-    const athletes = await getAthletesForCoach(coach.id);
-    const competitions = await getCompetitions();
+    const [athletes, competitions] = await Promise.all([
+      getAthletesForCoach(coach.id),
+      getCompetitions(),
+    ]);
     return (
       <div className="p-4 md:p-6">
         <h1 className="mb-4 text-2xl font-bold">Programmazione Settimanale</h1>
@@ -42,18 +51,26 @@ export default async function SettimanalePage() {
     );
   }
 
-  // Se non è coach, prova come atleta
-  const { data: athlete, error: athleteError } = await supabase
-    .from("athletes")
-    .select(
-      "id, current_coach_id, first_name, last_name, date_of_birth, registration_number, category, registered_society_id, created_at, updated_at, supabase_id",
-    )
-    .eq("supabase_id", user.id)
-    .single();
+  if (role === "athlete") {
+    const [athleteRes, competitions] = await Promise.all([
+      supabase
+        .from("athletes")
+        .select(
+          "id, current_coach_id, first_name, last_name, date_of_birth, registration_number, category, registered_society_id, created_at, updated_at, supabase_id",
+        )
+        .eq("supabase_id", user.id)
+        .single(),
+      getCompetitions(),
+    ]);
 
-  if (athlete && !athleteError) {
+    const athlete = athleteRes.data;
+    const athleteError = athleteRes.error;
+
+    if (!athlete || athleteError) {
+      return <div>Errore nel caricamento del profilo atleta.</div>;
+    }
+
     // Atleta: mostra solo la sua programmazione
-    const competitions = await getCompetitions();
     return (
       <div className="p-4 md:p-6">
         <h1 className="mb-4 text-2xl font-bold">

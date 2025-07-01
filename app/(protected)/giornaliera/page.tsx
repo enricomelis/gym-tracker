@@ -1,8 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
+import { getServerClient } from "@/lib/supabase/server";
 import DailyPlanner from "./daily-planner";
+import { getUserRole } from "@/lib/role";
 
 export default async function GiornalieraPage() {
-  const supabase = await createClient();
+  const supabase = await getServerClient();
 
   const {
     data: { user },
@@ -12,14 +13,19 @@ export default async function GiornalieraPage() {
     return <div>Utente non trovato.</div>;
   }
 
-  // Prova a vedere se è un coach
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", user.id)
-    .single();
+  const role = await getUserRole(supabase, user.id);
 
-  if (coach && !coachError) {
+  if (role === "coach") {
+    const { data: coach, error: coachError } = await supabase
+      .from("coaches")
+      .select("id")
+      .eq("supabase_id", user.id)
+      .single();
+
+    if (coachError || !coach) {
+      return <div>Errore nel caricamento degli atleti.</div>;
+    }
+
     const { data: athletes, error: athletesError } = await supabase
       .from("athletes")
       .select(
@@ -47,16 +53,19 @@ export default async function GiornalieraPage() {
     );
   }
 
-  // Se non è coach, prova come atleta
-  const { data: athlete, error: athleteError } = await supabase
-    .from("athletes")
-    .select(
-      "id, first_name, last_name, date_of_birth, registration_number, category, current_coach_id, registered_society_id, created_at, updated_at, supabase_id",
-    )
-    .eq("supabase_id", user.id)
-    .single();
+  if (role === "athlete") {
+    const { data: athlete, error: athleteError } = await supabase
+      .from("athletes")
+      .select(
+        "id, first_name, last_name, date_of_birth, registration_number, category, current_coach_id, registered_society_id, created_at, updated_at, supabase_id",
+      )
+      .eq("supabase_id", user.id)
+      .single();
 
-  if (athlete && !athleteError) {
+    if (!athlete || athleteError) {
+      return <div>Errore nel caricamento atleta.</div>;
+    }
+
     return (
       <div className="p-4 md:p-6">
         <h1 className="mb-4 text-2xl font-bold">

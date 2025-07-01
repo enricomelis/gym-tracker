@@ -27,3 +27,6 @@ export async function createClient() {
     },
   );
 }
+
+// Alias for consistent naming between client and server
+export const getServerClient = createClient;

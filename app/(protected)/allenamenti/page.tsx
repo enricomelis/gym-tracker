@@ -6,7 +6,7 @@ import { getWeek } from "date-fns";
 import Link from "next/link";
 import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
 import AllenamentoSwitcher from "@/components/allenamento-switcher";
-import { createClient } from "@/lib/supabase/client";
+import { getBrowserClient } from "@/lib/supabase/client";
 
 const APPARATUS = ["FX", "PH", "SR", "VT", "PB", "HB"];
 
@@ -23,7 +23,7 @@ type AthleteType = {
 };
 
 async function fetchUserAndAthletes() {
-  const supabase = createClient();
+  const supabase = getBrowserClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -60,7 +60,7 @@ async function fetchUserAndAthletes() {
 }
 
 async function fetchTodaySessions(athleteId: string, todayStr: string) {
-  const supabase = createClient();
+  const supabase = getBrowserClient();
   const { data: joins } = await supabase
     .from("athlete_training_sessions")
     .select(`training_session_id, training_sessions (id, date, session_number)`)
@@ -76,7 +76,7 @@ async function fetchTodaySessions(athleteId: string, todayStr: string) {
 }
 
 async function fetchApparatusSessionsWithSets(sessionId: string) {
-  const supabase = createClient();
+  const supabase = getBrowserClient();
   const { data: apparatusSessions } = await supabase
     .from("apparatus_sessions")
     .select("*")

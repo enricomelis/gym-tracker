@@ -10,17 +10,24 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { getAthletesForCoach, getSocieties } from "@/lib/actions/athletes";
-import { createClient } from "@/lib/supabase/server";
+import { getServerClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
+import { getUserRole } from "@/lib/role";
 
 export default async function AtletiPage() {
-  const supabase = await createClient();
+  const supabase = await getServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
     return <p>Utente non trovato.</p>;
+  }
+
+  const role = await getUserRole(supabase, user.id);
+
+  if (role !== "coach") {
+    return <p>Solo i tecnici possono gestire la pagina atleti.</p>;
   }
 
   const { data: coach, error: coachError } = await supabase
