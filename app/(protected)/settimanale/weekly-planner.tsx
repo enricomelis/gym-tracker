@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/table";
 import WeeklyGoalForm from "./weekly-goal-form";
 import { type Athlete } from "@/lib/actions/athletes";
+import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
 
 type Competition = {
   id: string;
@@ -109,25 +110,11 @@ export default function WeeklyPlanner({
             {athletes[0]?.first_name} {athletes[0]?.last_name}
           </div>
         ) : (
-          <Select
-            onValueChange={setSelectedAthleteId}
-            value={selectedAthleteId}
-          >
-            <SelectTrigger className="w-full md:w-[200px]">
-              <SelectValue placeholder="Seleziona Atleta" />
-            </SelectTrigger>
-            <SelectContent>
-              {athletes.map((athlete) => (
-                <SelectItem key={athlete.id} value={athlete.id}>
-                  <span className="truncate">{athlete.first_name}</span>
-                  <span className="hidden truncate md:inline">
-                    {" "}
-                    {athlete.last_name}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <AthleteSelectSwitcher
+            athletes={athletes}
+            selectedAthleteId={selectedAthleteId}
+            onChange={setSelectedAthleteId}
+          />
         )}
         <div className="flex w-full min-w-0 items-center gap-2 md:w-auto">
           <Button

@@ -35,6 +35,7 @@ import DailyRoutineForm from "./daily-routine-form";
 import { PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
 
 interface DailyPlannerProps {
   athletes: Athlete[];
@@ -183,21 +184,11 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
             {athletes[0]?.first_name} {athletes[0]?.last_name}
           </div>
         ) : (
-          <Select
-            value={selectedAthleteId}
-            onValueChange={setSelectedAthleteId}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Seleziona Atleta" />
-            </SelectTrigger>
-            <SelectContent>
-              {athletes.map((athlete) => (
-                <SelectItem key={athlete.id} value={athlete.id}>
-                  {athlete.first_name} {athlete.last_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <AthleteSelectSwitcher
+            athletes={athletes}
+            selectedAthleteId={selectedAthleteId}
+            onChange={setSelectedAthleteId}
+          />
         )}
 
         <Select

@@ -20,6 +20,7 @@ const coachLinks = [
   { href: "/atleti", label: "Atleti", icon: Users },
   { href: "/settimanale", label: "Settimanale", icon: Calendar },
   { href: "/giornaliera", label: "Giornaliera", icon: ClipboardList },
+  { href: "/allenamenti", label: "Allenamenti", icon: Dumbbell },
   { href: "/analisi-dati", label: "Analisi Dati", icon: BarChart2 },
 ];
 
@@ -46,7 +47,7 @@ export default function Sidebar({
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/settimanale", label: "Settimanale", icon: Calendar },
     { href: "/giornaliera", label: "Giornaliera", icon: ClipboardList },
-    { href: "/allenamenti", label: "Allenamenti", icon: Dumbbell }, // Placeholder
+    { href: "/allenamenti", label: "Allenamenti", icon: Dumbbell },
   ];
 
   const linksToShow = role === "athlete" ? athleteLinks : coachLinks;

@@ -1,6 +1,8 @@
 import ApparatusCard from "@/components/apparatus-card";
 import { createClient } from "@/lib/supabase/server";
 import { getWeek } from "date-fns";
+import Link from "next/link";
+import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
 
 const APPARATUS = ["FX", "PH", "SR", "VT", "PB", "HB"];
 
@@ -14,6 +16,12 @@ type TrainingSession = {
 type Join = {
   training_session_id: string;
   training_sessions: TrainingSession[];
+};
+
+type AthleteType = {
+  id: string;
+  first_name: string;
+  last_name: string;
 };
 
 async function getTodaySessions(athleteId: string, todayStr: string) {
@@ -61,20 +69,61 @@ async function getApparatusSessionsWithSets(sessionId: string) {
   return apparatusWithSets;
 }
 
-export default async function AllenamentiPage() {
+export default async function AllenamentiPage({
+  searchParams,
+}: {
+  searchParams?: { athlete?: string };
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return <div>Utente non trovato.</div>;
 
-  // Get athlete
-  const { data: athlete } = await supabase
-    .from("athletes")
-    .select("id, first_name, last_name")
+  // Prova a vedere se è un coach
+  const { data: coach, error: coachError } = await supabase
+    .from("coaches")
+    .select("id")
     .eq("supabase_id", user.id)
     .single();
-  if (!athlete) return <div>Atleta non trovato.</div>;
+
+  let athlete: AthleteType | null = null;
+  let athletes: AthleteType[] = [];
+
+  if (coach && !coachError) {
+    // Coach: carica lista atleti
+    const { data: athletesData, error: athletesError } = await supabase
+      .from("athletes")
+      .select("id, first_name, last_name")
+      .eq("current_coach_id", coach.id);
+    if (athletesError) {
+      return <div>Errore nel caricamento degli atleti.</div>;
+    }
+    athletes = athletesData || [];
+    if (athletes.length === 0) {
+      return (
+        <div>
+          Non hai ancora aggiunto nessun atleta. Aggiungine uno dalla pagina{" "}
+          <Link href="/atleti" className="underline">
+            Atleti
+          </Link>
+          .
+        </div>
+      );
+    }
+    // Scegli atleta selezionato da query param, o il primo
+    const selectedAthleteId = searchParams?.athlete || athletes[0].id;
+    athlete = athletes.find((a) => a.id === selectedAthleteId) || athletes[0];
+  } else {
+    // Se non è coach, prova come atleta
+    const { data: athleteData } = await supabase
+      .from("athletes")
+      .select("id, first_name, last_name")
+      .eq("supabase_id", user.id)
+      .single();
+    if (!athleteData) return <div>Atleta non trovato.</div>;
+    athlete = athleteData;
+  }
 
   // Get today's date
   const today = new Date();
@@ -83,7 +132,19 @@ export default async function AllenamentiPage() {
   // Get all today's sessions
   const sessions = await getTodaySessions(athlete.id, todayStr);
   if (sessions.length === 0) {
-    return <div>Nessun allenamento trovato per oggi.</div>;
+    return (
+      <div>
+        {athletes.length > 0 && (
+          <div className="mb-4">
+            <AthleteSelectSwitcher
+              athletes={athletes}
+              selectedAthleteId={athlete.id}
+            />
+          </div>
+        )}
+        Nessun allenamento trovato per oggi.
+      </div>
+    );
   }
 
   // For now, select the first session (add switcher later)
@@ -104,6 +165,14 @@ export default async function AllenamentiPage() {
 
   return (
     <div>
+      {athletes.length > 0 && (
+        <div className="mb-4">
+          <AthleteSelectSwitcher
+            athletes={athletes}
+            selectedAthleteId={athlete.id}
+          />
+        </div>
+      )}
       <h1 className="mb-4 text-2xl font-bold">
         Allenamento di oggi - {formatDate(selectedSession.date)} (Allenamento
         {" #"}

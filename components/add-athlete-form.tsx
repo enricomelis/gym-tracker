@@ -80,7 +80,7 @@ export default function AddAthleteForm({
         <Input id="dateOfBirth" name="dateOfBirth" type="date" required />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="registrationNumber">Numero di Matricola</Label>
+        <Label htmlFor="registrationNumber">Numero di Tessera</Label>
         <Input
           id="registrationNumber"
           name="registrationNumber"
