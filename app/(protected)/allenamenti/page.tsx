@@ -1,21 +1,19 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import ApparatusCard from "@/components/apparatus-card";
-import { createClient } from "@/lib/supabase/server";
 import { getWeek } from "date-fns";
 import Link from "next/link";
 import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
+import AllenamentoSwitcher from "@/components/allenamento-switcher";
+import { createClient } from "@/lib/supabase/client";
 
 const APPARATUS = ["FX", "PH", "SR", "VT", "PB", "HB"];
 
-// Define types for TrainingSession and Join
 type TrainingSession = {
   id: string;
   date: string;
   session_number: number;
-};
-
-type Join = {
-  training_session_id: string;
-  training_sessions: TrainingSession[];
 };
 
 type AthleteType = {
@@ -24,19 +22,52 @@ type AthleteType = {
   last_name: string;
 };
 
-async function getTodaySessions(athleteId: string, todayStr: string) {
-  const supabase = await createClient();
-  // Find all training_sessions for today for this athlete
+async function fetchUserAndAthletes() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { user: null };
+  // Try as coach
+  const { data: coach, error: coachError } = await supabase
+    .from("coaches")
+    .select("id")
+    .eq("supabase_id", user.id)
+    .single();
+  if (coach && !coachError) {
+    const { data: athletesData } = await supabase
+      .from("athletes")
+      .select("id, first_name, last_name")
+      .eq("current_coach_id", coach.id);
+    return {
+      user,
+      athletes: athletesData || [],
+      coach,
+    };
+  } else {
+    // Try as athlete
+    const { data: athleteData } = await supabase
+      .from("athletes")
+      .select("id, first_name, last_name")
+      .eq("supabase_id", user.id)
+      .single();
+    return {
+      user,
+      athlete: athleteData || null,
+      athletes: [],
+    };
+  }
+}
+
+async function fetchTodaySessions(athleteId: string, todayStr: string) {
+  const supabase = createClient();
   const { data: joins } = await supabase
     .from("athlete_training_sessions")
     .select(`training_session_id, training_sessions (id, date, session_number)`)
     .eq("athlete_id", athleteId);
-
-  // Filter for today's sessions
   const sessions = (joins ?? [])
-    .flatMap((j: Join) => j.training_sessions)
+    .flatMap((j: any) => j.training_sessions)
     .filter((s: TrainingSession) => s && s.date === todayStr);
-  // Sort by session_number
   sessions.sort(
     (a: TrainingSession, b: TrainingSession) =>
       a.session_number - b.session_number,
@@ -44,15 +75,12 @@ async function getTodaySessions(athleteId: string, todayStr: string) {
   return sessions;
 }
 
-async function getApparatusSessionsWithSets(sessionId: string) {
-  const supabase = await createClient();
-  // Get all apparatus_sessions for this session
+async function fetchApparatusSessionsWithSets(sessionId: string) {
+  const supabase = createClient();
   const { data: apparatusSessions } = await supabase
     .from("apparatus_sessions")
     .select("*")
     .eq("training_session_id", sessionId);
-
-  // For each apparatus_session, get its training_sets
   const apparatusWithSets = await Promise.all(
     APPARATUS.map(async (app) => {
       const session = (apparatusSessions ?? []).find(
@@ -69,68 +97,104 @@ async function getApparatusSessionsWithSets(sessionId: string) {
   return apparatusWithSets;
 }
 
-export default async function AllenamentiPage({
-  searchParams,
-}: {
-  searchParams?: { athlete?: string };
-}) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return <div>Utente non trovato.</div>;
+export default function AllenamentiPage() {
+  const [loading, setLoading] = useState(true);
+  const [athletes, setAthletes] = useState<AthleteType[]>([]);
+  const [athlete, setAthlete] = useState<AthleteType | null>(null);
+  const [sessions, setSessions] = useState<TrainingSession[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null,
+  );
+  const [apparatusData, setApparatusData] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Prova a vedere se è un coach
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", user.id)
-    .single();
-
-  let athlete: AthleteType | null = null;
-  let athletes: AthleteType[] = [];
-
-  if (coach && !coachError) {
-    // Coach: carica lista atleti
-    const { data: athletesData, error: athletesError } = await supabase
-      .from("athletes")
-      .select("id, first_name, last_name")
-      .eq("current_coach_id", coach.id);
-    if (athletesError) {
-      return <div>Errore nel caricamento degli atleti.</div>;
-    }
-    athletes = athletesData || [];
-    if (athletes.length === 0) {
-      return (
-        <div>
-          Non hai ancora aggiunto nessun atleta. Aggiungine uno dalla pagina{" "}
-          <Link href="/atleti" className="underline">
-            Atleti
-          </Link>
-          .
-        </div>
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      setError(null);
+      const today = new Date();
+      const todayStr = today.toISOString().slice(0, 10);
+      const userData = await fetchUserAndAthletes();
+      if (!userData.user) {
+        setError("Utente non trovato.");
+        setLoading(false);
+        return;
+      }
+      let athleteObj: AthleteType | null = null;
+      let athletesArr: AthleteType[] = [];
+      if (userData.coach) {
+        athletesArr = userData.athletes;
+        if (athletesArr.length === 0) {
+          setAthletes([]);
+          setError("Non hai ancora aggiunto nessun atleta.");
+          setLoading(false);
+          return;
+        }
+        athleteObj = athletesArr[0];
+      } else if (userData.athlete) {
+        athleteObj = userData.athlete;
+      }
+      setAthletes(athletesArr);
+      setAthlete(athleteObj);
+      if (!athleteObj) {
+        setError("Atleta non trovato.");
+        setLoading(false);
+        return;
+      }
+      const sessionsArr = await fetchTodaySessions(athleteObj.id, todayStr);
+      setSessions(sessionsArr);
+      if (sessionsArr.length === 0) {
+        setLoading(false);
+        return;
+      }
+      setSelectedSessionId(sessionsArr[0].id);
+      const apparatusArr = await fetchApparatusSessionsWithSets(
+        sessionsArr[0].id,
       );
+      setApparatusData(apparatusArr);
+      setLoading(false);
     }
-    // Scegli atleta selezionato da query param, o il primo
-    const selectedAthleteId = searchParams?.athlete || athletes[0].id;
-    athlete = athletes.find((a) => a.id === selectedAthleteId) || athletes[0];
-  } else {
-    // Se non è coach, prova come atleta
-    const { data: athleteData } = await supabase
-      .from("athletes")
-      .select("id, first_name, last_name")
-      .eq("supabase_id", user.id)
-      .single();
-    if (!athleteData) return <div>Atleta non trovato.</div>;
-    athlete = athleteData;
-  }
+    loadData();
+  }, []);
 
-  // Get today's date
-  const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  useEffect(() => {
+    async function updateApparatus() {
+      if (!selectedSessionId) return;
+      setLoading(true);
+      const apparatusArr =
+        await fetchApparatusSessionsWithSets(selectedSessionId);
+      setApparatusData(apparatusArr);
+      setLoading(false);
+    }
+    if (selectedSessionId) updateApparatus();
+  }, [selectedSessionId]);
 
-  // Get all today's sessions
-  const sessions = await getTodaySessions(athlete.id, todayStr);
+  // Handler for athlete change
+  const handleAthleteChange = async (athleteId: string) => {
+    setLoading(true);
+    setError(null);
+    const newAthlete = athletes.find((a) => a.id === athleteId) || null;
+    setAthlete(newAthlete);
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    const sessionsArr = await fetchTodaySessions(athleteId, todayStr);
+    setSessions(sessionsArr);
+    if (sessionsArr.length > 0) {
+      setSelectedSessionId(sessionsArr[0].id);
+      const apparatusArr = await fetchApparatusSessionsWithSets(
+        sessionsArr[0].id,
+      );
+      setApparatusData(apparatusArr);
+    } else {
+      setSelectedSessionId(null);
+      setApparatusData([]);
+    }
+    setLoading(false);
+  };
+
+  if (loading) return <div>Caricamento...</div>;
+  if (error) return <div>{error}</div>;
+  if (!athlete) return <div>Atleta non trovato.</div>;
   if (sessions.length === 0) {
     return (
       <div>
@@ -139,6 +203,7 @@ export default async function AllenamentiPage({
             <AthleteSelectSwitcher
               athletes={athletes}
               selectedAthleteId={athlete.id}
+              onChange={handleAthleteChange}
             />
           </div>
         )}
@@ -146,47 +211,38 @@ export default async function AllenamentiPage({
       </div>
     );
   }
-
-  // For now, select the first session (add switcher later)
-  const selectedSession = sessions[0];
-  const apparatusData = await getApparatusSessionsWithSets(selectedSession.id);
-
-  // Calcola weekNumber e year dalla data della sessione
+  const selectedSession =
+    sessions.find((s) => s.id === selectedSessionId) || sessions[0];
   const weekNumber = getWeek(new Date(selectedSession.date), {
     weekStartsOn: 1,
   });
   const year = new Date(selectedSession.date).getFullYear();
-
-  // Format date as DD/MM/YYYY
   function formatDate(iso: string) {
     const d = new Date(iso);
     return d.toLocaleDateString("it-IT");
   }
-
   return (
     <div>
-      {athletes.length > 0 && (
-        <div className="mb-4">
-          <AthleteSelectSwitcher
-            athletes={athletes}
-            selectedAthleteId={athlete.id}
-          />
-        </div>
-      )}
       <h1 className="mb-4 text-2xl font-bold">
-        Allenamento di oggi - {formatDate(selectedSession.date)} (Allenamento
-        {" #"}
+        Allenamento di oggi - {formatDate(selectedSession.date)} (Allenamento #
         {selectedSession.session_number})
       </h1>
-      {sessions.length > 1 && (
-        <div className="mb-4">
-          {/* TODO: session switcher */}
-          <span>Seleziona sessione: </span>
-          {sessions.map((s: TrainingSession) => (
-            <span key={s.id} className="mr-2">
-              Sessione {s.session_number}
-            </span>
-          ))}
+      {(athletes.length > 0 || sessions.length > 1) && (
+        <div className="mb-6 flex flex-wrap items-center gap-4">
+          {athletes.length > 0 && (
+            <AthleteSelectSwitcher
+              athletes={athletes}
+              selectedAthleteId={athlete.id}
+              onChange={handleAthleteChange}
+            />
+          )}
+          {sessions.length > 1 && (
+            <AllenamentoSwitcher
+              sessions={sessions}
+              selectedSessionId={selectedSessionId!}
+              onChange={setSelectedSessionId}
+            />
+          )}
         </div>
       )}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
