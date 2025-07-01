@@ -43,7 +43,6 @@ next-env.d.ts
 
 # editor
 .cursor/
-scope.md
 
 # internal docs
-docs/dev_task_checklist.md
+docs/
