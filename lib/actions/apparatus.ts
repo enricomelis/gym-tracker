@@ -1,5 +1,6 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
 
 export async function initApparatusSession(formData: FormData) {
   const trainingSessionId = formData.get("trainingSessionId") as string;
@@ -86,10 +87,28 @@ export async function updateApparatusSession({
 }
 
 export async function addTrainingSet(payload: AddTrainingSetPayload) {
+  // Validate payload using Zod
+  const setSchema = z.object({
+    apparatus_session_id: z.string().uuid(),
+    set_number: z.number().int().min(1),
+    volume_done: z.number().int().min(1),
+    execution_coefficient: z.enum(["A+", "A", "B+", "B", "C+", "C"]),
+    execution_penalty: z.number().min(0).max(10),
+    falls: z.number().int().min(0),
+    elements_done_number: z.number().int().min(1),
+    intensity: z.number().min(0),
+  });
+
+  const parsed = setSchema.safeParse(payload);
+
+  if (!parsed.success) {
+    return { error: "Invalid training set data" };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("training_sets")
-    .insert(payload)
+    .insert(parsed.data)
     .select()
     .single();
   if (error) {

@@ -4,11 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getWeek } from "date-fns";
 import { z } from "zod";
 
-// TODO: Define types for daily planning data
-// TODO: Implement getDailyRoutine function
-// TODO: Implement saveDailyRoutine function
-// TODO: Implement deleteDailyRoutine function
-
 export type DailyRoutine = {
   id?: string;
   session_id: string;
@@ -215,32 +210,15 @@ export async function saveDailyRoutine(formData: unknown) {
 
     const athlete_id = join.athlete_id;
 
-    // Delete existing routines for this session
-    const { error: deleteError } = await supabase
-      .from("daily_routines")
-      .delete()
-      .eq("session_id", session_id);
+    const { error: rpcError } = await supabase.rpc("save_daily_routines", {
+      p_session_id: session_id,
+      p_athlete_id: athlete_id,
+      p_routines: JSON.stringify(routines),
+    });
 
-    if (deleteError) {
-      console.error("Error deleting old routines:", deleteError);
-      return { error: "Could not update routines" };
-    }
-
-    if (routines.length > 0) {
-      const routinesToInsert = routines.map((routine) => ({
-        ...routine,
-        session_id,
-        athlete_id,
-      }));
-
-      const { error: insertError } = await supabase
-        .from("daily_routines")
-        .insert(routinesToInsert);
-
-      if (insertError) {
-        console.error("Error inserting routines:", insertError);
-        return { error: "Could not insert routines" };
-      }
+    if (rpcError) {
+      console.error("Error saving routines via RPC:", rpcError);
+      return { error: "Could not save routines" };
     }
 
     return { success: true };
@@ -257,70 +235,30 @@ export async function createEmptyTrainingSession(
 ) {
   const supabase = await createClient();
 
-  const dateObj = new Date(date);
-  const week_number = getWeek(dateObj, { weekStartsOn: 1 });
-  const year = dateObj.getFullYear();
+  const { error } = await supabase.rpc("create_empty_training_session", {
+    p_athlete_id: athleteId,
+    p_date: date,
+    p_session_number: sessionNumber,
+  });
 
-  // 1. Crea la sessione
-  const { data, error } = await supabase
-    .from("training_sessions")
-    .insert({
-      date,
-      session_number: sessionNumber,
-      week_number,
-      year,
-    })
-    .select("id")
-    .single();
-
-  if (error || !data) {
+  if (error) {
     console.error("Error creating empty session:", error);
     return { error: "Could not create training session" };
   }
-
-  // 2. Crea la join
-  const { error: joinError } = await supabase
-    .from("athlete_training_sessions")
-    .insert({
-      athlete_id: athleteId,
-      training_session_id: data.id,
-    });
-
-  if (joinError) {
-    console.error("Error creating join:", joinError);
-    return { error: "Could not link athlete to session" };
-  }
-
   return { success: true };
 }
 
 export async function deleteDailyTraining(sessionId: string) {
   const supabase = await createClient();
 
-  // 1. Elimina tutte le daily routines associate con la sessione
-  await supabase.from("daily_routines").delete().eq("session_id", sessionId);
+  const { error } = await supabase.rpc("delete_training_session", {
+    p_session_id: sessionId,
+  });
 
-  // 2. Elimina la join con l'atleta
-  await supabase
-    .from("athlete_training_sessions")
-    .delete()
-    .eq("training_session_id", sessionId);
-
-  // 3. Elimina la sessione
-  const { error: sessionError } = await supabase
-    .from("training_sessions")
-    .delete()
-    .eq("id", sessionId);
-
-  if (sessionError) {
-    console.error("Error deleting training session:", sessionError);
+  if (error) {
+    console.error("Error deleting training session:", error);
     return { error: "Could not delete training session" };
   }
 
   return { success: true };
 }
-
-// Backend logic for daily planning is complete.
-// Next steps:
-// 1. Create the UI page in `app/(protected)/giornaliera/page.tsx`.
-// 2. Create the form component for adding/editing daily routines.

@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
 
 export type WeeklyGoal = {
   id?: string;
@@ -42,9 +43,37 @@ export async function getWeeklyGoals(
 export async function upsertWeeklyGoals(goals: Omit<WeeklyGoal, "id">[]) {
   const supabase = await createClient();
 
+  const goalSchema = z.object({
+    athlete_id: z.string().uuid(),
+    week_number: z.number().int().min(1).max(52),
+    year: z.number().int().gte(2020).lte(2100),
+    apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"]),
+    macro: z.enum(["Mixed", "Competition"]),
+    micro: z.enum([
+      "Increasing Load",
+      "Decreasing Load",
+      "Model",
+      "Competition Week",
+    ]),
+    exercise_volume: z.number().int().min(0),
+    dismount_volume: z.number().int().min(0),
+    target_penalty: z.number().min(0).max(10),
+    base_volume: z.number().int().min(0).nullable().optional(),
+    camp: z.string().nullable().optional(),
+    competition_id: z.string().uuid().nullable().optional(),
+  });
+
+  const parsed = z.array(goalSchema).safeParse(goals);
+
+  if (!parsed.success) {
+    return { error: "Invalid weekly goals data" };
+  }
+
   const { data, error } = await supabase
     .from("apparatus_weekly_goals")
-    .upsert(goals, { onConflict: "athlete_id,week_number,year,apparatus" })
+    .upsert(parsed.data, {
+      onConflict: "athlete_id,week_number,year,apparatus",
+    })
     .select();
 
   if (error) {
