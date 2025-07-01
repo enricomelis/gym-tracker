@@ -30,7 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format, getDaysInMonth, getISOWeek, startOfToday } from "date-fns";
-import { it } from "date-fns/locale";
+import { it as itLocale } from "date-fns/locale";
 import DailyRoutineForm from "./daily-routine-form";
 import { PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -67,9 +67,9 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
   const [showPastEvents, setShowPastEvents] = useState(false);
 
   const formatItalianDate = (date: Date) => {
-    const dayOfWeek = format(date, "EEEE", { locale: it });
+    const dayOfWeek = format(date, "EEEE", { locale: itLocale });
     const dayOfMonth = format(date, "d");
-    const month = format(date, "MMMM", { locale: it });
+    const month = format(date, "MMMM", { locale: itLocale });
     return `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}, ${dayOfMonth} ${month.charAt(0).toUpperCase() + month.slice(1)}`;
   };
 

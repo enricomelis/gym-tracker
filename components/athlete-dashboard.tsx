@@ -5,7 +5,6 @@ import { getWeek, getYear } from "date-fns";
 import { Button } from "@/components/ui/button";
 
 export default async function AthleteDashboard() {
-  // 1. Get current user
   const supabase = await createClient();
   const {
     data: { user },
@@ -15,7 +14,6 @@ export default async function AthleteDashboard() {
     return <div>Utente non trovato.</div>;
   }
 
-  // 2. Map user to athlete
   const { data: athlete, error: athleteError } = await supabase
     .from("athletes")
     .select("id, first_name, last_name")
@@ -26,18 +24,16 @@ export default async function AthleteDashboard() {
     return <div>Atleta non trovato.</div>;
   }
 
-  // 3. Get current week, year, date
   const today = new Date();
   const weekNumber = getWeek(today, { weekStartsOn: 1 });
   const year = getYear(today);
   const month = today.getMonth() + 1;
   const todayStr = today.toISOString().slice(0, 10);
 
-  // 4. Fetch weekly programming for this athlete
-  const weeklyGoals = await getWeeklyGoals(athlete.id, weekNumber, year);
-
-  // 5. Fetch daily training for today
-  const dailyTrainings = await getDailyTrainings(athlete.id, year, month);
+  const [weeklyGoals, dailyTrainings] = await Promise.all([
+    getWeeklyGoals(athlete.id, weekNumber, year),
+    getDailyTrainings(athlete.id, year, month),
+  ]);
   const todaySession = dailyTrainings.find((s) => s.date === todayStr);
 
   return (

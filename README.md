@@ -41,7 +41,7 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
     - [ ] Inserire anche la penalità precisa per ogni salita.
     - [ ] Fare in modo che l'inserimento di ogni salita calcoli
           automaticamente se è "di Intensità" o "di Base" in base a delle regole arbitrarie.
-  - [ ] Rendere l'inserimento disponibile dai tecnici
+  - [x] Rendere l'inserimento disponibile dai tecnici
 - [ ] **Storico Allenamenti:** Un archivio completo e facilmente consultabile di tutte le sessioni di allenamento svolte.
 
 ### 📊 Fase 4: Analisi e Funzionalità Avanzate
@@ -80,9 +80,7 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 #### Database Schema
 
-- [ ] Modificare relazione Atleti-Allenamenti.
-  - [x] Dovrebbe essere Molti-a-Molti.
-  - [ ] Il 30 Giugno 2025 crea problemi. Non vengono mostrati gli allenamenti e non funziona l'incremento per il `session_number`.
+- [x] Modificare relazione Atleti-Allenamenti. Dovrebbe essere Molti-a-Molti.
 - [ ] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
 - [ ] RLS non attiva.
 
