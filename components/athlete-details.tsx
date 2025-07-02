@@ -25,6 +25,12 @@ import {
 } from "@/components/ui/select";
 import React from "react";
 
+type Coach = {
+  id: string;
+  first_name: string;
+  last_name: string;
+};
+
 type Athlete = {
   id: string;
   first_name: string;
@@ -54,7 +60,7 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
         .from("coaches")
         .select("id, first_name, last_name");
       if (!error && data) {
-        const mapped = data.map((c: any) => ({
+        const mapped = data.map((c: Coach) => ({
           id: c.id,
           name: `${c.first_name} ${c.last_name}`,
         }));
