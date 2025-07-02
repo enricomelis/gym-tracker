@@ -26,6 +26,7 @@ import {
 import WeeklyGoalForm from "./weekly-goal-form";
 import { type Athlete } from "@/lib/actions/athletes";
 import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
+import { useRole } from "@/lib/hooks/use-role";
 
 type Competition = {
   id: string;
@@ -62,7 +63,8 @@ export default function WeeklyPlanner({
   const weeksInYear = getWeeksInYear(year);
   const weeks = Array.from({ length: weeksInYear }, (_, i) => i + 1);
 
-  const isReadOnly = athletes.length === 1;
+  const { role } = useRole();
+  const isReadOnly = role === "athlete";
   const currentWeek = (() => {
     const today = new Date();
     if (year !== today.getFullYear()) return null;

@@ -36,6 +36,7 @@ import { PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
+import { useRole } from "@/lib/hooks/use-role";
 
 interface DailyPlannerProps {
   athletes: Athlete[];
@@ -173,7 +174,8 @@ export default function DailyPlanner({ athletes }: DailyPlannerProps) {
     return map;
   }, [trainings]);
 
-  const isReadOnly = athletes.length === 1;
+  const { role } = useRole();
+  const isReadOnly = role === "athlete";
   const today = startOfToday();
 
   return (
