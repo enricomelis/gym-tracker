@@ -6,6 +6,9 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
 
 ## Roadmap del Progetto
 
+Le fasi numerate sono ordinate in base alla priorità, partendo dalle fondamenta dal progetto e aggiungendo mano mano strati di funzionalità.
+Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno ordinate in futuro con l'ampliamento del progetto.
+
 ### 🏗️ Fase 1: Fondamenta e Setup
 
 - [x] Inizializzazione del progetto Next.js
@@ -17,39 +20,44 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
 
 ### 🎯 Fase 2: Funzionalità Core di Programmazione
 
-- [ ] **Gestione Atleti:** Una sezione dedicata per gestire le anagrafiche degli atleti e delle competizioni.
-  - [x] Atleti
-  - [ ] Competizioni + Modifica al db: Ogni Gara deve avere un Nome.
-- [ ] **Programmazione Settimanale:** Uno strumento visuale, basato su calendario, per definire gli obiettivi di allenamento per ogni atleta e per ogni attrezzo.
-  - [x] Inserimento della programmazione
-  - [ ] Inserimento di un bottone che scrolla automaticamente fino alla settimana corrente.
-  - [ ] Molteplici modalità di visualizzazione (Filtri)
-- [ ] **Pianificazione Giornaliera:** La possibilità di creare esercizi dettagliati per ogni sessione di allenamento.
-  - [x] Inserimento della programmazione
-  - [ ] Molteplici modalità di visualizzazione (Filtri)
-- [ ] **Dashboard del Coach:** Una vista centrale per avere tutto sotto controllo, con la pianificazione del giorno e dati riepilogativi.
-- [ ] **Presets:** Possibilità di salvare dei preset per le programmazioni, in modo da facilitare l'inserimento da parte del tecnico (esempio: creare un preset per un microciclo d'urto)
-  - [ ] Settimanale
-  - [ ] Mensile
-  - [ ] Inserimento?
+- [x] **Gestione atleti:** Una sezione dedicata per la visione degli atleti.
+- [x] **Programmazione:** Una sezione per gestire la programmazione secondo lo standard nazionale.
+  - [x] Programmazione Settimanale.
+  - [x] Programmazione Giornaliera.
+- [x] **Inserimento:** Una sezione di tecnici e atleti possono inserire il carico svolto durante gli allenamenti.
 
-### 🤸🏻‍♂️ Fase 3: Esecuzione Allenamento e Tracking
+### ✨ Fase 3: Funzionalità aggiuntive per UX Leggera
 
-- [x] **Auth per Atleti:** Possibilità per gli atleti di creare un account, inserire i dati, fornire feedback e visualizzare il proprio andamento in tempo reale.
-- [ ] **Modalità Allenamento "Live":** Un'interfaccia ottimizzata per l'inserimento rapido dei dati durante l'allenamento, direttamente dalla palestra.
-  - [x] Interfaccia per inserire sessioni all'attrezzo e singole salite
-    - [ ] Inserire anche la penalità precisa per ogni salita.
-    - [ ] Fare in modo che l'inserimento di ogni salita calcoli
-          automaticamente se è "di Intensità" o "di Base" in base a delle regole arbitrarie.
-  - [x] Rendere l'inserimento disponibile dai tecnici
-- [ ] **Storico Allenamenti:** Un archivio completo e facilmente consultabile di tutte le sessioni di allenamento svolte.
+- [ ] **Micro preset:** Possibilità di salvare delle settimane, degli allenamenti e dei macrocicli per facilitarne l'inserimento.
+  - [ ] Preset per la programmazione settimanale.
+  - [ ] Preset per la programmazione giornaliera.
+- [ ] **Macro preset**
+  - [ ] Preset per determinati macrocicli.
+  - [ ] Preset per la preparazione a una gara (multi-settimana, multi-microciclo).
+- [ ] **Gestione delle gare:** Calcolo automatico della programmazione, parametrizzata dal tecnico, data una gara calendarizzata.
 
-### 📊 Fase 4: Analisi e Funzionalità Avanzate
+### 📊 Fase X.1: Analisi dati e Regole Avanzate
 
-- [ ] **Modificatori del Volume:** Una gestione ottimale per gestire tutte le regole che definiscono i modificatori percentuali del carico.
-- [ ] **Dashboard dei Progressi:** Grafici e report per visualizzare e analizzare i progressi di ogni atleta nel tempo.
-- [ ] **Gestione Competizioni:** Strumenti per tracciare la partecipazione e i risultati nelle gare.
-- [ ] **Progressive Web App (PWA):** Per un'esperienza d'uso ancora più integrata su dispositivi mobili.
+- [ ] **Grafici e Analisi dati:** Una sezione che confronta la programmazione con l'inserimento, che visualizzi l'andamento con grafici e che renda comprensibile l'andamento dell'atleta.
+- [ ] **Regole avanzate:** Implementazione delle regole avanzate dello standard nazionale.
+  - [ ] Inizialmente aggiungendo dei semplici calcoli frontend per l'inserimento più accurato.
+  - [ ] Successivamente collegando ogni elemento della salita alle regole da applicare.
+
+### 🧑🏻‍🔧 Fase X.2: Super Tecnico
+
+- [ ] **Nuovo ruolo:** Inserimento di un terzo ruolo, al di sopra del tecnico, che rifletta la figura di Direttore Tecnico ai vari livelli (Regionale, Nazionale...) con funzionalità aggiuntive di analisi di svariati atleti.
+
+### 🌐 Fase Z.1: UI
+
+- [ ] **Miglioramento generale:** Tema e colori ben definiti, Tipografia, Libreria Componenti.
+- [ ] **Filtri:** Possibilità di cambiare modalità di visualizzazione per le varie programmazioni.
+- [ ] **Dashboard:** Inserimento di Dashboard per tecnici e atleti, che aiutino al massimo a visualizzare l'andamento.
+
+### ⚡ Fase Z.2: Ottimizzazioni varie
+
+- [ ] **Speed Insights:** Inserimento di analisi per ottimizzare la velocità dell'app.
+- [ ] **RLS:** Inserimento di un maggior livello di sicurezza, lato database.
+- [ ] **Sviluppo Mobile:** Costruzione di una versione mobile on-device dell'app.
 
 ---
 
@@ -88,4 +96,3 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 - main: production
 - development: preview
-  - [x] allenamenti: feature (interfaccia per inserimento carico)
