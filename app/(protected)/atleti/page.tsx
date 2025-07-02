@@ -9,10 +9,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { getAthletesForCoach, getSocieties } from "@/lib/actions/athletes";
+import {
+  getAthletesForCoach,
+  getInactiveAthletesForCoach,
+  getSocieties,
+} from "@/lib/actions/athletes";
 import { getServerClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
 import { getUserRole } from "@/lib/role";
+import InactiveAthletesList from "@/components/inactive-athletes-list";
 
 export default async function AtletiPage() {
   const supabase = await getServerClient();
@@ -43,22 +48,37 @@ export default async function AtletiPage() {
 
   const athletes = await getAthletesForCoach(coach.id);
   const societies = await getSocieties();
+  const inactiveAthletes = await getInactiveAthletesForCoach(coach.id);
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Gestione Atleti</h1>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>Aggiungi Atleta</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Aggiungi un nuovo atleta</DialogTitle>
-            </DialogHeader>
-            <AddAthleteForm societies={societies} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="secondary">Atleti Disattivati</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Atleti Disattivati</DialogTitle>
+              </DialogHeader>
+              <InactiveAthletesList athletes={inactiveAthletes} />
+            </DialogContent>
+          </Dialog>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>Aggiungi Atleta</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Aggiungi un nuovo atleta</DialogTitle>
+              </DialogHeader>
+              <AddAthleteForm societies={societies} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {athletes.map((athlete) => (

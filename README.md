@@ -78,10 +78,6 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 ### Back-end
 
-#### Fetching
-
-- [ ] Adesso la gestione dei ruoli non è robusta. Si può modificare creando un prop specifico "role" in futuro.
-
 #### URLs
 
 - [ ] Dopo la corretta conferma dell'email, il redirect va cambiato dalla Dashboard Supabase.
@@ -89,7 +85,7 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 #### Database Schema
 
 - [x] Modificare relazione Atleti-Allenamenti. Dovrebbe essere Molti-a-Molti.
-- [ ] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
+- [x] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
 - [ ] RLS non attiva.
 
 ## Gestione dei Branch

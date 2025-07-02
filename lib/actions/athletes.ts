@@ -16,6 +16,7 @@ export type Athlete = {
   created_at: string;
   updated_at: string;
   supabase_id: string | null;
+  is_active?: boolean;
 };
 
 export type CreateAthleteState = {
@@ -31,10 +32,27 @@ export async function getAthletesForCoach(coachId: string) {
   const { data, error } = await supabase
     .from("athletes")
     .select("*")
-    .eq("current_coach_id", coachId);
+    .eq("current_coach_id", coachId)
+    .eq("is_active", true);
 
   if (error) {
     console.error("Error fetching athletes:", error);
+    return [];
+  }
+
+  return data;
+}
+
+export async function getInactiveAthletesForCoach(coachId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("athletes")
+    .select("*")
+    .eq("current_coach_id", coachId)
+    .eq("is_active", false);
+
+  if (error) {
+    console.error("Error fetching inactive athletes:", error);
     return [];
   }
 
@@ -192,13 +210,35 @@ export async function createAthlete(
 export async function deleteAthlete(athleteId: string) {
   const supabase = await createClient();
 
+  // Soft delete: set is_active = false
   const { error } = await supabase
     .from("athletes")
-    .delete()
+    .update({ is_active: false })
     .eq("id", athleteId);
 
   if (error) {
-    console.error("Error deleting athlete:", error);
+    console.error("Error deactivating athlete:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath("/atleti");
+  return { success: true };
+}
+
+// Change athlete's current coach
+export async function changeAthleteCoach(
+  athleteId: string,
+  newCoachId: string,
+) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("athletes")
+    .update({ current_coach_id: newCoachId })
+    .eq("id", athleteId);
+
+  if (error) {
+    console.error("Error updating athlete coach:", error);
     return { error: error.message };
   }
 
@@ -219,4 +259,21 @@ export async function getCompetitions() {
   }
 
   return data;
+}
+
+export async function reactivateAthlete(athleteId: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("athletes")
+    .update({ is_active: true })
+    .eq("id", athleteId);
+
+  if (error) {
+    console.error("Error reactivating athlete:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath("/atleti");
+  return { success: true };
 }
