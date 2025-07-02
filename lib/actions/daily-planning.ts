@@ -213,7 +213,7 @@ export async function saveDailyRoutine(formData: unknown) {
     const { error: rpcError } = await supabase.rpc("save_daily_routines", {
       p_session_id: session_id,
       p_athlete_id: athlete_id,
-      p_routines: JSON.stringify(routines),
+      p_routines: routines,
     });
 
     if (rpcError) {
