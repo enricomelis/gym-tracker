@@ -83,9 +83,10 @@ export default function DailyRoutineForm({
     control,
     handleSubmit,
     reset,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       session_id: "",
       routines: [],
@@ -238,6 +239,11 @@ export default function DailyRoutineForm({
                   placeholder="N. Salite"
                   type="number"
                   onFocus={handleFocus}
+                  className={
+                    errors.routines?.[index]?.target_sets
+                      ? "border-red-500 focus-visible:ring-red-500"
+                      : undefined
+                  }
                 />
                 <Controller
                   name={`routines.${index}.target_execution`}
@@ -260,6 +266,11 @@ export default function DailyRoutineForm({
                     </Select>
                   )}
                 />
+                {errors.routines?.[index]?.target_sets && (
+                  <div className="col-span-full text-xs text-red-600">
+                    {errors.routines[index]?.target_sets?.message}
+                  </div>
+                )}
                 <Button
                   type="button"
                   variant="ghost"
