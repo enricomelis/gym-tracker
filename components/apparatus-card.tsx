@@ -65,8 +65,12 @@ export default function ApparatusCard({
   const [editingSet, setEditingSet] = useState<TrainingSet | null>(null);
 
   // Editable session values
-  const [baseVolume, setBaseVolume] = useState(session?.base_volume ?? 0);
-  const [totalTime, setTotalTime] = useState(session?.total_time ?? 1);
+  const [baseVolume, setBaseVolume] = useState<string>(
+    session ? String(session.base_volume ?? "") : "",
+  );
+  const [totalTime, setTotalTime] = useState<string>(
+    session ? String(session.total_time ?? "") : "",
+  );
   const [isSavingSession, setIsSavingSession] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
@@ -87,14 +91,33 @@ export default function ApparatusCard({
     fetchGoal();
   }, [athleteId, apparatus, weekNumber, year]);
 
+  // Exit edit mode on Escape key and revert unsaved changes
+  useEffect(() => {
+    if (!editMode) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        // Revert to original session values
+        setBaseVolume(session ? String(session.base_volume ?? "") : "");
+        setTotalTime(session ? String(session.total_time ?? "") : "");
+        setEditMode(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [editMode, session]);
+
   // In editMode calcola la densità live come (baseVolume + somma volume salite) / totalTime, altrimenti mostra quella da db
   const totalSetVolume = sets.reduce(
     (sum, s) => sum + (Number(s.volume_done) || 0),
     0,
   );
+  const baseVolumeNum = Number(baseVolume) || 0;
+  const totalTimeNum = Number(totalTime) || 0;
   const density = editMode
-    ? totalTime > 0
-      ? (baseVolume + totalSetVolume) / totalTime
+    ? totalTimeNum > 0
+      ? (baseVolumeNum + totalSetVolume) / totalTimeNum
       : 0
     : (session?.density ?? 0);
 
@@ -108,8 +131,14 @@ export default function ApparatusCard({
       const res = await initApparatusSession(formData);
       if (res && res.session) {
         setSession(res.session);
-        setBaseVolume(res.session.base_volume ?? 0);
-        setTotalTime(res.session.total_time ?? 1);
+        setBaseVolume(
+          res.session.base_volume !== null
+            ? String(res.session.base_volume)
+            : "",
+        );
+        setTotalTime(
+          res.session.total_time !== null ? String(res.session.total_time) : "",
+        );
         setSets([]);
       } else if (res && res.error) {
         setError(res.error);
@@ -129,19 +158,21 @@ export default function ApparatusCard({
       (sum, s) => sum + (Number(s.volume_done) || 0),
       0,
     );
-    const total_volume = newBaseVolume + totalSetVolume;
+    const newBaseVolumeNum = Number(newBaseVolume) || 0;
+    const newTotalTimeNum = Number(newTotalTime) || 0;
+    const total_volume = newBaseVolumeNum + totalSetVolume;
     const intensities = newSets.map((s) => Number(s.intensity) || 0);
     const average_intensity =
       intensities.length > 0
         ? intensities.reduce((a, b) => a + b, 0) / intensities.length
         : 0;
     const max_intensity = intensities.length > 0 ? Math.max(...intensities) : 0;
-    const density = newTotalTime > 0 ? total_volume / newTotalTime : 0;
+    const density = newTotalTimeNum > 0 ? total_volume / newTotalTimeNum : 0;
     if (!session) return;
     const res = await updateApparatusSession({
       id: session.id,
-      base_volume: newBaseVolume,
-      total_time: newTotalTime,
+      base_volume: newBaseVolumeNum,
+      total_time: newTotalTimeNum,
       density,
       intensity_sets_count,
       total_volume,
@@ -155,8 +186,8 @@ export default function ApparatusCard({
     if (!session) return;
     // Se non ci sono cambiamenti, non inviare update
     if (
-      baseVolume === session.base_volume &&
-      totalTime === session.total_time
+      Number(baseVolume) === session.base_volume &&
+      Number(totalTime) === session.total_time
     ) {
       setEditMode(false);
       return;
@@ -291,7 +322,7 @@ export default function ApparatusCard({
                       className="w-24 border-b-2 border-primary text-lg focus:border-primary focus:outline-none"
                       value={baseVolume}
                       min={0}
-                      onChange={(e) => setBaseVolume(Number(e.target.value))}
+                      onChange={(e) => setBaseVolume(e.target.value)}
                       disabled={isSavingSession}
                       onFocus={handleFocus}
                     />
@@ -300,7 +331,7 @@ export default function ApparatusCard({
                       className="select-text text-base"
                       onFocus={handleFocus}
                     >
-                      {baseVolume}
+                      {baseVolume === "" ? "-" : baseVolume}
                       {" UdE"}
                     </span>
                   )}
@@ -313,7 +344,7 @@ export default function ApparatusCard({
                       className="w-24 border-b-2 border-primary text-lg focus:border-primary focus:outline-none"
                       value={totalTime}
                       min={1}
-                      onChange={(e) => setTotalTime(Number(e.target.value))}
+                      onChange={(e) => setTotalTime(e.target.value)}
                       disabled={isSavingSession}
                       onFocus={handleFocus}
                     />
@@ -322,7 +353,7 @@ export default function ApparatusCard({
                       className="select-text text-base"
                       onFocus={handleFocus}
                     >
-                      {totalTime}
+                      {totalTime === "" ? "-" : totalTime}
                       {" min"}
                     </span>
                   )}

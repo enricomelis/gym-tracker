@@ -59,6 +59,14 @@ const microcycleOptions: Array<WeeklyGoal["micro"]> = [
   "Competition Week",
 ];
 
+// Extend WeeklyGoal to allow empty-string placeholders for numeric fields during editing
+type EditableWeeklyGoal = Omit<WeeklyGoal, "id" | "athlete_id"> & {
+  exercise_volume: number | "";
+  dismount_volume: number | "";
+  base_volume?: number | "" | null;
+  target_penalty: number | "";
+};
+
 export default function WeeklyGoalForm({
   athleteId,
   year,
@@ -76,9 +84,7 @@ export default function WeeklyGoalForm({
 }) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [weeklyGoals, setWeeklyGoals] = useState<
-    Omit<WeeklyGoal, "id" | "athlete_id">[]
-  >([]);
+  const [weeklyGoals, setWeeklyGoals] = useState<EditableWeeklyGoal[]>([]);
 
   useEffect(() => {
     const goalsMap = new Map(initialGoals.map((g) => [g.apparatus, g]));
@@ -90,7 +96,7 @@ export default function WeeklyGoalForm({
 
     const newGoals = apparatusList.map((apparatus) => {
       const existingGoal = goalsMap.get(apparatus);
-      return {
+      const obj: EditableWeeklyGoal = {
         week_number: weekNumber,
         year: year,
         apparatus: apparatus,
@@ -103,6 +109,7 @@ export default function WeeklyGoalForm({
         target_penalty: existingGoal?.target_penalty ?? 0,
         base_volume: existingGoal?.base_volume ?? null,
       };
+      return obj;
     });
     setWeeklyGoals(newGoals);
   }, [initialGoals, weekNumber, year]);
@@ -285,15 +292,20 @@ export default function WeeklyGoalForm({
               </label>
               <Input
                 type="number"
-                value={goal.exercise_volume}
+                value={
+                  typeof goal.exercise_volume === "string"
+                    ? ""
+                    : goal.exercise_volume
+                }
                 onFocus={handleFocus}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const val = e.target.value;
                   handleApparatusGoalChange(
                     goal.apparatus,
                     "exercise_volume",
-                    parseInt(e.target.value) || 0,
-                  )
-                }
+                    val === "" ? "" : parseInt(val) || 0,
+                  );
+                }}
               />
             </div>
             <div>
@@ -304,15 +316,19 @@ export default function WeeklyGoalForm({
                 type="number"
                 value={
                   goal.apparatus === "VT"
-                    ? (goal.base_volume ?? 0)
-                    : goal.dismount_volume
+                    ? typeof goal.base_volume === "string"
+                      ? ""
+                      : (goal.base_volume ?? 0)
+                    : typeof goal.dismount_volume === "string"
+                      ? ""
+                      : goal.dismount_volume
                 }
                 onFocus={handleFocus}
                 onChange={(e) =>
                   handleApparatusGoalChange(
                     goal.apparatus,
                     goal.apparatus === "VT" ? "base_volume" : "dismount_volume",
-                    parseInt(e.target.value) || 0,
+                    e.target.value === "" ? "" : parseInt(e.target.value) || 0,
                   )
                 }
               />
@@ -324,13 +340,19 @@ export default function WeeklyGoalForm({
               <Input
                 type="number"
                 step="0.1"
-                value={goal.target_penalty}
+                value={
+                  typeof goal.target_penalty === "string"
+                    ? ""
+                    : goal.target_penalty
+                }
                 onFocus={handleFocus}
                 onChange={(e) =>
                   handleApparatusGoalChange(
                     goal.apparatus,
                     "target_penalty",
-                    parseFloat(e.target.value) || 0,
+                    e.target.value === ""
+                      ? ""
+                      : parseFloat(e.target.value) || 0,
                   )
                 }
               />
@@ -357,28 +379,39 @@ export default function WeeklyGoalForm({
                 <TableCell>
                   <Input
                     type="number"
-                    value={goal.exercise_volume}
+                    value={
+                      typeof goal.exercise_volume === "string"
+                        ? ""
+                        : goal.exercise_volume
+                    }
                     onFocus={handleFocus}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const val = e.target.value;
                       handleApparatusGoalChange(
                         goal.apparatus,
                         "exercise_volume",
-                        parseInt(e.target.value) || 0,
-                      )
-                    }
+                        val === "" ? "" : parseInt(val) || 0,
+                      );
+                    }}
                   />
                 </TableCell>
                 <TableCell>
                   {goal.apparatus === "VT" ? (
                     <Input
                       type="number"
-                      value={goal.base_volume ?? 0}
+                      value={
+                        typeof goal.base_volume === "string"
+                          ? ""
+                          : (goal.base_volume ?? 0)
+                      }
                       onFocus={handleFocus}
                       onChange={(e) =>
                         handleApparatusGoalChange(
                           goal.apparatus,
                           "base_volume",
-                          parseInt(e.target.value) || 0,
+                          e.target.value === ""
+                            ? ""
+                            : parseInt(e.target.value) || 0,
                         )
                       }
                       placeholder="Vol. Basi"
@@ -386,13 +419,19 @@ export default function WeeklyGoalForm({
                   ) : (
                     <Input
                       type="number"
-                      value={goal.dismount_volume}
+                      value={
+                        typeof goal.dismount_volume === "string"
+                          ? ""
+                          : goal.dismount_volume
+                      }
                       onFocus={handleFocus}
                       onChange={(e) =>
                         handleApparatusGoalChange(
                           goal.apparatus,
                           "dismount_volume",
-                          parseInt(e.target.value) || 0,
+                          e.target.value === ""
+                            ? ""
+                            : parseInt(e.target.value) || 0,
                         )
                       }
                       placeholder="Vol. Uscite"
@@ -403,13 +442,19 @@ export default function WeeklyGoalForm({
                   <Input
                     type="number"
                     step="0.1"
-                    value={goal.target_penalty}
+                    value={
+                      typeof goal.target_penalty === "string"
+                        ? ""
+                        : goal.target_penalty
+                    }
                     onFocus={handleFocus}
                     onChange={(e) =>
                       handleApparatusGoalChange(
                         goal.apparatus,
                         "target_penalty",
-                        parseFloat(e.target.value) || 0,
+                        e.target.value === ""
+                          ? ""
+                          : parseFloat(e.target.value) || 0,
                       )
                     }
                   />
