@@ -90,5 +90,10 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 ## Gestione dei Branch
 
-- main: production
-- development: preview
+La gestione dei branch è purtroppo un miscuglio non ben definito di CI/CD e di GitFlow, dato che non ho mai avuto esperienze lavorative con nessuno dei due (sto semplicemente prendendo ciò che mi sembra meglio da entrambi).
+
+- il branch `main` è quello di production, l'ultima versione stabile dell'app.
+- il branch `development` è quello di riferimento per lo sviluppo di nuove funzionalità e di testing.
+- tutti i branch che iniziano con un numero sono creati per la risoluzione delle GitHub Issue associata, possono derivare sia da `main` che da `development`.
+- tutti i branch che iniziano con _feat/_ sono dedicati a una singola funzionalità, difficilmente deriveranno da `main` ma non lo escludo a priori.
+- tutti i branch che iniziano con _hotfix/_ sono dedicati a fix di bug da risolvere velocemente, quasi sempre deriveranno da `main`.
