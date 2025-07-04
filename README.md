@@ -86,8 +86,8 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 - [x] Modificare relazione Atleti-Allenamenti. Dovrebbe essere Molti-a-Molti.
 - [x] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
-- [ ] RLS non attiva.
-- [ ] Abilitare gli Speed Insights di Vercel
+- [x] RLS non attiva.
+- [x] Abilitare gli Speed Insights di Vercel
 
 ## Gestione dei Branch
 
