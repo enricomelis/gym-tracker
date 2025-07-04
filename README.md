@@ -55,8 +55,8 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 
 ### ⚡ Fase Z.2: Ottimizzazioni varie
 
-- [ ] **Speed Insights:** Inserimento di analisi per ottimizzare la velocità dell'app.
-- [ ] **RLS:** Inserimento di un maggior livello di sicurezza, lato database.
+- [x] **Speed Insights:** Inserimento di analisi per ottimizzare la velocità dell'app.
+- [x] **RLS:** Inserimento di un maggior livello di sicurezza, lato database.
 - [ ] **Sviluppo Mobile:** Costruzione di una versione mobile on-device dell'app.
 
 ---
@@ -69,7 +69,7 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 #### app
 
-- [ ] Fare in modo che il login venga salvato.
+- [x] Fare in modo che il login venga salvato.
 
 #### app/settimanale - Mobile
 
@@ -80,13 +80,14 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 #### URLs
 
-- [ ] Dopo la corretta conferma dell'email, il redirect va cambiato dalla Dashboard Supabase.
+- [x] Dopo la corretta conferma dell'email, il redirect va cambiato dalla Dashboard Supabase.
 
 #### Database Schema
 
 - [x] Modificare relazione Atleti-Allenamenti. Dovrebbe essere Molti-a-Molti.
 - [x] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
-- [ ] RLS non attiva.
+- [x] RLS non attiva.
+- [x] Abilitare gli Speed Insights di Vercel
 
 ## Gestione dei Branch
 
@@ -97,3 +98,13 @@ La gestione dei branch è purtroppo un miscuglio non ben definito di CI/CD e di 
 - tutti i branch che iniziano con un numero sono creati per la risoluzione delle GitHub Issue associata, possono derivare sia da `main` che da `development`.
 - tutti i branch che iniziano con _feat/_ sono dedicati a una singola funzionalità, difficilmente deriveranno da `main` ma non lo escludo a priori.
 - tutti i branch che iniziano con _hotfix/_ sono dedicati a fix di bug da risolvere velocemente, quasi sempre deriveranno da `main`.
+
+### Dev Workflow
+
+- `git branch <branch_name>` per creare un nuovo branch secondo le convenzioni di sopra
+- `git checkout <branch_name>` per cambiare e andare sul nuovo branch
+- `git push origin <branch_name>` per pubblicare per la prima volta il branch su GitHub
+- `git add .` per aggiungere tutti i cambiamenti
+- `npm run build` per verificare che la build non crei problemi
+- `git commit -m "<messaggio>"` per fare la commit locale
+- `git push origin <branch_name>` per pushare i cambiamenti sul proprio branch
