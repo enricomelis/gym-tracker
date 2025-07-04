@@ -25,7 +25,7 @@ export default function Home() {
               Benvenuto in Gym Tracker
             </h1>
             <p className="text-muted-foreground">
-              Gym Tracker è un'applicazione per programmare, tracciare e
+              Gym Tracker è un&apos;applicazione per programmare, tracciare e
               analizzare gli allenamenti di ginnastica artistica.
             </p>
 
