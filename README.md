@@ -55,8 +55,8 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 
 ### ⚡ Fase Z.2: Ottimizzazioni varie
 
-- [ ] **Speed Insights:** Inserimento di analisi per ottimizzare la velocità dell'app.
-- [ ] **RLS:** Inserimento di un maggior livello di sicurezza, lato database.
+- [x] **Speed Insights:** Inserimento di analisi per ottimizzare la velocità dell'app.
+- [x] **RLS:** Inserimento di un maggior livello di sicurezza, lato database.
 - [ ] **Sviluppo Mobile:** Costruzione di una versione mobile on-device dell'app.
 
 ---
