@@ -97,3 +97,13 @@ La gestione dei branch è purtroppo un miscuglio non ben definito di CI/CD e di 
 - tutti i branch che iniziano con un numero sono creati per la risoluzione delle GitHub Issue associata, possono derivare sia da `main` che da `development`.
 - tutti i branch che iniziano con _feat/_ sono dedicati a una singola funzionalità, difficilmente deriveranno da `main` ma non lo escludo a priori.
 - tutti i branch che iniziano con _hotfix/_ sono dedicati a fix di bug da risolvere velocemente, quasi sempre deriveranno da `main`.
+
+### Dev Workflow
+
+- `git branch <branch_name>` per creare un nuovo branch secondo le convenzioni di sopra
+- `git checkout <branch_name>` per cambiare e andare sul nuovo branch
+- pubblicare il branch su GitHub (non so come si fa da CLI)
+- `git add .` per aggiungere tutti i cambiamenti
+- `npm run build` per verificare che la build non crei problemi
+- `git commit -m "<messaggio>"` per fare la commit locale
+- `git push origin <branch_name>` per pushare i cambiamenti sul proprio branch
