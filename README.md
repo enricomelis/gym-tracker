@@ -69,7 +69,7 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 #### app
 
-- [ ] Fare in modo che il login venga salvato.
+- [x] Fare in modo che il login venga salvato.
 
 #### app/settimanale - Mobile
 
@@ -80,13 +80,14 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 #### URLs
 
-- [ ] Dopo la corretta conferma dell'email, il redirect va cambiato dalla Dashboard Supabase.
+- [x] Dopo la corretta conferma dell'email, il redirect va cambiato dalla Dashboard Supabase.
 
 #### Database Schema
 
 - [x] Modificare relazione Atleti-Allenamenti. Dovrebbe essere Molti-a-Molti.
 - [x] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
-- [ ] RLS non attiva.
+- [x] RLS non attiva.
+- [x] Abilitare gli Speed Insights di Vercel
 
 ## Gestione dei Branch
 
@@ -102,7 +103,7 @@ La gestione dei branch è purtroppo un miscuglio non ben definito di CI/CD e di 
 
 - `git branch <branch_name>` per creare un nuovo branch secondo le convenzioni di sopra
 - `git checkout <branch_name>` per cambiare e andare sul nuovo branch
-- pubblicare il branch su GitHub (non so come si fa da CLI)
+- `git push origin <branch_name>` per pubblicare per la prima volta il branch su GitHub
 - `git add .` per aggiungere tutti i cambiamenti
 - `npm run build` per verificare che la build non crei problemi
 - `git commit -m "<messaggio>"` per fare la commit locale
