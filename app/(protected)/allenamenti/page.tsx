@@ -10,6 +10,7 @@ import type {
   ApparatusSession,
   TrainingSet,
 } from "@/components/apparatus-card";
+import { Athlete } from "@/lib/actions/athletes";
 
 const APPARATUS = ["FX", "PH", "SR", "VT", "PB", "HB"];
 
@@ -44,32 +45,48 @@ async function fetchUserAndAthletes() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { user: null };
-  // Try as coach
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", user.id)
-    .single();
-  if (coach && !coachError) {
-    const { data: athletesData } = await supabase
-      .from("athletes")
-      .select("id, first_name, last_name")
-      .eq("current_coach_id", coach.id);
+
+  // Try as coach using RPC
+  const { data: coachId } = await supabase.rpc("get_coach_id_rpc", {
+    user_id: user.id,
+  });
+
+  if (coachId) {
+    const { data: athletesData } = await supabase.rpc(
+      "get_coach_athletes_rpc",
+      {
+        user_id: user.id,
+        include_inactive: false,
+      },
+    );
     return {
       user,
-      athletes: athletesData || [],
-      coach,
+      athletes:
+        athletesData?.map((a: Athlete) => ({
+          id: a.id,
+          first_name: a.first_name,
+          last_name: a.last_name,
+        })) || [],
+      coach: { id: coachId },
     };
   } else {
-    // Try as athlete
-    const { data: athleteData } = await supabase
-      .from("athletes")
-      .select("id, first_name, last_name")
-      .eq("supabase_id", user.id)
-      .single();
+    // Try as athlete using RPC
+    const { data: athleteProfile } = await supabase.rpc(
+      "get_athlete_profile_rpc",
+      {
+        user_id: user.id,
+      },
+    );
+    const athlete = athleteProfile?.[0];
     return {
       user,
-      athlete: athleteData || null,
+      athlete: athlete
+        ? {
+            id: athlete.id,
+            first_name: athlete.first_name,
+            last_name: athlete.last_name,
+          }
+        : null,
       athletes: [],
     };
   }

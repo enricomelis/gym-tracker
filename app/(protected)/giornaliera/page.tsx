@@ -16,23 +16,12 @@ export default async function GiornalieraPage() {
   const role = await getUserRole(supabase, user.id);
 
   if (role === "coach") {
-    const { data: coach, error: coachError } = await supabase
-      .from("coaches")
-      .select("id")
-      .eq("supabase_id", user.id)
-      .single();
+    const { data: athletes, error: athletesError } = await supabase.rpc(
+      "get_coach_athletes_rpc",
+      { user_id: user.id, include_inactive: false },
+    );
 
-    if (coachError || !coach) {
-      return <div>Errore nel caricamento degli atleti.</div>;
-    }
-
-    const { data: athletes, error: athletesError } = await supabase
-      .from("athletes")
-      .select(
-        "id, first_name, last_name, date_of_birth, registration_number, category, current_coach_id, registered_society_id, created_at, updated_at, supabase_id",
-      )
-      .eq("current_coach_id", coach.id);
-    if (athletesError) {
+    if (athletesError || !athletes) {
       return <div>Errore nel caricamento degli atleti.</div>;
     }
     return (
@@ -54,14 +43,12 @@ export default async function GiornalieraPage() {
   }
 
   if (role === "athlete") {
-    const { data: athlete, error: athleteError } = await supabase
-      .from("athletes")
-      .select(
-        "id, first_name, last_name, date_of_birth, registration_number, category, current_coach_id, registered_society_id, created_at, updated_at, supabase_id",
-      )
-      .eq("supabase_id", user.id)
-      .single();
+    const { data: athleteProfile, error: athleteError } = await supabase.rpc(
+      "get_athlete_profile_rpc",
+      { user_id: user.id }
+    );
 
+    const athlete = athleteProfile?.[0];
     if (!athlete || athleteError) {
       return <div>Errore nel caricamento atleta.</div>;
     }

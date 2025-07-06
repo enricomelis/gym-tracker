@@ -9,11 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  getAthletesForCoach,
-  getInactiveAthletesForCoach,
-  getSocieties,
-} from "@/lib/actions/athletes";
+import { Athlete, getSocieties } from "@/lib/actions/athletes";
 import { getServerClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
 import { getUserRole } from "@/lib/role";
@@ -35,20 +31,32 @@ export default async function AtletiPage() {
     return <p>Solo i tecnici possono gestire la pagina atleti.</p>;
   }
 
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", user.id)
-    .single();
+  const { data: coachId, error: coachError } = await supabase.rpc(
+    "get_coach_id_rpc",
+    { user_id: user.id },
+  );
 
-  if (coachError || !coach) {
+  if (coachError || !coachId) {
     console.error("Error fetching coach:", coachError);
     return <p>Coach non trovato.</p>;
   }
 
-  const athletes = await getAthletesForCoach(coach.id);
+  const { data: athletes, error: athletesError } = await supabase.rpc(
+    "get_coach_athletes_rpc",
+    { user_id: user.id, include_inactive: false },
+  );
+
+  if (athletesError || !athletes) {
+    return <div>Errore nel caricamento degli atleti.</div>;
+  }
+  const { data: inactiveAthletes } = await supabase.rpc(
+    "get_coach_athletes_rpc",
+    { user_id: user.id, include_inactive: true },
+  );
+
   const societies = await getSocieties();
-  const inactiveAthletes = await getInactiveAthletesForCoach(coach.id);
+  const filteredInactiveAthletes =
+    inactiveAthletes?.filter((athlete: Athlete) => !athlete.is_active) || [];
 
   return (
     <div>
@@ -63,7 +71,7 @@ export default async function AtletiPage() {
               <DialogHeader>
                 <DialogTitle>Atleti Disattivati</DialogTitle>
               </DialogHeader>
-              <InactiveAthletesList athletes={inactiveAthletes} />
+              <InactiveAthletesList athletes={filteredInactiveAthletes} />
             </DialogContent>
           </Dialog>
 
@@ -81,7 +89,7 @@ export default async function AtletiPage() {
         </div>
       </div>
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {athletes.map((athlete) => (
+        {athletes.map((athlete: Athlete) => (
           <Dialog key={athlete.id}>
             <DialogTrigger asChild>
               <Card className="cursor-pointer hover:bg-muted/50">

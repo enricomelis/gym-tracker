@@ -1,5 +1,5 @@
 import { getServerClient } from "@/lib/supabase/server";
-import { getAthletesForCoach, getCompetitions } from "@/lib/actions/athletes";
+import { getCompetitions } from "@/lib/actions/athletes";
 import WeeklyPlanner from "./weekly-planner";
 import { getUserRole } from "@/lib/role";
 
@@ -17,22 +17,19 @@ export default async function SettimanalePage() {
   const role = await getUserRole(supabase, user.id);
 
   if (role === "coach") {
-    // Fetch coach id
-    const { data: coach, error: coachError } = await supabase
-      .from("coaches")
-      .select("id")
-      .eq("supabase_id", user.id)
-      .single();
-
-    if (coachError || !coach) {
-      return <div>Errore nel caricamento del profilo tecnico.</div>;
-    }
-
-    // Coach: mostra tutti i suoi atleti
-    const [athletes, competitions] = await Promise.all([
-      getAthletesForCoach(coach.id),
+    // Coach: mostra tutti i suoi atleti usando RPC
+    const [athletesRes, competitions] = await Promise.all([
+      supabase.rpc("get_coach_athletes_rpc", {
+        user_id: user.id,
+        include_inactive: false,
+      }),
       getCompetitions(),
     ]);
+
+    const athletes = athletesRes.data;
+    if (athletesRes.error || !athletes) {
+      return <div>Errore nel caricamento del profilo tecnico.</div>;
+    }
     return (
       <div className="p-4 md:p-6">
         <h1 className="mb-4 text-2xl font-bold">Programmazione Settimanale</h1>
@@ -53,17 +50,11 @@ export default async function SettimanalePage() {
 
   if (role === "athlete") {
     const [athleteRes, competitions] = await Promise.all([
-      supabase
-        .from("athletes")
-        .select(
-          "id, current_coach_id, first_name, last_name, date_of_birth, registration_number, category, registered_society_id, created_at, updated_at, supabase_id",
-        )
-        .eq("supabase_id", user.id)
-        .single(),
+      supabase.rpc("get_athlete_profile_rpc", { user_id: user.id }),
       getCompetitions(),
     ]);
 
-    const athlete = athleteRes.data;
+    const athlete = athleteRes.data?.[0];
     const athleteError = athleteRes.error;
 
     if (!athlete || athleteError) {
