@@ -25,12 +25,13 @@ export async function getWeeklyGoals(
   year: number,
 ) {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("apparatus_weekly_goals")
-    .select("*")
-    .eq("athlete_id", athleteId)
-    .eq("week_number", weekNumber)
-    .eq("year", year);
+  
+  // Use RPC function to get weekly goals with proper RLS handling
+  const { data, error } = await supabase.rpc("get_weekly_goals_rpc", {
+    p_athlete_id: athleteId,
+    p_week_number: weekNumber,
+    p_year: year,
+  });
 
   if (error) {
     console.error("Error fetching weekly goals:", error);

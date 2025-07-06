@@ -55,8 +55,8 @@ async function fetchUserAndAthletes() {
     const { data: athletesData } = await supabase.rpc(
       "get_coach_athletes_rpc",
       {
-        user_id: user.id,
-        include_inactive: false,
+        p_coach_id: coachId as string,
+        p_active_only: true,
       },
     );
     return {

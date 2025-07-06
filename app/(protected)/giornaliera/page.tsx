@@ -16,9 +16,18 @@ export default async function GiornalieraPage() {
   const role = await getUserRole(supabase, user.id);
 
   if (role === "coach") {
+    const { data: coachId, error: coachError } = await supabase.rpc(
+      "get_coach_id_rpc",
+      { user_id: user.id },
+    );
+
+    if (coachError || !coachId) {
+      return <div>Errore nel caricamento del profilo tecnico.</div>;
+    }
+
     const { data: athletes, error: athletesError } = await supabase.rpc(
       "get_coach_athletes_rpc",
-      { user_id: user.id, include_inactive: false },
+      { p_coach_id: coachId as string, p_active_only: true },
     );
 
     if (athletesError || !athletes) {
@@ -45,7 +54,7 @@ export default async function GiornalieraPage() {
   if (role === "athlete") {
     const { data: athleteProfile, error: athleteError } = await supabase.rpc(
       "get_athlete_profile_rpc",
-      { user_id: user.id }
+      { user_id: user.id },
     );
 
     const athlete = athleteProfile?.[0];

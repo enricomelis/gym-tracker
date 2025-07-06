@@ -17,11 +17,20 @@ export default async function SettimanalePage() {
   const role = await getUserRole(supabase, user.id);
 
   if (role === "coach") {
-    // Coach: mostra tutti i suoi atleti usando RPC
+    // Coach: mostra tutti i suoi atleti usando RPC aggiornata
+    const { data: coachId, error: coachError } = await supabase.rpc(
+      "get_coach_id_rpc",
+      { user_id: user.id },
+    );
+
+    if (coachError || !coachId) {
+      return <div>Errore nel caricamento del profilo tecnico.</div>;
+    }
+
     const [athletesRes, competitions] = await Promise.all([
       supabase.rpc("get_coach_athletes_rpc", {
-        user_id: user.id,
-        include_inactive: false,
+        p_coach_id: coachId as string,
+        p_active_only: true,
       }),
       getCompetitions(),
     ]);

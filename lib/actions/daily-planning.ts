@@ -67,39 +67,33 @@ export async function getDailyTrainings(
   const startDateStr = startDate.toISOString().slice(0, 10);
   const endDateStr = endDate.toISOString().slice(0, 10);
 
-  const { data: joins, error: sessionsError } = await supabase
-    .from("athlete_training_sessions")
-    .select(
-      `
-      training_sessions (
-        id,
-        date,
-        session_number,
-        daily_routines (*)
-      )
-    `,
-    )
-    .eq("athlete_id", athleteId)
-    .gte("training_sessions.date", startDateStr)
-    .lte("training_sessions.date", endDateStr);
+  // Use RPC function to get training sessions with proper RLS handling
+  const { data: sessions, error: sessionsError } = await supabase.rpc(
+    "get_training_sessions_rpc",
+    {
+      p_athlete_id: athleteId,
+      p_start_date: startDateStr,
+      p_end_date: endDateStr,
+    },
+  );
 
   if (sessionsError) {
     console.error("Error fetching training sessions:", sessionsError);
     return [];
   }
 
-  // Definisco il tipo per la join
-  type JoinResult = { training_sessions: TrainingSession[] };
-  const sessions = ((joins as JoinResult[]) ?? []).flatMap(
-    (join) => join.training_sessions ?? [],
-  );
+  // Sessions are already properly formatted from the RPC function
+  const sessionsList = sessions ?? [];
 
   // Fetch all weekly goals for the given year and athlete to calculate volume
-  const { data: weeklyGoals, error: weeklyGoalsError } = await supabase
-    .from("apparatus_weekly_goals")
-    .select("week_number, apparatus, exercise_volume, dismount_volume")
-    .eq("athlete_id", athleteId)
-    .eq("year", year);
+  // Use RPC function to get weekly goals with proper RLS handling
+  const { data: weeklyGoals, error: weeklyGoalsError } = await supabase.rpc(
+    "get_weekly_goals_rpc",
+    {
+      p_athlete_id: athleteId,
+      p_year: year,
+    },
+  );
 
   if (weeklyGoalsError) {
     console.error("Error fetching weekly goals:", weeklyGoalsError);
@@ -118,8 +112,8 @@ export async function getDailyTrainings(
     });
   }
 
-  const trainingSessions: EnrichedTrainingSession[] = sessions.map(
-    (session) => {
+  const trainingSessions: EnrichedTrainingSession[] = sessionsList.map(
+    (session: TrainingSession) => {
       const weekNumber = getWeek(new Date(session.date), { weekStartsOn: 1 });
 
       let totalVolume = 0;

@@ -43,7 +43,7 @@ export default async function AtletiPage() {
 
   const { data: athletes, error: athletesError } = await supabase.rpc(
     "get_coach_athletes_rpc",
-    { user_id: user.id, include_inactive: false },
+    { p_coach_id: coachId as string, p_active_only: true },
   );
 
   if (athletesError || !athletes) {
@@ -51,7 +51,7 @@ export default async function AtletiPage() {
   }
   const { data: inactiveAthletes } = await supabase.rpc(
     "get_coach_athletes_rpc",
-    { user_id: user.id, include_inactive: true },
+    { p_coach_id: coachId as string, p_active_only: false },
   );
 
   const societies = await getSocieties();

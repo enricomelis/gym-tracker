@@ -29,11 +29,12 @@ export type CreateAthleteState = {
 
 export async function getAthletesForCoach(coachId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("athletes")
-    .select("*")
-    .eq("current_coach_id", coachId)
-    .eq("is_active", true);
+
+  // Use RPC function to get coach's athletes with proper RLS handling
+  const { data, error } = await supabase.rpc("get_coach_athletes_rpc", {
+    p_coach_id: coachId,
+    p_active_only: true,
+  });
 
   if (error) {
     console.error("Error fetching athletes:", error);
@@ -45,11 +46,12 @@ export async function getAthletesForCoach(coachId: string) {
 
 export async function getInactiveAthletesForCoach(coachId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("athletes")
-    .select("*")
-    .eq("current_coach_id", coachId)
-    .eq("is_active", false);
+
+  // Use RPC function to get coach's inactive athletes with proper RLS handling
+  const { data, error } = await supabase.rpc("get_coach_athletes_rpc", {
+    p_coach_id: coachId,
+    p_active_only: false,
+  });
 
   if (error) {
     console.error("Error fetching inactive athletes:", error);
@@ -210,11 +212,10 @@ export async function createAthlete(
 export async function deleteAthlete(athleteId: string) {
   const supabase = await createClient();
 
-  // Soft delete: set is_active = false
-  const { error } = await supabase
-    .from("athletes")
-    .update({ is_active: false })
-    .eq("id", athleteId);
+  // Use RPC function to deactivate athlete with proper authorization
+  const { error } = await supabase.rpc("deactivate_athlete_rpc", {
+    athlete_id: athleteId,
+  });
 
   if (error) {
     console.error("Error deactivating athlete:", error);
@@ -232,10 +233,11 @@ export async function changeAthleteCoach(
 ) {
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("athletes")
-    .update({ current_coach_id: newCoachId })
-    .eq("id", athleteId);
+  // Use RPC function to change athlete's coach with proper authorization
+  const { error } = await supabase.rpc("change_athlete_coach_rpc", {
+    athlete_id: athleteId,
+    new_coach_id: newCoachId,
+  });
 
   if (error) {
     console.error("Error updating athlete coach:", error);
@@ -264,10 +266,10 @@ export async function getCompetitions() {
 export async function reactivateAthlete(athleteId: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("athletes")
-    .update({ is_active: true })
-    .eq("id", athleteId);
+  // Use RPC function to reactivate athlete with proper authorization
+  const { error } = await supabase.rpc("reactivate_athlete_rpc", {
+    athlete_id: athleteId,
+  });
 
   if (error) {
     console.error("Error reactivating athlete:", error);
