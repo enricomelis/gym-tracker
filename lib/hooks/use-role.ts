@@ -21,30 +21,18 @@ export function useRole() {
         return;
       }
 
-      // Query coach first then athlete (same as server util)
-      const { data: coach } = await supabase
-        .from("coaches")
-        .select("id")
-        .eq("supabase_id", user.id)
-        .maybeSingle();
+      // Use the same RPC function as the server-side getUserRole
+      const { data, error } = await supabase.rpc("get_user_role_rpc", {
+        user_id: user.id,
+      });
 
-      if (coach) {
-        setRole("coach");
-        setLoading(false);
-        return;
-      }
-
-      const { data: athlete } = await supabase
-        .from("athletes")
-        .select("id")
-        .eq("supabase_id", user.id)
-        .maybeSingle();
-
-      if (athlete) {
-        setRole("athlete");
-      } else {
+      if (error) {
+        console.error("Error getting user role:", error);
         setRole(null);
+      } else {
+        setRole(data as UserRole);
       }
+
       setLoading(false);
     };
     fetchRole();

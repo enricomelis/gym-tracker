@@ -6,25 +6,15 @@ export async function getUserRole(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<UserRole> {
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", userId)
-    .maybeSingle();
+  // Use the security definer RPC function to bypass RLS policies
+  const { data, error } = await supabase.rpc("get_user_role_rpc", {
+    user_id: userId,
+  });
 
-  if (coach && !coachError) {
-    return "coach";
+  if (error) {
+    console.error("Error getting user role:", error);
+    return null;
   }
 
-  const { data: athlete, error: athleteError } = await supabase
-    .from("athletes")
-    .select("id")
-    .eq("supabase_id", userId)
-    .maybeSingle();
-
-  if (athlete && !athleteError) {
-    return "athlete";
-  }
-
-  return null;
+  return data as UserRole;
 }
