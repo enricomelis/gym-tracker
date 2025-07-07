@@ -56,7 +56,7 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 ### ⚡ Fase Z.2: Ottimizzazioni varie
 
 - [x] **Speed Insights:** Inserimento di analisi per ottimizzare la velocità dell'app.
-- [x] **RLS:** Inserimento di un maggior livello di sicurezza, lato database.
+- [ ] **RLS:** Inserimento di un maggior livello di sicurezza, lato database.
 - [ ] **Sviluppo Mobile:** Costruzione di una versione mobile on-device dell'app.
 
 ---
@@ -86,8 +86,6 @@ Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non
 
 - [x] Modificare relazione Atleti-Allenamenti. Dovrebbe essere Molti-a-Molti.
 - [x] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
-- [ ] RLS non attiva.
-- [x] Abilitare gli Speed Insights di Vercel
 
 ## Gestione dei Branch
 
