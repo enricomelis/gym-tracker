@@ -113,7 +113,7 @@ CREATE TABLE apparatus_weekly_goals (
     macro macro_enum NOT NULL,
     micro micro_enum NOT NULL,
     camp TEXT,
-    competition_id UUID NOT NULL REFERENCES competitions(id),
+    competition_id UUID REFERENCES competitions(id),
     exercise_volume INT NOT NULL CHECK (exercise_volume > 0),
     dismount_volume INT NOT NULL CHECK (dismount_volume >= 0),
     target_penalty NUMERIC NOT NULL CHECK (target_penalty >= 0 AND target_penalty <= 10),
