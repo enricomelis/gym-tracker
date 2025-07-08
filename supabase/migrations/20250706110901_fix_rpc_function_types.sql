@@ -7,8 +7,8 @@
 -- =======================================================================================
 -- Fix get_coach_athletes_rpc function with correct data types
 -- =======================================================================================
-drop function if exists public.get_coach_athletes_rpc(uuid, boolean)
-create function public.get_coach_athletes_rpc(user_id uuid, include_inactive boolean default false)
+DROP FUNCTION IF EXISTS public.get_coach_athletes_rpc(uuid, boolean);
+CREATE FUNCTION public.get_coach_athletes_rpc(user_id uuid, include_inactive boolean default false)
 returns table (
   id uuid,
   first_name varchar,
@@ -48,12 +48,12 @@ begin
     and (include_inactive or a.is_active = true)
   order by a.first_name, a.last_name;
 end;
-$$
+$$;
 -- =======================================================================================
 -- Fix get_athlete_profile_rpc function with correct data types
 -- =======================================================================================
-drop function if exists public.get_athlete_profile_rpc(uuid)
-create function public.get_athlete_profile_rpc(user_id uuid)
+DROP FUNCTION IF EXISTS public.get_athlete_profile_rpc(uuid);
+CREATE FUNCTION public.get_athlete_profile_rpc(user_id uuid)
 returns table (
   id uuid,
   first_name varchar,
@@ -90,7 +90,7 @@ begin
   from public.athletes a
   where a.supabase_id = user_id;
 end;
-$$
+$$;
 -- Grant execute permissions to authenticated users
-grant execute on function public.get_coach_athletes_rpc(uuid, boolean) to authenticated
-grant execute on function public.get_athlete_profile_rpc(uuid) to authenticated
+GRANT EXECUTE ON FUNCTION public.get_coach_athletes_rpc(uuid, boolean) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_athlete_profile_rpc(uuid) TO authenticated;

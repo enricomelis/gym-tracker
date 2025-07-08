@@ -11,25 +11,25 @@
 -- =======================================================================================
 
 -- Drop existing problematic policies that create circular dependencies
-drop policy if exists "Athletes can view their current coach" on public.coaches
-drop policy if exists "Coaches can view their athletes" on public.athletes
+DROP POLICY IF EXISTS "Athletes can view their current coach" ON public.coaches;
+DROP POLICY IF EXISTS "Coaches can view their athletes" ON public.athletes;
 -- Drop and recreate simplified policies that don't create circular dependencies
 -- This ensures we replace any existing policies with the correct non-circular versions
 
 -- COACHES TABLE - Only allow coaches to see their own profile
-drop policy if exists "Coaches can view their own profile" on public.coaches
-create policy "Coaches can view their own profile" 
-on public.coaches 
-for select 
-to authenticated 
-using (supabase_id = (select auth.uid()))
+DROP POLICY IF EXISTS "Coaches can view their own profile" ON public.coaches;
+CREATE POLICY "Coaches can view their own profile" 
+ON public.coaches 
+FOR SELECT 
+TO authenticated 
+USING (supabase_id = (SELECT auth.uid()));
 -- ATHLETES TABLE - Only allow athletes to see their own profile  
-drop policy if exists "Athletes can view their own profile" on public.athletes
-create policy "Athletes can view their own profile" 
-on public.athletes 
-for select 
-to authenticated 
-using (supabase_id = (select auth.uid()))
+DROP POLICY IF EXISTS "Athletes can view their own profile" ON public.athletes;
+CREATE POLICY "Athletes can view their own profile" 
+ON public.athletes 
+FOR SELECT 
+TO authenticated 
+USING (supabase_id = (SELECT auth.uid()));
 -- Note: Coach-athlete relationship queries will be handled by RPC functions
 -- This eliminates the circular dependency while maintaining security
 
@@ -87,9 +87,9 @@ begin
   -- If no profile found, return empty result set
   return;
 end;
-$$
+$$;
 -- Grant execute permission to authenticated users
-grant execute on function public.get_user_profile_rpc(uuid) to authenticated
+GRANT EXECUTE ON FUNCTION public.get_user_profile_rpc(uuid) TO authenticated;
 -- =======================================================================================
 -- FUNCTION 2: get_coach_id_rpc  
 -- Purpose: Get coach ID from supabase user ID
@@ -109,9 +109,9 @@ begin
     limit 1
   );
 end;
-$$
+$$;
 -- Grant execute permission to authenticated users
-grant execute on function public.get_coach_id_rpc(uuid) to authenticated
+GRANT EXECUTE ON FUNCTION public.get_coach_id_rpc(uuid) TO authenticated;
 -- =======================================================================================
 -- FUNCTION 3: get_athlete_id_rpc
 -- Purpose: Get athlete ID from supabase user ID  
@@ -131,9 +131,9 @@ begin
     limit 1
   );
 end;
-$$
+$$;
 -- Grant execute permission to authenticated users
-grant execute on function public.get_athlete_id_rpc(uuid) to authenticated
+GRANT EXECUTE ON FUNCTION public.get_athlete_id_rpc(uuid) TO authenticated;
 -- =======================================================================================
 -- FUNCTION 4: get_coach_athletes_rpc
 -- Purpose: Get all athletes for a coach with optional inclusion of inactive ones
@@ -182,9 +182,9 @@ begin
     and (include_inactive or a.is_active = true)
   order by a.first_name, a.last_name;
 end;
-$$
+$$;
 -- Grant execute permission to authenticated users
-grant execute on function public.get_coach_athletes_rpc(uuid, boolean) to authenticated
+GRANT EXECUTE ON FUNCTION public.get_coach_athletes_rpc(uuid, boolean) TO authenticated;
 -- =======================================================================================
 -- FUNCTION 5: get_athlete_profile_rpc
 -- Purpose: Get complete athlete profile with coach and society information
@@ -231,9 +231,9 @@ begin
   left join public.societies s on a.registered_society_id = s.id
   where a.supabase_id = user_id;
 end;
-$$
+$$;
 -- Grant execute permission to authenticated users
-grant execute on function public.get_athlete_profile_rpc(uuid) to authenticated
+GRANT EXECUTE ON FUNCTION public.get_athlete_profile_rpc(uuid) TO authenticated;
 -- =======================================================================================
 -- FUNCTION 6: get_all_coaches_rpc
 -- Purpose: Get list of all coaches with society information
@@ -263,9 +263,9 @@ begin
   left join public.societies s on c.society_id = s.id
   order by c.first_name, c.last_name;
 end;
-$$
+$$;
 -- Grant execute permission to authenticated users
-grant execute on function public.get_all_coaches_rpc() to authenticated
+GRANT EXECUTE ON FUNCTION public.get_all_coaches_rpc() TO authenticated;
 -- =======================================================================================
 -- FUNCTION 7: get_athlete_coach_rpc
 -- Purpose: Get coach information for a specific athlete
@@ -294,9 +294,9 @@ begin
   left join public.societies s on c.society_id = s.id
   where a.supabase_id = user_id;
 end;
-$$
+$$;
 -- Grant execute permission to authenticated users
-grant execute on function public.get_athlete_coach_rpc(uuid) to authenticated
+GRANT EXECUTE ON FUNCTION public.get_athlete_coach_rpc(uuid) TO authenticated;
 -- =======================================================================================
 -- MIGRATION COMPLETE
 -- Summary: 

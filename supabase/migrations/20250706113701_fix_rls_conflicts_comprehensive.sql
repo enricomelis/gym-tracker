@@ -6,34 +6,34 @@
 -- ===========================================
 
 -- Drop the restrictive policy that prevents coaches from seeing all societies
-DROP POLICY IF EXISTS "Coaches can view their own society" ON public.societies
+DROP POLICY IF EXISTS "Coaches can view their own society" ON public.societies;
 -- Create a more permissive policy for authenticated users
 -- This allows coaches to see all societies when creating/managing athletes
 CREATE POLICY "Authenticated users can view all societies" 
 ON public.societies 
 FOR SELECT 
 TO authenticated 
-USING (true)
+USING (true);
 -- Add comment explaining the rationale
 COMMENT ON POLICY "Authenticated users can view all societies" ON public.societies IS 
-'Allows coaches to view all societies when creating/assigning athletes. This is necessary for the athlete creation form dropdown.'
+'Allows coaches to view all societies when creating/assigning athletes. This is necessary for the athlete creation form dropdown.';
 -- ===========================================
 -- FASE 2: Create RPC functions for athlete operations
 -- ===========================================
 
 -- Drop existing functions to avoid signature conflicts
-DROP FUNCTION IF EXISTS get_coach_athletes_rpc(UUID, BOOLEAN)
-DROP FUNCTION IF EXISTS get_coach_athletes_rpc(UUID)
-DROP FUNCTION IF EXISTS deactivate_athlete_rpc(UUID)
-DROP FUNCTION IF EXISTS reactivate_athlete_rpc(UUID)
-DROP FUNCTION IF EXISTS change_athlete_coach_rpc(UUID, UUID)
-DROP FUNCTION IF EXISTS get_weekly_goals_rpc()
-DROP FUNCTION IF EXISTS get_weekly_goals_rpc(UUID, INTEGER, INTEGER)
-DROP FUNCTION IF EXISTS get_weekly_goals_rpc(UUID, INTEGER)
-DROP FUNCTION IF EXISTS create_weekly_goal_rpc(UUID, INTEGER, INTEGER, TEXT, INTEGER, INTEGER)
-DROP FUNCTION IF EXISTS get_training_sessions_rpc(UUID, DATE, DATE)
-DROP FUNCTION IF EXISTS get_training_sessions_rpc(DATE)
-DROP FUNCTION IF EXISTS create_training_session_rpc(UUID, DATE, INTEGER, TEXT)
+DROP FUNCTION IF EXISTS get_coach_athletes_rpc(UUID, BOOLEAN);
+DROP FUNCTION IF EXISTS get_coach_athletes_rpc(UUID);
+DROP FUNCTION IF EXISTS deactivate_athlete_rpc(UUID);
+DROP FUNCTION IF EXISTS reactivate_athlete_rpc(UUID);
+DROP FUNCTION IF EXISTS change_athlete_coach_rpc(UUID, UUID);
+DROP FUNCTION IF EXISTS get_weekly_goals_rpc();
+DROP FUNCTION IF EXISTS get_weekly_goals_rpc(UUID, INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS get_weekly_goals_rpc(UUID, INTEGER);
+DROP FUNCTION IF EXISTS create_weekly_goal_rpc(UUID, INTEGER, INTEGER, TEXT, INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS get_training_sessions_rpc(UUID, DATE, DATE);
+DROP FUNCTION IF EXISTS get_training_sessions_rpc(DATE);
+DROP FUNCTION IF EXISTS create_training_session_rpc(UUID, DATE, INTEGER, TEXT);
 -- RPC to get coach's athletes (both active and inactive)
 CREATE OR REPLACE FUNCTION get_coach_athletes_rpc(p_coach_id UUID, p_active_only BOOLEAN)
 RETURNS TABLE(
@@ -88,7 +88,7 @@ BEGIN
         ORDER BY a.first_name, a.last_name;
     END IF;
 END;
-$$
+$$;
 -- RPC to deactivate an athlete
 CREATE OR REPLACE FUNCTION deactivate_athlete_rpc(athlete_id UUID)
 RETURNS BOOLEAN
@@ -122,7 +122,7 @@ BEGIN
     
     RETURN true;
 END;
-$$
+$$;
 -- RPC to reactivate an athlete
 CREATE OR REPLACE FUNCTION reactivate_athlete_rpc(athlete_id UUID)
 RETURNS BOOLEAN
@@ -156,7 +156,7 @@ BEGIN
     
     RETURN true;
 END;
-$$
+$$;
 -- RPC to change athlete's coach
 CREATE OR REPLACE FUNCTION change_athlete_coach_rpc(athlete_id UUID, new_coach_id UUID)
 RETURNS BOOLEAN
@@ -195,7 +195,7 @@ BEGIN
     
     RETURN true;
 END;
-$$
+$$;
 -- ===========================================
 -- FASE 3: Fix weekly goals access
 -- ===========================================
@@ -270,7 +270,7 @@ BEGIN
         ORDER BY awg.year DESC, awg.week_number, a.first_name, a.last_name, awg.apparatus;
     END IF;
 END;
-$$
+$$;
 -- RPC to get weekly goals for specific athlete, week, and year
 CREATE OR REPLACE FUNCTION get_weekly_goals_rpc(p_athlete_id UUID, p_week_number INTEGER, p_year INTEGER)
 RETURNS TABLE(
@@ -312,7 +312,7 @@ BEGIN
       AND awg.year = p_year
     ORDER BY awg.apparatus;
 END;
-$$
+$$;
 -- RPC to create weekly goal
 CREATE OR REPLACE FUNCTION create_weekly_goal_rpc(
     p_athlete_id UUID,
@@ -354,7 +354,7 @@ BEGIN
     
     RETURN new_goal_id;
 END;
-$$
+$$;
 -- ===========================================
 -- FASE 4: Fix training sessions access
 -- ===========================================
@@ -445,7 +445,7 @@ BEGIN
         ORDER BY ts.date DESC, ts.session_number;
     END IF;
 END;
-$$
+$$;
 -- RPC to create training session
 CREATE OR REPLACE FUNCTION create_training_session_rpc(
     p_athlete_id UUID,
@@ -489,51 +489,51 @@ BEGIN
     
     RETURN new_session_id;
 END;
-$$
+$$;
 -- ===========================================
 -- FASE 5: Optimize existing RLS policies
 -- ===========================================
 
 -- Update athletes policies to be more specific
-DROP POLICY IF EXISTS "Coaches can view their own athletes" ON public.athletes
-DROP POLICY IF EXISTS "Coaches can insert athletes" ON public.athletes
-DROP POLICY IF EXISTS "Coaches can update their own athletes" ON public.athletes
+DROP POLICY IF EXISTS "Coaches can view their own athletes" ON public.athletes;
+DROP POLICY IF EXISTS "Coaches can insert athletes" ON public.athletes;
+DROP POLICY IF EXISTS "Coaches can update their own athletes" ON public.athletes;
 -- Create consolidated athletes policy
 CREATE POLICY "Coaches can manage their own athletes" 
 ON public.athletes 
 FOR ALL 
 TO authenticated 
-USING (current_coach_id IN (SELECT id FROM coaches WHERE supabase_id = auth.uid()))
+USING (current_coach_id IN (SELECT id FROM coaches WHERE supabase_id = auth.uid()));
 -- Update apparatus_weekly_goals policies
-DROP POLICY IF EXISTS "Coaches can view weekly goals for their athletes" ON public.apparatus_weekly_goals
-DROP POLICY IF EXISTS "Coaches can insert weekly goals for their athletes" ON public.apparatus_weekly_goals
-DROP POLICY IF EXISTS "Coaches can update weekly goals for their athletes" ON public.apparatus_weekly_goals
+DROP POLICY IF EXISTS "Coaches can view weekly goals for their athletes" ON public.apparatus_weekly_goals;
+DROP POLICY IF EXISTS "Coaches can insert weekly goals for their athletes" ON public.apparatus_weekly_goals;
+DROP POLICY IF EXISTS "Coaches can update weekly goals for their athletes" ON public.apparatus_weekly_goals;
 -- Create consolidated weekly goals policy
 CREATE POLICY "Coaches can manage weekly goals for their athletes" 
 ON public.apparatus_weekly_goals 
 FOR ALL 
 TO authenticated 
-USING (athlete_id IN (SELECT id FROM athletes WHERE current_coach_id IN (SELECT id FROM coaches WHERE supabase_id = auth.uid())))
+USING (athlete_id IN (SELECT id FROM athletes WHERE current_coach_id IN (SELECT id FROM coaches WHERE supabase_id = auth.uid())));
 -- Update training_sessions policies
-DROP POLICY IF EXISTS "Coaches can view training sessions for their athletes" ON public.training_sessions
-DROP POLICY IF EXISTS "Coaches can insert training sessions for their athletes" ON public.training_sessions
-DROP POLICY IF EXISTS "Coaches can update training sessions for their athletes" ON public.training_sessions
+DROP POLICY IF EXISTS "Coaches can view training sessions for their athletes" ON public.training_sessions;
+DROP POLICY IF EXISTS "Coaches can insert training sessions for their athletes" ON public.training_sessions;
+DROP POLICY IF EXISTS "Coaches can update training sessions for their athletes" ON public.training_sessions;
 -- Create consolidated training sessions policy
 CREATE POLICY "Coaches can manage training sessions for their athletes" 
 ON public.training_sessions 
 FOR ALL 
 TO authenticated 
-USING (id IN (SELECT training_session_id FROM athlete_training_sessions WHERE athlete_id IN (SELECT id FROM athletes WHERE current_coach_id IN (SELECT id FROM coaches WHERE supabase_id = auth.uid()))))
+USING (id IN (SELECT training_session_id FROM athlete_training_sessions WHERE athlete_id IN (SELECT id FROM athletes WHERE current_coach_id IN (SELECT id FROM coaches WHERE supabase_id = auth.uid()))));
 -- ===========================================
 -- COMMENTS FOR DOCUMENTATION
 -- ===========================================
 
-COMMENT ON FUNCTION get_coach_athletes_rpc(UUID, BOOLEAN) IS 'RPC function to get coach athletes with proper authorization filtering'
-COMMENT ON FUNCTION deactivate_athlete_rpc(UUID) IS 'RPC function to safely deactivate an athlete with proper coach authorization'
-COMMENT ON FUNCTION reactivate_athlete_rpc(UUID) IS 'RPC function to safely reactivate an athlete with proper coach authorization'
-COMMENT ON FUNCTION change_athlete_coach_rpc(UUID, UUID) IS 'RPC function to transfer an athlete to a different coach with proper authorization'
-COMMENT ON FUNCTION get_weekly_goals_rpc(UUID, INTEGER) IS 'RPC function to get weekly goals for specific parameters'
-COMMENT ON FUNCTION get_weekly_goals_rpc(UUID, INTEGER, INTEGER) IS 'RPC function to get weekly goals for specific athlete, week and year'
-COMMENT ON FUNCTION create_weekly_goal_rpc(UUID, INTEGER, INTEGER, TEXT, INTEGER, INTEGER) IS 'RPC function to create weekly goals with proper coach authorization'
-COMMENT ON FUNCTION get_training_sessions_rpc(UUID, DATE, DATE) IS 'RPC function to get training sessions for current user athletes with optional date filtering'
-COMMENT ON FUNCTION create_training_session_rpc(UUID, DATE, INTEGER, TEXT) IS 'RPC function to create training sessions with proper coach authorization'
+COMMENT ON FUNCTION get_coach_athletes_rpc(UUID, BOOLEAN) IS 'RPC function to get coach athletes with proper authorization filtering';
+COMMENT ON FUNCTION deactivate_athlete_rpc(UUID) IS 'RPC function to safely deactivate an athlete with proper coach authorization';
+COMMENT ON FUNCTION reactivate_athlete_rpc(UUID) IS 'RPC function to safely reactivate an athlete with proper coach authorization';
+COMMENT ON FUNCTION change_athlete_coach_rpc(UUID, UUID) IS 'RPC function to transfer an athlete to a different coach with proper authorization';
+COMMENT ON FUNCTION get_weekly_goals_rpc(UUID, INTEGER) IS 'RPC function to get weekly goals for specific parameters';
+COMMENT ON FUNCTION get_weekly_goals_rpc(UUID, INTEGER, INTEGER) IS 'RPC function to get weekly goals for specific athlete, week and year';
+COMMENT ON FUNCTION create_weekly_goal_rpc(UUID, INTEGER, INTEGER, TEXT, INTEGER, INTEGER) IS 'RPC function to create weekly goals with proper coach authorization';
+COMMENT ON FUNCTION get_training_sessions_rpc(UUID, DATE, DATE) IS 'RPC function to get training sessions for current user athletes with optional date filtering';
+COMMENT ON FUNCTION create_training_session_rpc(UUID, DATE, INTEGER, TEXT) IS 'RPC function to create training sessions with proper coach authorization';

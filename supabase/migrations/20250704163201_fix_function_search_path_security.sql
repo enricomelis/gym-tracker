@@ -22,7 +22,7 @@ BEGIN
 
   RETURN v_session_id;
 END;
-$function$
+$function$;
 CREATE OR REPLACE FUNCTION public.save_daily_routines(p_session_id uuid, p_athlete_id uuid, p_routines jsonb)
  RETURNS void
  LANGUAGE plpgsql
@@ -50,7 +50,7 @@ BEGIN
     (r->>'target_execution')::public.execution_coefficient_enum
   FROM jsonb_array_elements(p_routines) AS r;
 END;
-$function$
+$function$;
 CREATE OR REPLACE FUNCTION public.delete_training_session(p_session_id uuid)
  RETURNS void
  LANGUAGE plpgsql
@@ -61,4 +61,4 @@ BEGIN
   DELETE FROM public.athlete_training_sessions WHERE training_session_id = p_session_id;
   DELETE FROM public.training_sessions WHERE id = p_session_id;
 END;
-$function$
+$function$;

@@ -26,6 +26,6 @@ BEGIN
   -- No role found
   RETURN NULL;
 END;
-$$
+$$;
 -- Grant execute permission to authenticated users
-GRANT EXECUTE ON FUNCTION public.get_user_role_rpc(uuid) TO authenticated
+GRANT EXECUTE ON FUNCTION public.get_user_role_rpc(uuid) TO authenticated;
