@@ -2,7 +2,7 @@
 -- Scopo: garantire che le funzioni di pianificazione giornaliera possano inserire/modificare dati anche con RLS attivo
 
 -- 1️⃣ create_empty_training_session -------------------------------------------------------
-DROP FUNCTION IF EXISTS public.create_empty_training_session(uuid, date, integer)
+DROP FUNCTION IF EXISTS public.create_empty_training_session(uuid, date, integer);
 CREATE OR REPLACE FUNCTION public.create_empty_training_session(
   p_athlete_id      UUID,
   p_date            DATE,
@@ -28,9 +28,9 @@ BEGIN
 
   RETURN v_session_id;
 END;
-$$
+$$;
 -- 2️⃣ save_daily_routines ----------------------------------------------------------------
-DROP FUNCTION IF EXISTS public.save_daily_routines(uuid, uuid, jsonb)
+DROP FUNCTION IF EXISTS public.save_daily_routines(uuid, uuid, jsonb);
 CREATE OR REPLACE FUNCTION public.save_daily_routines(
   p_session_id  UUID,
   p_athlete_id  UUID,
@@ -64,9 +64,9 @@ BEGIN
     (r->>'target_execution')::public.execution_coefficient_enum
   FROM jsonb_array_elements(p_routines) AS r;
 END;
-$$
+$$;
 -- 3️⃣ delete_training_session -------------------------------------------------------------
-DROP FUNCTION IF EXISTS public.delete_training_session(uuid)
+DROP FUNCTION IF EXISTS public.delete_training_session(uuid);
 CREATE OR REPLACE FUNCTION public.delete_training_session(p_session_id UUID) RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -77,8 +77,8 @@ BEGIN
   DELETE FROM public.athlete_training_sessions WHERE training_session_id = p_session_id;
   DELETE FROM public.training_sessions         WHERE id = p_session_id;
 END;
-$$
+$$;
 -- 4️⃣ Permessi di esecuzione --------------------------------------------------------------
-GRANT EXECUTE ON FUNCTION public.create_empty_training_session(UUID, DATE, INTEGER) TO authenticated
-GRANT EXECUTE ON FUNCTION public.save_daily_routines(UUID, UUID, JSONB)        TO authenticated
-GRANT EXECUTE ON FUNCTION public.delete_training_session(UUID)                 TO authenticated
+GRANT EXECUTE ON FUNCTION public.create_empty_training_session(UUID, DATE, INTEGER) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.save_daily_routines(UUID, UUID, JSONB)        TO authenticated;
+GRANT EXECUTE ON FUNCTION public.delete_training_session(UUID)                 TO authenticated;

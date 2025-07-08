@@ -2,7 +2,7 @@
 -- Scopo: Verificare i valori di current_user_id e coach_id durante l'esecuzione dall'app
 
 -- 1️⃣ Drop della funzione precedente se esiste per evitare conflitti
-DROP FUNCTION IF EXISTS public.get_training_sessions_rpc(UUID, DATE, DATE)
+DROP FUNCTION IF EXISTS public.get_training_sessions_rpc(UUID, DATE, DATE);
 -- 2️⃣ Creazione nuova funzione con logging
 CREATE OR REPLACE FUNCTION public.get_training_sessions_rpc(
   p_athlete_id  UUID DEFAULT NULL,
@@ -112,6 +112,6 @@ BEGIN
     ORDER BY ts.date DESC, ts.session_number;
   END IF;
 END;
-$$
+$$;
 -- 3️⃣ Permessi di esecuzione
-GRANT EXECUTE ON FUNCTION public.get_training_sessions_rpc(UUID, DATE, DATE) TO authenticated
+GRANT EXECUTE ON FUNCTION public.get_training_sessions_rpc(UUID, DATE, DATE) TO authenticated;

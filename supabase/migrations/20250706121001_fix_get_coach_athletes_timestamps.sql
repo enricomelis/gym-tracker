@@ -1,6 +1,6 @@
 -- Adjust get_coach_athletes_rpc to use timestamp (without time zone) matching table columns
 
-DROP FUNCTION IF EXISTS get_coach_athletes_rpc(UUID, BOOLEAN)
+DROP FUNCTION IF EXISTS get_coach_athletes_rpc(UUID, BOOLEAN);
 CREATE OR REPLACE FUNCTION get_coach_athletes_rpc(p_coach_id UUID, p_active_only BOOLEAN)
 RETURNS TABLE(
     id UUID,
@@ -67,5 +67,5 @@ BEGIN
         ORDER BY a.first_name, a.last_name;
     END IF;
 END;
-$$
-GRANT EXECUTE ON FUNCTION get_coach_athletes_rpc(UUID, BOOLEAN) TO authenticated
+$$;
+GRANT EXECUTE ON FUNCTION get_coach_athletes_rpc(UUID, BOOLEAN) TO authenticated;

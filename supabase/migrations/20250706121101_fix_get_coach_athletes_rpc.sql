@@ -2,7 +2,7 @@
 -- Scopo: correggere ambiguità di colonna e disallineamenti di tipo nella RPC get_coach_athletes_rpc
 
 -- 1️⃣ Elimina la vecchia funzione (se esiste con la stessa firma)
-DROP FUNCTION IF EXISTS public.get_coach_athletes_rpc(UUID, BOOLEAN)
+DROP FUNCTION IF EXISTS public.get_coach_athletes_rpc(UUID, BOOLEAN);
 -- 2️⃣ Ricrea la funzione con alias qualificati e tipi coerenti
 CREATE OR REPLACE FUNCTION public.get_coach_athletes_rpc(
   p_coach_id      UUID,
@@ -63,6 +63,6 @@ BEGIN
     AND  (p_active_only = false OR a.is_active = true)
   ORDER  BY a.first_name, a.last_name;
 END;
-$$
+$$;
 -- 3️⃣ Concedi i permessi di esecuzione al ruolo applicativo
-GRANT EXECUTE ON FUNCTION public.get_coach_athletes_rpc(UUID, BOOLEAN) TO authenticated
+GRANT EXECUTE ON FUNCTION public.get_coach_athletes_rpc(UUID, BOOLEAN) TO authenticated;

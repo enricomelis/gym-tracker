@@ -2,15 +2,15 @@
 
 -- Drop and recreate functions with correct column references
 
-DROP FUNCTION IF EXISTS get_coach_athletes_rpc(UUID, BOOLEAN)
-DROP FUNCTION IF EXISTS deactivate_athlete_rpc(UUID)
-DROP FUNCTION IF EXISTS reactivate_athlete_rpc(UUID)
-DROP FUNCTION IF EXISTS change_athlete_coach_rpc(UUID, UUID)
-DROP FUNCTION IF EXISTS get_weekly_goals_rpc(UUID, INTEGER)
-DROP FUNCTION IF EXISTS get_weekly_goals_rpc(UUID, INTEGER, INTEGER)
-DROP FUNCTION IF EXISTS create_weekly_goal_rpc(UUID, INTEGER, INTEGER, TEXT, INTEGER, INTEGER)
-DROP FUNCTION IF EXISTS get_training_sessions_rpc(UUID, DATE, DATE)
-DROP FUNCTION IF EXISTS create_training_session_rpc(UUID, DATE, INTEGER, TEXT)
+DROP FUNCTION IF EXISTS get_coach_athletes_rpc(UUID, BOOLEAN);
+DROP FUNCTION IF EXISTS deactivate_athlete_rpc(UUID);
+DROP FUNCTION IF EXISTS reactivate_athlete_rpc(UUID);
+DROP FUNCTION IF EXISTS change_athlete_coach_rpc(UUID, UUID);
+DROP FUNCTION IF EXISTS get_weekly_goals_rpc(UUID, INTEGER);
+DROP FUNCTION IF EXISTS get_weekly_goals_rpc(UUID, INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS create_weekly_goal_rpc(UUID, INTEGER, INTEGER, TEXT, INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS get_training_sessions_rpc(UUID, DATE, DATE);
+DROP FUNCTION IF EXISTS create_training_session_rpc(UUID, DATE, INTEGER, TEXT);
 -- RPC to get coach's athletes (both active and inactive)
 CREATE OR REPLACE FUNCTION get_coach_athletes_rpc(p_coach_id UUID, p_active_only BOOLEAN)
 RETURNS TABLE(
@@ -65,7 +65,7 @@ BEGIN
         ORDER BY a.first_name, a.last_name;
     END IF;
 END;
-$$
+$$;
 -- RPC to deactivate an athlete
 CREATE OR REPLACE FUNCTION deactivate_athlete_rpc(athlete_id UUID)
 RETURNS BOOLEAN
@@ -99,7 +99,7 @@ BEGIN
     
     RETURN true;
 END;
-$$
+$$;
 -- RPC to reactivate an athlete
 CREATE OR REPLACE FUNCTION reactivate_athlete_rpc(athlete_id UUID)
 RETURNS BOOLEAN
@@ -133,7 +133,7 @@ BEGIN
     
     RETURN true;
 END;
-$$
+$$;
 -- RPC to change athlete's coach
 CREATE OR REPLACE FUNCTION change_athlete_coach_rpc(athlete_id UUID, new_coach_id UUID)
 RETURNS BOOLEAN
@@ -172,4 +172,4 @@ BEGIN
     
     RETURN true;
 END;
-$$
+$$;
