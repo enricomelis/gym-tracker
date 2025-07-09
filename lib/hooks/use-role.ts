@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getBrowserClient } from "@/lib/supabase/client";
-import type { UserRole } from "@/lib/role";
+import { getUserRole, type UserRole } from "@/lib/role";
 
 export function useRole() {
   const [role, setRole] = useState<UserRole>(null);
@@ -21,30 +21,10 @@ export function useRole() {
         return;
       }
 
-      // Query coach first then athlete (same as server util)
-      const { data: coach } = await supabase
-        .from("coaches")
-        .select("id")
-        .eq("supabase_id", user.id)
-        .maybeSingle();
+      const role = await getUserRole(supabase, user.id);
 
-      if (coach) {
-        setRole("coach");
-        setLoading(false);
-        return;
-      }
+      setRole(role);
 
-      const { data: athlete } = await supabase
-        .from("athletes")
-        .select("id")
-        .eq("supabase_id", user.id)
-        .maybeSingle();
-
-      if (athlete) {
-        setRole("athlete");
-      } else {
-        setRole(null);
-      }
       setLoading(false);
     };
     fetchRole();

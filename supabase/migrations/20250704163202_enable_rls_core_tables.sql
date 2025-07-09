@@ -19,7 +19,6 @@ USING (
     WHERE supabase_id = (SELECT auth.uid())
   )
 );
-
 -- Only coaches can manage societies (no INSERT/UPDATE/DELETE for now)
 
 -- COACHES POLICIES  
@@ -29,7 +28,6 @@ ON public.coaches
 FOR SELECT 
 TO authenticated 
 USING (supabase_id = (SELECT auth.uid()));
-
 -- Coaches can update their own profile
 CREATE POLICY "Coaches can update their own profile" 
 ON public.coaches 
@@ -37,7 +35,6 @@ FOR UPDATE
 TO authenticated 
 USING (supabase_id = (SELECT auth.uid()))
 WITH CHECK (supabase_id = (SELECT auth.uid()));
-
 -- Athletes can see their current coach
 CREATE POLICY "Athletes can view their current coach" 
 ON public.coaches 
@@ -50,7 +47,6 @@ USING (
     WHERE supabase_id = (SELECT auth.uid())
   )
 );
-
 -- ATHLETES POLICIES
 -- Coaches can see their athletes
 CREATE POLICY "Coaches can view their athletes" 
@@ -64,14 +60,12 @@ USING (
     WHERE supabase_id = (SELECT auth.uid())
   )
 );
-
 -- Athletes can see their own profile  
 CREATE POLICY "Athletes can view their own profile" 
 ON public.athletes 
 FOR SELECT 
 TO authenticated 
 USING (supabase_id = (SELECT auth.uid()));
-
 -- Coaches can update their athletes
 CREATE POLICY "Coaches can update their athletes" 
 ON public.athletes 
@@ -91,7 +85,6 @@ WITH CHECK (
     WHERE supabase_id = (SELECT auth.uid())
   )
 );
-
 -- Coaches can insert new athletes
 CREATE POLICY "Coaches can create athletes" 
 ON public.athletes 
@@ -104,7 +97,6 @@ WITH CHECK (
     WHERE supabase_id = (SELECT auth.uid())
   )
 );
-
 -- Athletes can update their own profile (limited fields)
 -- Note: Athletes cannot change coach or society - this would require additional application logic
 CREATE POLICY "Athletes can update their own profile" 
@@ -113,7 +105,6 @@ FOR UPDATE
 TO authenticated 
 USING (supabase_id = (SELECT auth.uid()))
 WITH CHECK (supabase_id = (SELECT auth.uid()));
-
 -- Coaches can delete their athletes (mark as inactive)
 CREATE POLICY "Coaches can delete their athletes" 
 ON public.athletes 
@@ -125,4 +116,4 @@ USING (
     FROM public.coaches 
     WHERE supabase_id = (SELECT auth.uid())
   )
-); 
+)

@@ -6,11 +6,9 @@ ALTER TABLE public.training_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.apparatus_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.training_sets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.athlete_training_sessions ENABLE ROW LEVEL SECURITY;
-
 -- Enable RLS on planning tables
 ALTER TABLE public.apparatus_weekly_goals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.daily_routines ENABLE ROW LEVEL SECURITY;
-
 -- TRAINING_SESSIONS POLICIES
 -- Coaches can see sessions of their athletes
 CREATE POLICY "Coaches can view training sessions of their athletes" 
@@ -27,7 +25,6 @@ USING (
     )
   )
 );
-
 -- Athletes can see their own training sessions
 CREATE POLICY "Athletes can view their own training sessions" 
 ON public.training_sessions 
@@ -41,13 +38,13 @@ USING (
     WHERE a.supabase_id = (SELECT auth.uid())
   )
 );
-
 -- Coaches can create training sessions for their athletes
 CREATE POLICY "Coaches can create training sessions" 
 ON public.training_sessions 
 FOR INSERT 
 TO authenticated 
-WITH CHECK (true);  -- Will be controlled by athlete_training_sessions policies
+WITH CHECK (true);
+-- Will be controlled by athlete_training_sessions policies
 
 -- Coaches can update training sessions of their athletes
 CREATE POLICY "Coaches can update training sessions of their athletes" 
@@ -74,7 +71,6 @@ WITH CHECK (
     )
   )
 );
-
 -- Coaches can delete training sessions of their athletes
 CREATE POLICY "Coaches can delete training sessions of their athletes" 
 ON public.training_sessions 
@@ -90,7 +86,6 @@ USING (
     )
   )
 );
-
 -- ATHLETE_TRAINING_SESSIONS POLICIES
 -- Coaches can manage athlete-session relationships for their athletes
 CREATE POLICY "Coaches can view athlete training session links for their athletes" 
@@ -105,7 +100,6 @@ USING (
     )
   )
 );
-
 CREATE POLICY "Coaches can create athlete training session links for their athletes" 
 ON public.athlete_training_sessions 
 FOR INSERT 
@@ -118,7 +112,6 @@ WITH CHECK (
     )
   )
 );
-
 CREATE POLICY "Coaches can delete athlete training session links for their athletes" 
 ON public.athlete_training_sessions 
 FOR DELETE 
@@ -131,7 +124,6 @@ USING (
     )
   )
 );
-
 -- Athletes can view their own training session links
 CREATE POLICY "Athletes can view their own training session links" 
 ON public.athlete_training_sessions 
@@ -142,7 +134,6 @@ USING (
     SELECT id FROM public.athletes WHERE supabase_id = (SELECT auth.uid())
   )
 );
-
 -- APPARATUS_SESSIONS POLICIES
 -- Coaches can manage apparatus sessions for training sessions of their athletes
 CREATE POLICY "Coaches can view apparatus sessions of their athletes" 
@@ -159,7 +150,6 @@ USING (
     )
   )
 );
-
 -- Athletes can view their own apparatus sessions
 CREATE POLICY "Athletes can view their own apparatus sessions" 
 ON public.apparatus_sessions 
@@ -173,7 +163,6 @@ USING (
     WHERE a.supabase_id = (SELECT auth.uid())
   )
 );
-
 -- Coaches can manage apparatus sessions
 CREATE POLICY "Coaches can create apparatus sessions for their athletes" 
 ON public.apparatus_sessions 
@@ -189,7 +178,6 @@ WITH CHECK (
     )
   )
 );
-
 CREATE POLICY "Coaches can update apparatus sessions of their athletes" 
 ON public.apparatus_sessions 
 FOR UPDATE 
@@ -214,7 +202,6 @@ WITH CHECK (
     )
   )
 );
-
 CREATE POLICY "Coaches can delete apparatus sessions of their athletes" 
 ON public.apparatus_sessions 
 FOR DELETE 
@@ -229,7 +216,6 @@ USING (
     )
   )
 );
-
 -- TRAINING_SETS POLICIES
 -- Coaches can manage training sets for apparatus sessions of their athletes
 CREATE POLICY "Coaches can view training sets of their athletes" 
@@ -247,7 +233,6 @@ USING (
     )
   )
 );
-
 -- Athletes can view their own training sets
 CREATE POLICY "Athletes can view their own training sets" 
 ON public.training_sets 
@@ -262,7 +247,6 @@ USING (
     WHERE a.supabase_id = (SELECT auth.uid())
   )
 );
-
 -- Coaches can manage training sets
 CREATE POLICY "Coaches can create training sets for their athletes" 
 ON public.training_sets 
@@ -279,7 +263,6 @@ WITH CHECK (
     )
   )
 );
-
 CREATE POLICY "Coaches can update training sets of their athletes" 
 ON public.training_sets 
 FOR UPDATE 
@@ -306,7 +289,6 @@ WITH CHECK (
     )
   )
 );
-
 CREATE POLICY "Coaches can delete training sets of their athletes" 
 ON public.training_sets 
 FOR DELETE 
@@ -322,7 +304,6 @@ USING (
     )
   )
 );
-
 -- APPARATUS_WEEKLY_GOALS POLICIES
 -- Coaches can manage weekly goals for their athletes
 CREATE POLICY "Coaches can view weekly goals of their athletes" 
@@ -337,7 +318,6 @@ USING (
     )
   )
 );
-
 -- Athletes can view their own weekly goals
 CREATE POLICY "Athletes can view their own weekly goals" 
 ON public.apparatus_weekly_goals 
@@ -348,7 +328,6 @@ USING (
     SELECT id FROM public.athletes WHERE supabase_id = (SELECT auth.uid())
   )
 );
-
 -- Coaches can manage weekly goals for their athletes
 CREATE POLICY "Coaches can create weekly goals for their athletes" 
 ON public.apparatus_weekly_goals 
@@ -362,7 +341,6 @@ WITH CHECK (
     )
   )
 );
-
 CREATE POLICY "Coaches can update weekly goals of their athletes" 
 ON public.apparatus_weekly_goals 
 FOR UPDATE 
@@ -383,7 +361,6 @@ WITH CHECK (
     )
   )
 );
-
 CREATE POLICY "Coaches can delete weekly goals of their athletes" 
 ON public.apparatus_weekly_goals 
 FOR DELETE 
@@ -396,7 +373,6 @@ USING (
     )
   )
 );
-
 -- DAILY_ROUTINES POLICIES
 -- Coaches can manage daily routines for their athletes
 CREATE POLICY "Coaches can view daily routines of their athletes" 
@@ -411,7 +387,6 @@ USING (
     )
   )
 );
-
 -- Athletes can view their own daily routines
 CREATE POLICY "Athletes can view their own daily routines" 
 ON public.daily_routines 
@@ -422,7 +397,6 @@ USING (
     SELECT id FROM public.athletes WHERE supabase_id = (SELECT auth.uid())
   )
 );
-
 -- Coaches can manage daily routines for their athletes
 CREATE POLICY "Coaches can create daily routines for their athletes" 
 ON public.daily_routines 
@@ -436,7 +410,6 @@ WITH CHECK (
     )
   )
 );
-
 CREATE POLICY "Coaches can update daily routines of their athletes" 
 ON public.daily_routines 
 FOR UPDATE 
@@ -457,7 +430,6 @@ WITH CHECK (
     )
   )
 );
-
 CREATE POLICY "Coaches can delete daily routines of their athletes" 
 ON public.daily_routines 
 FOR DELETE 
@@ -469,4 +441,4 @@ USING (
       SELECT id FROM public.coaches WHERE supabase_id = (SELECT auth.uid())
     )
   )
-); 
+);

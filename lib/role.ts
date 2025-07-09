@@ -6,23 +6,23 @@ export async function getUserRole(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<UserRole> {
-  const { data: coach, error: coachError } = await supabase
+  const { data: coach } = await supabase
     .from("coaches")
-    .select("id")
+    .select("*")
     .eq("supabase_id", userId)
-    .maybeSingle();
+    .single();
 
-  if (coach && !coachError) {
+  if (coach) {
     return "coach";
   }
 
-  const { data: athlete, error: athleteError } = await supabase
+  const { data: athlete } = await supabase
     .from("athletes")
-    .select("id")
+    .select("*")
     .eq("supabase_id", userId)
-    .maybeSingle();
+    .single();
 
-  if (athlete && !athleteError) {
+  if (athlete) {
     return "athlete";
   }
 
