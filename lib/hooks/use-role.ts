@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getBrowserClient } from "@/lib/supabase/client";
-import type { UserRole } from "@/lib/role";
+import { getUserRole, type UserRole } from "@/lib/role";
 
 export function useRole() {
   const [role, setRole] = useState<UserRole>(null);
@@ -21,17 +21,9 @@ export function useRole() {
         return;
       }
 
-      // Use the same RPC function as the server-side getUserRole
-      const { data, error } = await supabase.rpc("get_user_role_rpc", {
-        user_id: user.id,
-      });
+      const role = await getUserRole(supabase, user.id);
 
-      if (error) {
-        console.error("Error getting user role:", error);
-        setRole(null);
-      } else {
-        setRole(data as UserRole);
-      }
+      setRole(role);
 
       setLoading(false);
     };

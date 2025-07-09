@@ -207,7 +207,13 @@ export default function ApparatusCard({
     if (res && res.set) {
       setSets((prev) => {
         const newSets = [...prev, res.set];
-        updateCalculatedSessionFields(newSets);
+        // We can't call startTransition while rendering/updating, so return first
+        // The transition will run right after state is queued.
+        queueMicrotask(() => {
+          startTransition(() => {
+            updateCalculatedSessionFields(newSets);
+          });
+        });
         return newSets;
       });
     }
@@ -220,7 +226,11 @@ export default function ApparatusCard({
     if (res && res.success) {
       setSets((prev) => {
         const newSets = prev.filter((s) => s.id !== editingSet.id);
-        updateCalculatedSessionFields(newSets);
+        queueMicrotask(() => {
+          startTransition(() => {
+            updateCalculatedSessionFields(newSets);
+          });
+        });
         return newSets;
       });
       setEditingSet(null);
