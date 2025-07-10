@@ -27,6 +27,7 @@ import WeeklyGoalForm from "./weekly-goal-form";
 import { type Athlete } from "@/lib/actions/athletes";
 import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
 import { useRole } from "@/lib/hooks/use-role";
+import PresetButton from "@/components/preset-button";
 
 type Competition = {
   id: string;
@@ -112,6 +113,7 @@ export default function WeeklyPlanner({
           />
         )}
         <div className="flex w-full min-w-0 items-center gap-2 md:w-auto">
+          <PresetButton presetType="settimanale" />
           <Button
             variant="outline"
             className="aspect-square h-6 w-6 md:h-10 md:w-10"
@@ -204,17 +206,15 @@ export default function WeeklyPlanner({
                   eventDisplay.push(<span key="camp">{firstGoal.camp}</span>);
                 }
 
-                const isCurrent = isReadOnly && currentWeek === week;
+                const isCurrent = currentWeek === week;
+                const baseRowClass = isReadOnly
+                  ? ""
+                  : "cursor-pointer hover:bg-muted/50";
+                const highlightClass = isCurrent ? "bg-muted font-bold" : "";
                 return (
                   <TableRow
                     key={week}
-                    className={
-                      isReadOnly
-                        ? isCurrent
-                          ? "bg-muted font-bold"
-                          : ""
-                        : "cursor-pointer hover:bg-muted/50"
-                    }
+                    className={`${baseRowClass} ${highlightClass}`.trim()}
                     onClick={() => {
                       if (!isReadOnly) setEditingWeek(week);
                     }}
@@ -291,17 +291,13 @@ export default function WeeklyPlanner({
                 eventDisplay.push(<span key="camp">{firstGoal.camp}</span>);
               }
 
-              const isCurrent = isReadOnly && currentWeek === week;
+              const isCurrent = currentWeek === week;
               return (
                 <div
                   key={week}
-                  className={
-                    isReadOnly
-                      ? isCurrent
-                        ? "border-b bg-muted p-4 font-bold"
-                        : "border-b p-4"
-                      : "cursor-pointer border-b p-4 hover:bg-muted/50"
-                  }
+                  className={`${
+                    isReadOnly ? "" : "cursor-pointer hover:bg-muted/50"
+                  } border-b p-4 ${isCurrent ? "bg-muted font-bold" : ""}`.trim()}
                   onClick={() => {
                     if (!isReadOnly) setEditingWeek(week);
                   }}
