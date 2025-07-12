@@ -25,12 +25,12 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
-  EnrichedTrainingSession,
   saveDailyRoutine,
   deleteDailyTraining,
 } from "@/lib/actions/daily-planning";
 import { useToast } from "@/components/ui/use-toast";
 import { Trash2 } from "lucide-react";
+import { type EnrichedTrainingSession } from "@/lib/types";
 
 const APPARATUS_TYPES = ["FX", "PH", "SR", "VT", "PB", "HB"] as const;
 const ROUTINE_TYPES = [

@@ -12,31 +12,8 @@ import {
 } from "@/lib/actions/apparatus";
 import TrainingSetForm from "@/components/training-set-form";
 import React from "react";
-import { getWeeklyGoalForApparatus } from "@/lib/actions/planning";
-
-// Define types for ApparatusSession and TrainingSet
-export type ApparatusSession = {
-  id: string;
-  apparatus: string;
-  base_volume: number;
-  total_time: number;
-  density: number | null;
-  intensity_sets_count: number | null;
-  total_volume: number | null;
-  average_intensity: number | null;
-  max_intensity: number | null;
-};
-
-export type TrainingSet = {
-  id?: string;
-  set_number: number;
-  volume_done: number;
-  execution_coefficient: string;
-  execution_penalty: number;
-  falls: number;
-  elements_done_number: number;
-  intensity: number;
-};
+import { getWeeklyGoalForApparatus } from "@/lib/actions/weekly-planning";
+import type { ApparatusSession, TrainingSet } from "@/lib/types";
 
 export default function ApparatusCard({
   apparatus,

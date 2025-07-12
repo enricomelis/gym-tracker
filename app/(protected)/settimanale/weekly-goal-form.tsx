@@ -4,8 +4,11 @@ import { useState, useEffect, useTransition } from "react";
 import { format } from "date-fns";
 import React from "react";
 
-import type { WeeklyGoal } from "@/lib/actions/planning";
-import { upsertWeeklyGoals, deleteWeeklyGoals } from "@/lib/actions/planning";
+import type { WeeklyGoal, WeeklyGoalPreset, Competition } from "@/lib/types";
+import {
+  upsertWeeklyGoals,
+  deleteWeeklyGoals,
+} from "@/lib/actions/weekly-planning";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -46,14 +49,7 @@ import {
 import {
   getWeeklyGoalPresets,
   createWeeklyGoalPreset,
-  type WeeklyGoalPreset,
 } from "@/lib/actions/presets";
-
-type Competition = {
-  id: string;
-  location: string;
-  date: string;
-};
 
 const apparatusList: Array<WeeklyGoal["apparatus"]> = [
   "FX",

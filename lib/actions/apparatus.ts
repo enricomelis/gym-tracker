@@ -1,5 +1,9 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
+import {
+  type UpdateApparatusSessionPayload,
+  type AddTrainingSetPayload,
+} from "@/lib/types";
 import { z } from "zod";
 
 export async function initApparatusSession(formData: FormData) {
@@ -30,29 +34,6 @@ export async function initApparatusSession(formData: FormData) {
   }
   return { session: data };
 }
-
-// Define types for update and add payloads
-export type UpdateApparatusSessionPayload = {
-  id: string;
-  base_volume: number;
-  total_time: number;
-  density?: number;
-  intensity_sets_count?: number;
-  total_volume?: number;
-  average_intensity?: number;
-  max_intensity?: number;
-};
-
-export type AddTrainingSetPayload = {
-  apparatus_session_id: string;
-  set_number: number;
-  volume_done: number;
-  execution_coefficient: string;
-  execution_penalty: number;
-  falls: number;
-  elements_done_number: number;
-  intensity: number;
-};
 
 export async function updateApparatusSession({
   id,
