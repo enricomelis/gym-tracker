@@ -15,7 +15,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { type AthleteRoutineFormProps } from "@/lib/types";
+type AthleteRoutineFormProps = {
+  athlete_id: string;
+  routine_name?: string;
+  routine_volume?: number;
+  routine_notes?: string;
+  apparatus?: Apparatus | "";
+  onSuccess?: () => void;
+};
 
 export default function AthleteRoutineForm({
   athlete_id,

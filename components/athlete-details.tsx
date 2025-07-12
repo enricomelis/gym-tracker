@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import React from "react";
 import AthleteRoutineForm from "@/components/athlete-routine-form";
-import { useState } from "react";
+import { type AthleteRoutine } from "@/lib/types";
 
 type Coach = {
   id: string;
@@ -55,6 +55,24 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
   const [showConfirm, setShowConfirm] = React.useState(false);
   const [showSelector, setShowSelector] = React.useState(false);
   const [showAddExercise, setShowAddExercise] = React.useState(false);
+
+  const [athleteRoutines, setAthleteRoutines] = React.useState<
+    AthleteRoutine[]
+  >([]);
+
+  React.useEffect(() => {
+    async function fetchAthleteRoutines() {
+      const supabase = getBrowserClient();
+      const { data, error } = await supabase
+        .from("athlete_routines")
+        .select("*")
+        .eq("athlete_id", athlete.id);
+      if (!error && data) {
+        setAthleteRoutines(data);
+      }
+    }
+    fetchAthleteRoutines();
+  }, [athlete.id]);
 
   React.useEffect(() => {
     async function fetchCoaches() {
@@ -129,6 +147,24 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
       <p>
         <strong>Categoria:</strong> {athlete.category}
       </p>
+
+      <h2 className="text-lg font-semibold">Esercizi</h2>
+      <div className="space-y-2">
+        {athleteRoutines.map((routine) => (
+          <div key={routine.id}>
+            <p>
+              <strong>
+                {routine.apparatus}
+                {": "}
+              </strong>
+              {routine.routine_name} | {routine.routine_volume} |{" "}
+              {routine.routine_notes
+                ? `(${routine.routine_notes})`
+                : "Nessuna nota"}
+            </p>
+          </div>
+        ))}
+      </div>
 
       <AlertDialog>
         <AlertDialogTrigger asChild>

@@ -306,3 +306,11 @@ export async function addAthleteRoutine(
 
   return { success: true, data } as const;
 }
+
+export async function getAthleteRoutines(athleteId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("athlete_routines")
+    .select("*")
+    .eq("athlete_id", athleteId);
+}
