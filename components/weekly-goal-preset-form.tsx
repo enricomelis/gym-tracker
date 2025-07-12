@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import type { WeeklyGoalPreset } from "@/lib/actions/presets";
+import type { WeeklyGoalPreset } from "@/lib/types";
 
 // Apparatus list and enums reused from WeeklyGoalPreset type
 const apparatusList: Array<WeeklyGoalPreset["apparatus"]> = [

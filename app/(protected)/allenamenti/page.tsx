@@ -9,21 +9,11 @@ import { getBrowserClient } from "@/lib/supabase/client";
 import type {
   ApparatusSession,
   TrainingSet,
-} from "@/components/apparatus-card";
+  TrainingSession,
+  Athlete,
+} from "@/lib/types";
 
 const APPARATUS = ["FX", "PH", "SR", "VT", "PB", "HB"];
-
-type TrainingSession = {
-  id: string;
-  date: string;
-  session_number: number;
-};
-
-type AthleteType = {
-  id: string;
-  first_name: string;
-  last_name: string;
-};
 
 // Supabase join type between athlete_training_sessions and training_sessions
 type AthleteTrainingSessionJoin = {
@@ -119,8 +109,8 @@ async function fetchApparatusSessionsWithSets(
 
 export default function AllenamentiPage() {
   const [loading, setLoading] = useState(true);
-  const [athletes, setAthletes] = useState<AthleteType[]>([]);
-  const [athlete, setAthlete] = useState<AthleteType | null>(null);
+  const [athletes, setAthletes] = useState<Athlete[]>([]);
+  const [athlete, setAthlete] = useState<Athlete | null>(null);
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null,
@@ -140,10 +130,10 @@ export default function AllenamentiPage() {
         setLoading(false);
         return;
       }
-      let athleteObj: AthleteType | null = null;
-      let athletesArr: AthleteType[] = [];
+      let athleteObj: Athlete | null = null;
+      let athletesArr: Athlete[] = [];
       if (userData.coach) {
-        athletesArr = userData.athletes;
+        athletesArr = userData.athletes as Athlete[];
         if (athletesArr.length === 0) {
           setAthletes([]);
           setError("Non hai ancora aggiunto nessun atleta.");
@@ -152,7 +142,7 @@ export default function AllenamentiPage() {
         }
         athleteObj = athletesArr[0];
       } else if (userData.athlete) {
-        athleteObj = userData.athlete;
+        athleteObj = userData.athlete as Athlete;
       }
       setAthletes(athletesArr);
       setAthlete(athleteObj);
