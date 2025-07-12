@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import React from "react";
 import AthleteRoutineForm from "@/components/athlete-routine-form";
-import { type AthleteRoutine } from "@/lib/types";
+import { type AthleteRoutine, APPARATUS_TYPES } from "@/lib/types";
 
 type Coach = {
   id: string;
@@ -153,23 +153,30 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
 
       <h2 className="text-lg font-semibold">Esercizi</h2>
       <div className="space-y-2">
-        {athleteRoutines.map((routine) => (
-          <button
-            key={routine.id}
-            type="button"
-            className="w-full rounded border px-2 py-1 text-left hover:bg-muted focus:bg-muted focus:outline-none"
-            onClick={() => {
-              setEditingRoutine(routine);
-              setShowAddExercise(true);
-            }}
-          >
-            <strong>{routine.apparatus}: </strong>
-            {routine.routine_name} | {routine.routine_volume} |{" "}
-            {routine.routine_notes
-              ? `(${routine.routine_notes})`
-              : "Nessuna nota"}
-          </button>
-        ))}
+        {athleteRoutines
+          .slice()
+          .sort(
+            (a, b) =>
+              APPARATUS_TYPES.indexOf(a.apparatus) -
+              APPARATUS_TYPES.indexOf(b.apparatus),
+          )
+          .map((routine) => (
+            <button
+              key={routine.id}
+              type="button"
+              className="w-full rounded border px-2 py-1 text-left hover:bg-muted focus:bg-muted focus:outline-none"
+              onClick={() => {
+                setEditingRoutine(routine);
+                setShowAddExercise(true);
+              }}
+            >
+              <strong>{routine.apparatus}: </strong>
+              {routine.routine_name} | {routine.routine_volume} |{" "}
+              {routine.routine_notes
+                ? `(${routine.routine_notes})`
+                : "Nessuna nota"}
+            </button>
+          ))}
       </div>
 
       <AlertDialog>
