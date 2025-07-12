@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { getYear, getWeek } from "date-fns";
 import React from "react";
 
-import type { WeeklyGoal } from "@/lib/actions/planning";
-import { getGroupedWeeklyGoals } from "@/lib/actions/planning";
+import type { WeeklyGoal } from "@/lib/actions/weekly-planning";
+import { getGroupedWeeklyGoals } from "@/lib/actions/weekly-planning";
 import { getWeeksInYear, getWeekDateRange } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {

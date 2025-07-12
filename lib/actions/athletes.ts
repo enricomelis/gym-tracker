@@ -4,21 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-export type Athlete = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  date_of_birth: string;
-  registration_number: number;
-  category: "Allievi" | "Junior" | "Senior";
-  current_coach_id: string;
-  registered_society_id: string | null;
-  created_at: string;
-  updated_at: string;
-  supabase_id: string | null;
-  is_active?: boolean;
-};
-
 export type CreateAthleteState = {
   errors?: {
     registration_number?: string[];

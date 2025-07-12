@@ -1,4 +1,4 @@
-import { getWeeklyGoals } from "@/lib/actions/planning";
+import { getWeeklyGoals } from "@/lib/actions/weekly-planning";
 import { getDailyTrainings } from "@/lib/actions/daily-planning";
 import { createClient } from "@/lib/supabase/server";
 import { getWeek, getYear } from "date-fns";
