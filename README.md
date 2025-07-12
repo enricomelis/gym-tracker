@@ -29,12 +29,18 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 ### ✨ Fase 3: Funzionalità aggiuntive per UX Leggera
 
 - [ ] **Micro preset:** Possibilità di salvare delle settimane, degli allenamenti e dei macrocicli per facilitarne l'inserimento.
-  - [ ] Preset per la programmazione settimanale.
+  - [x] Preset per la programmazione settimanale.
   - [ ] Preset per la programmazione giornaliera.
 - [ ] **Macro preset**
   - [ ] Preset per determinati macrocicli.
   - [ ] Preset per la preparazione a una gara (multi-settimana, multi-microciclo).
 - [ ] **Gestione delle gare:** Calcolo automatico della programmazione, parametrizzata dal tecnico, data una gara calendarizzata.
+
+#### User Flow da ottenere
+
+- [x] Inserimento degli esercizi dei singoli atleti per ogni attrezzo.
+- [ ] Definizione dei tipi di settimane: Carico, Scarico, Gara...
+- [ ] ???
 
 ### 📊 Fase X.1: Analisi dati e Regole Avanzate
 

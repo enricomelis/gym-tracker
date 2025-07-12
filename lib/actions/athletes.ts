@@ -366,4 +366,11 @@ export async function getAthleteRoutines(athleteId: string) {
     .from("athlete_routines")
     .select("*")
     .eq("athlete_id", athleteId);
+
+  if (error) {
+    console.error("Error fetching athlete routines:", error);
+    return [];
+  }
+
+  return data;
 }
