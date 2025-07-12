@@ -262,3 +262,43 @@ export async function reactivateAthlete(athleteId: string) {
   revalidatePath("/atleti");
   return { success: true };
 }
+
+export async function addAthleteRoutine(
+  athlete_id: string,
+  routine_name: string,
+  routine_volume: number,
+  routine_notes: string,
+) {
+  const supabase = await createClient();
+
+  // Validate input with Zod
+  const routineSchema = z.object({
+    athlete_id: z.string().uuid(),
+    routine_name: z.string().min(1),
+    routine_volume: z.number().int().min(1),
+    routine_notes: z.string().nullable().optional(),
+  });
+
+  const parsed = routineSchema.safeParse({
+    athlete_id,
+    routine_name,
+    routine_volume,
+    routine_notes,
+  });
+
+  if (!parsed.success) {
+    console.error("Invalid routine data", parsed.error);
+    return { error: "Invalid routine data" } as const;
+  }
+
+  const { data, error } = await supabase.from("athlete_routines").insert({
+    ...parsed.data,
+  });
+
+  if (error) {
+    console.error("Error adding athlete routine:", error);
+    return { error: error.message } as const;
+  }
+
+  return { success: true, data } as const;
+}

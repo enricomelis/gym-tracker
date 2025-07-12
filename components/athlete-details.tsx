@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import React from "react";
+import AthleteRoutineForm from "@/components/athlete-routine-form";
 
 type Coach = {
   id: string;
@@ -121,7 +122,7 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
         <strong>Data di nascita:</strong> {formatDate(athlete.date_of_birth)}
       </p>
       <p>
-        <strong>Matricola:</strong> {athlete.registration_number}
+        <strong>Tessera:</strong> {athlete.registration_number}
       </p>
       <p>
         <strong>Categoria:</strong> {athlete.category}
@@ -191,6 +192,23 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
           </Button>
         </div>
       )}
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button className="w-full">Aggiungi Esercizio</Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aggiungi Esercizio</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AthleteRoutineForm
+            athlete_id={athlete.id}
+            routine_name={""}
+            routine_volume={0}
+            routine_notes={""}
+          />
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Confirm dialog */}
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
