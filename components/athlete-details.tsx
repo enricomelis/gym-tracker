@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import React from "react";
 import AthleteRoutineForm from "@/components/athlete-routine-form";
+import { useState } from "react";
 
 type Coach = {
   id: string;
@@ -53,6 +54,7 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
   );
   const [showConfirm, setShowConfirm] = React.useState(false);
   const [showSelector, setShowSelector] = React.useState(false);
+  const [showAddExercise, setShowAddExercise] = React.useState(false);
 
   React.useEffect(() => {
     async function fetchCoaches() {
@@ -193,7 +195,7 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
         </div>
       )}
 
-      <AlertDialog>
+      <AlertDialog open={showAddExercise} onOpenChange={setShowAddExercise}>
         <AlertDialogTrigger asChild>
           <Button className="w-full">Aggiungi Esercizio</Button>
         </AlertDialogTrigger>
@@ -206,6 +208,8 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
             routine_name={""}
             routine_volume={0}
             routine_notes={""}
+            apparatus=""
+            onSuccess={() => setShowAddExercise(false)}
           />
         </AlertDialogContent>
       </AlertDialog>

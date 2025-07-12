@@ -199,6 +199,15 @@ export type TrainingSet = {
 };
 
 // Tipi per la gestione dei presets
+export type AthleteRoutineFormProps = {
+  athlete_id: string;
+  routine_name?: string;
+  routine_volume?: number;
+  routine_notes?: string;
+  apparatus?: Apparatus | "";
+  onSuccess?: () => void;
+};
+
 export type WeeklyGoalPreset = {
   id?: string;
   name: string;
