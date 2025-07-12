@@ -1,2 +1,5 @@
 -- inserimento società
-INSERT INTO societies (id, name, city, region) VALUES ('1', 'AGL', 'Livorno', 'Toscana');
+INSERT INTO "public"."societies" ("id", "name", "city", "region") VALUES ('2903c35f-3a73-41d3-b8d3-5924ceb68c67', 'AGL', 'Livorno', 'Toscana');
+
+-- inserimento atleti
+INSERT INTO "public"."athletes" ("id", "supabase_id", "current_coach_id", "registered_society_id", "first_name", "last_name", "date_of_birth", "registration_number", "category", "created_at", "updated_at", "is_active") VALUES ('8b58e8af-9610-4d1a-9583-f81c5f540cb9', null, 'a3250183-339e-4b4c-b18e-eebf1327f089', '2903c35f-3a73-41d3-b8d3-5924ceb68c67', 'Roberto', 'Biagietti', '2001-01-07', '11', 'Senior', '2025-07-12 09:47:33.381714', '2025-07-12 09:47:33.381714', 'true'), ('c07d4979-158c-417e-8375-7bfcccc4180a', null, 'a3250183-339e-4b4c-b18e-eebf1327f089', '2903c35f-3a73-41d3-b8d3-5924ceb68c67', 'Simone', 'Houriya', '1997-03-31', '10', 'Senior', '2025-07-12 09:47:11.902088', '2025-07-12 09:47:11.902088', 'true');

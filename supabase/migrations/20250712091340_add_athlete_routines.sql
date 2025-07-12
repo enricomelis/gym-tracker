@@ -6,6 +6,7 @@ create table athlete_routines (
     routine_name TEXT NOT NULL,
     routine_volume INT NOT NULL,
     routine_notes TEXT NOT NULL,
+    apparatus apparatus_enum NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now()
 );

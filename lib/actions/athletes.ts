@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { APPARATUS_TYPES, type Apparatus } from "@/lib/types";
 
 export type CreateAthleteState = {
   errors?: {
@@ -268,6 +269,7 @@ export async function addAthleteRoutine(
   routine_name: string,
   routine_volume: number,
   routine_notes: string,
+  apparatus: Apparatus,
 ) {
   const supabase = await createClient();
 
@@ -277,6 +279,7 @@ export async function addAthleteRoutine(
     routine_name: z.string().min(1),
     routine_volume: z.number().int().min(1),
     routine_notes: z.string().nullable().optional(),
+    apparatus: z.enum(APPARATUS_TYPES as [string, ...string[]]),
   });
 
   const parsed = routineSchema.safeParse({
@@ -284,6 +287,7 @@ export async function addAthleteRoutine(
     routine_name,
     routine_volume,
     routine_notes,
+    apparatus,
   });
 
   if (!parsed.success) {
