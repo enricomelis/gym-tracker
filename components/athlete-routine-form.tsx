@@ -1,6 +1,9 @@
 "use client";
 
-import { addAthleteRoutine } from "@/lib/actions/athletes";
+import {
+  addAthleteRoutine,
+  updateAthleteRoutine,
+} from "@/lib/actions/athletes";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -21,6 +24,7 @@ type AthleteRoutineFormProps = {
   routine_volume?: number;
   routine_notes?: string;
   apparatus?: Apparatus | "";
+  id?: string;
   onSuccess?: () => void;
 };
 
@@ -30,6 +34,7 @@ export default function AthleteRoutineForm({
   routine_volume = 0,
   routine_notes = "",
   apparatus = "",
+  id,
   onSuccess,
 }: AthleteRoutineFormProps) {
   const { toast } = useToast();
@@ -50,13 +55,25 @@ export default function AthleteRoutineForm({
     e.preventDefault();
     setIsPending(true);
     setError(null);
-    const result = await addAthleteRoutine(
-      athlete_id,
-      name,
-      typeof volume === "string" ? parseInt(volume) || 0 : volume,
-      notes,
-      selectedApparatus as Apparatus,
-    );
+    let result;
+    if (id) {
+      result = await updateAthleteRoutine(
+        id,
+        athlete_id,
+        name,
+        typeof volume === "string" ? parseInt(volume) || 0 : volume,
+        notes,
+        selectedApparatus as Apparatus,
+      );
+    } else {
+      result = await addAthleteRoutine(
+        athlete_id,
+        name,
+        typeof volume === "string" ? parseInt(volume) || 0 : volume,
+        notes,
+        selectedApparatus as Apparatus,
+      );
+    }
     setIsPending(false);
     if (result && "error" in result) {
       setError(result.error || null);
@@ -142,7 +159,13 @@ export default function AthleteRoutineForm({
             <p className="text-sm font-medium text-destructive">{error}</p>
           )}
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Aggiunta..." : "Aggiungi Esercizio"}
+            {isPending
+              ? id
+                ? "Salvataggio..."
+                : "Aggiunta..."
+              : id
+                ? "Salva Modifiche"
+                : "Aggiungi Esercizio"}
           </Button>
         </form>
       )}

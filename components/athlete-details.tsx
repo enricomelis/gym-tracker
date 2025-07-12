@@ -55,24 +55,27 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
   const [showConfirm, setShowConfirm] = React.useState(false);
   const [showSelector, setShowSelector] = React.useState(false);
   const [showAddExercise, setShowAddExercise] = React.useState(false);
+  const [editingRoutine, setEditingRoutine] =
+    React.useState<AthleteRoutine | null>(null);
 
   const [athleteRoutines, setAthleteRoutines] = React.useState<
     AthleteRoutine[]
   >([]);
 
-  React.useEffect(() => {
-    async function fetchAthleteRoutines() {
-      const supabase = getBrowserClient();
-      const { data, error } = await supabase
-        .from("athlete_routines")
-        .select("*")
-        .eq("athlete_id", athlete.id);
-      if (!error && data) {
-        setAthleteRoutines(data);
-      }
+  const fetchAthleteRoutines = React.useCallback(async () => {
+    const supabase = getBrowserClient();
+    const { data, error } = await supabase
+      .from("athlete_routines")
+      .select("*")
+      .eq("athlete_id", athlete.id);
+    if (!error && data) {
+      setAthleteRoutines(data);
     }
-    fetchAthleteRoutines();
   }, [athlete.id]);
+
+  React.useEffect(() => {
+    fetchAthleteRoutines();
+  }, [fetchAthleteRoutines]);
 
   React.useEffect(() => {
     async function fetchCoaches() {
@@ -151,18 +154,21 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
       <h2 className="text-lg font-semibold">Esercizi</h2>
       <div className="space-y-2">
         {athleteRoutines.map((routine) => (
-          <div key={routine.id}>
-            <p>
-              <strong>
-                {routine.apparatus}
-                {": "}
-              </strong>
-              {routine.routine_name} | {routine.routine_volume} |{" "}
-              {routine.routine_notes
-                ? `(${routine.routine_notes})`
-                : "Nessuna nota"}
-            </p>
-          </div>
+          <button
+            key={routine.id}
+            type="button"
+            className="w-full rounded border px-2 py-1 text-left hover:bg-muted focus:bg-muted focus:outline-none"
+            onClick={() => {
+              setEditingRoutine(routine);
+              setShowAddExercise(true);
+            }}
+          >
+            <strong>{routine.apparatus}: </strong>
+            {routine.routine_name} | {routine.routine_volume} |{" "}
+            {routine.routine_notes
+              ? `(${routine.routine_notes})`
+              : "Nessuna nota"}
+          </button>
         ))}
       </div>
 
@@ -231,21 +237,34 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
         </div>
       )}
 
-      <AlertDialog open={showAddExercise} onOpenChange={setShowAddExercise}>
+      <AlertDialog
+        open={showAddExercise}
+        onOpenChange={(open) => {
+          setShowAddExercise(open);
+          if (!open) setEditingRoutine(null);
+        }}
+      >
         <AlertDialogTrigger asChild>
           <Button className="w-full">Aggiungi Esercizio</Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Aggiungi Esercizio</AlertDialogTitle>
+            <AlertDialogTitle>
+              {editingRoutine ? "Modifica Esercizio" : "Aggiungi Esercizio"}
+            </AlertDialogTitle>
           </AlertDialogHeader>
           <AthleteRoutineForm
             athlete_id={athlete.id}
-            routine_name={""}
-            routine_volume={0}
-            routine_notes={""}
-            apparatus=""
-            onSuccess={() => setShowAddExercise(false)}
+            id={editingRoutine?.id}
+            routine_name={editingRoutine?.routine_name ?? ""}
+            routine_volume={editingRoutine?.routine_volume ?? 0}
+            routine_notes={editingRoutine?.routine_notes ?? ""}
+            apparatus={editingRoutine?.apparatus ?? ""}
+            onSuccess={async () => {
+              setShowAddExercise(false);
+              setEditingRoutine(null);
+              await fetchAthleteRoutines();
+            }}
           />
         </AlertDialogContent>
       </AlertDialog>

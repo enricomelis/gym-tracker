@@ -307,6 +307,59 @@ export async function addAthleteRoutine(
   return { success: true, data } as const;
 }
 
+export async function updateAthleteRoutine(
+  id: string,
+  athlete_id: string,
+  routine_name: string,
+  routine_volume: number,
+  routine_notes: string,
+  apparatus: Apparatus,
+) {
+  const supabase = await createClient();
+
+  // Validate input with Zod
+  const routineSchema = z.object({
+    id: z.string().uuid(),
+    athlete_id: z.string().uuid(),
+    routine_name: z.string().min(1),
+    routine_volume: z.number().int().min(1),
+    routine_notes: z.string().nullable().optional(),
+    apparatus: z.enum(APPARATUS_TYPES as [string, ...string[]]),
+  });
+
+  const parsed = routineSchema.safeParse({
+    id,
+    athlete_id,
+    routine_name,
+    routine_volume,
+    routine_notes,
+    apparatus,
+  });
+
+  if (!parsed.success) {
+    console.error("Invalid routine data", parsed.error);
+    return { error: "Invalid routine data" } as const;
+  }
+
+  const { error } = await supabase
+    .from("athlete_routines")
+    .update({
+      athlete_id,
+      routine_name,
+      routine_volume,
+      routine_notes,
+      apparatus,
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error updating athlete routine:", error);
+    return { error: error.message } as const;
+  }
+
+  return { success: true } as const;
+}
+
 export async function getAthleteRoutines(athleteId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
