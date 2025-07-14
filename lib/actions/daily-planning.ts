@@ -3,56 +3,19 @@
 import { createClient } from "@/lib/supabase/server";
 import { getWeek } from "date-fns";
 import { z } from "zod";
+import {
+  type TrainingSession,
+  type EnrichedTrainingSession,
+  type ExerciseType,
+  ExerciseTypeVolumeMultipliers,
+  ExecutionPenaltyMap,
+  ExecutionCoeff,
+} from "@/lib/types";
 
-export type DailyRoutine = {
-  id?: string;
-  session_id: string;
-  apparatus: "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
-  type: "I+" | "I" | "P" | "C" | "U" | "Std" | "G" | "S" | "B" | "D";
-  quantity: number;
-  target_sets: number; // n_salite
-  target_execution: "A+" | "A" | "B+" | "B" | "C+" | "C";
-};
+const volumeMultipliers: Record<ExerciseType, number> =
+  ExerciseTypeVolumeMultipliers;
 
-export type TrainingSession = {
-  id: string;
-  date: string;
-  session_number: number;
-  // This is the raw type from the DB
-  daily_routines: DailyRoutine[];
-};
-
-export type EnrichedTrainingSession = {
-  id: string;
-  date: string;
-  session_number: number;
-  week_number: number;
-  total_volume: number;
-  average_intensity: number;
-  routines: DailyRoutine[];
-};
-
-const volumeMultipliers: Record<DailyRoutine["type"], number> = {
-  "I+": 1.15,
-  I: 1.0,
-  P: 0.5,
-  C: 0.33,
-  U: 1.0, // This will be handled separately
-  Std: 0,
-  G: 0,
-  S: 0,
-  B: 0,
-  D: 0,
-};
-
-const executionPenaltyMap: Record<DailyRoutine["target_execution"], number> = {
-  "A+": 1.4,
-  A: 1.6,
-  "B+": 1.8,
-  B: 2.0,
-  "C+": 2.2,
-  C: 2.5,
-};
+const executionPenaltyMap: Record<ExecutionCoeff, number> = ExecutionPenaltyMap;
 
 export async function getDailyTrainings(
   athleteId: string,

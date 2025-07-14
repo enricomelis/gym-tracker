@@ -1,7 +1,8 @@
 "use client";
 
 import { useTransition } from "react";
-import { reactivateAthlete, type Athlete } from "@/lib/actions/athletes";
+import { reactivateAthlete } from "@/lib/actions/athletes";
+import { type Athlete } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 

@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import React from "react";
+import AthleteRoutineForm from "@/components/athlete-routine-form";
+import { type AthleteRoutine, APPARATUS_TYPES } from "@/lib/types";
 
 type Coach = {
   id: string;
@@ -52,6 +54,28 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
   );
   const [showConfirm, setShowConfirm] = React.useState(false);
   const [showSelector, setShowSelector] = React.useState(false);
+  const [showAddExercise, setShowAddExercise] = React.useState(false);
+  const [editingRoutine, setEditingRoutine] =
+    React.useState<AthleteRoutine | null>(null);
+
+  const [athleteRoutines, setAthleteRoutines] = React.useState<
+    AthleteRoutine[]
+  >([]);
+
+  const fetchAthleteRoutines = React.useCallback(async () => {
+    const supabase = getBrowserClient();
+    const { data, error } = await supabase
+      .from("athlete_routines")
+      .select("*")
+      .eq("athlete_id", athlete.id);
+    if (!error && data) {
+      setAthleteRoutines(data);
+    }
+  }, [athlete.id]);
+
+  React.useEffect(() => {
+    fetchAthleteRoutines();
+  }, [fetchAthleteRoutines]);
 
   React.useEffect(() => {
     async function fetchCoaches() {
@@ -121,11 +145,39 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
         <strong>Data di nascita:</strong> {formatDate(athlete.date_of_birth)}
       </p>
       <p>
-        <strong>Matricola:</strong> {athlete.registration_number}
+        <strong>Tessera:</strong> {athlete.registration_number}
       </p>
       <p>
         <strong>Categoria:</strong> {athlete.category}
       </p>
+
+      <h2 className="text-lg font-semibold">Esercizi</h2>
+      <div className="space-y-2">
+        {athleteRoutines
+          .slice()
+          .sort(
+            (a, b) =>
+              APPARATUS_TYPES.indexOf(a.apparatus) -
+              APPARATUS_TYPES.indexOf(b.apparatus),
+          )
+          .map((routine) => (
+            <button
+              key={routine.id}
+              type="button"
+              className="w-full rounded border px-2 py-1 text-left hover:bg-muted focus:bg-muted focus:outline-none"
+              onClick={() => {
+                setEditingRoutine(routine);
+                setShowAddExercise(true);
+              }}
+            >
+              <strong>{routine.apparatus}: </strong>
+              {routine.routine_name} | {routine.routine_volume} |{" "}
+              {routine.routine_notes
+                ? `(${routine.routine_notes})`
+                : "Nessuna nota"}
+            </button>
+          ))}
+      </div>
 
       <AlertDialog>
         <AlertDialogTrigger asChild>
@@ -191,6 +243,38 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
           </Button>
         </div>
       )}
+
+      <AlertDialog
+        open={showAddExercise}
+        onOpenChange={(open) => {
+          setShowAddExercise(open);
+          if (!open) setEditingRoutine(null);
+        }}
+      >
+        <AlertDialogTrigger asChild>
+          <Button className="w-full">Aggiungi Esercizio</Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {editingRoutine ? "Modifica Esercizio" : "Aggiungi Esercizio"}
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <AthleteRoutineForm
+            athlete_id={athlete.id}
+            id={editingRoutine?.id}
+            routine_name={editingRoutine?.routine_name ?? ""}
+            routine_volume={editingRoutine?.routine_volume ?? 0}
+            routine_notes={editingRoutine?.routine_notes ?? ""}
+            apparatus={editingRoutine?.apparatus ?? ""}
+            onSuccess={async () => {
+              setShowAddExercise(false);
+              setEditingRoutine(null);
+              await fetchAthleteRoutines();
+            }}
+          />
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Confirm dialog */}
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>

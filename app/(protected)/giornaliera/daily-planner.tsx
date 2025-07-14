@@ -16,11 +16,10 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
-  EnrichedTrainingSession,
   getDailyTrainings,
   createEmptyTrainingSession,
 } from "@/lib/actions/daily-planning";
-import { type Athlete } from "@/lib/actions/athletes";
+import { type Athlete, type EnrichedTrainingSession } from "@/lib/types";
 import {
   Table,
   TableBody,

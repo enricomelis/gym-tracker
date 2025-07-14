@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { getYear, getWeek } from "date-fns";
 import React from "react";
 
-import type { WeeklyGoal } from "@/lib/actions/planning";
-import { getGroupedWeeklyGoals } from "@/lib/actions/planning";
+import type { WeeklyGoal, Competition, Athlete } from "@/lib/types";
+import { getGroupedWeeklyGoals } from "@/lib/actions/weekly-planning";
 import { getWeeksInYear, getWeekDateRange } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,16 +24,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import WeeklyGoalForm from "./weekly-goal-form";
-import { type Athlete } from "@/lib/actions/athletes";
 import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
 import { useRole } from "@/lib/hooks/use-role";
 import PresetButton from "@/components/preset-button";
-
-type Competition = {
-  id: string;
-  location: string;
-  date: string;
-};
 
 type GroupedGoals = Record<number, WeeklyGoal[]>;
 

@@ -1,23 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { type WeeklyGoal } from "@/lib/types";
 import { z } from "zod";
-
-export type WeeklyGoal = {
-  id?: string;
-  athlete_id: string;
-  week_number: number;
-  year: number;
-  apparatus: "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
-  macro: "Mixed" | "Competition";
-  micro: "Increasing Load" | "Decreasing Load" | "Model" | "Competition Week";
-  exercise_volume: number;
-  dismount_volume: number;
-  target_penalty: number;
-  base_volume?: number | null;
-  camp?: string | null;
-  competition_id?: string | null;
-};
 
 export async function getWeeklyGoals(
   athleteId: string,
