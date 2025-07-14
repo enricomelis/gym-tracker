@@ -24,3 +24,11 @@ WITH CHECK (
   supabase_id = auth.uid()
 );
 
+CREATE POLICY "authenticated coaches can select coaches"
+ON "public"."coaches"
+AS PERMISSIVE
+FOR SELECT
+TO authenticated
+USING (
+  true
+);
