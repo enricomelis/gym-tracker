@@ -4,6 +4,50 @@ Un'applicazione web moderna progettata per la gestione degli allenamenti nella g
 
 ---
 
+## Per la DX
+
+La fase di dev è svolto tramite le CLI di _git_ e _supabase_.
+
+### Gestione dei Branch
+
+- il branch `main` è quello di production, l'ultima versione stabile dell'app.
+- il branch `development` è quello di riferimento per lo sviluppo di nuove funzionalità e di testing.
+- tutti i branch che iniziano con un numero sono creati per la risoluzione delle GitHub Issue associata, possono derivare sia da `main` che da `development`.
+- tutti i branch che iniziano con _feat/_ sono dedicati a una singola funzionalità, difficilmente deriveranno da `main` ma non lo escludo a priori.
+- tutti i branch che iniziano con _hotfix/_ sono dedicati a fix di bug da risolvere velocemente, quasi sempre deriveranno da `main`.
+- tutti i branch che iniziano con _refactor/_ sono dedicati a ristrutturazione del codice senza aggiunta/rimozione di funzionalità.
+
+### Workflow
+
+Dopo aver clonato la repo e aver installato le dependecies, il flusso di sviluppo tendenzialmente va così, a partire dal branch /development:
+
+- `git pull` e `git status` per controllare di essere aggiornati alle ultime push
+- `git branch <nome-del-branch>` per creare un nuovo branch
+- `git push origin/<nome-del-branch>` per pubblicare il nuovo branch su GitHub
+- `supabase start` per avviare il db locale (per funzionare ha bisogno di Docker, la documentazione della Supabase CLI è chiara e ben scritta)
+- `supabase db pull` per aggiornare la versione locale con quella remota nel caso fossero avvenuti cambiamenti
+- `supabase db reset` per riscrivere da 0 lo schema del db locale e popolarlo col file `seed.sql` (ad ora vuoto/inesistente)\*
+- `npm run dev` per avviare il server locale (senza `supabase start` non può funzionare)
+- `npm run build` per verificare che il codice possa essere compilato/gestito correttamente da Vercel
+- `git add .` per aggiungere tutti i file modificati all'interno della directory corrente
+- `git commit -m "<messaggio di commit>"` per salvare in locale i cambiamenti
+- `git push origin <nome-del-branch>` per fare la push alla repo remota su GitHub
+- `supabase stop` per chiudere il db locale
+- per la PR e le merge, si fa tutto su GitHub
+
+#### Migrazioni
+
+- `supabase migration new <nome_migrazione>` per creare una nuova migrazione in locale (viene creata con un timestamp automaticamente UTC, quindi due ore prima rispetto all'ora italiana. ad ora non c'è modo per cambiare questo formato ma è bene che rimanga tale.)
+- `supabase migration list` per controllare quali migrazioni sono state eseguite in locale e in remoto
+- `supabase migration up --local` per eseguire una migrazione nuova nel db locale
+
+altri comandi utili
+
+- `supabase db diff` per vedere le differenze fra locale e remoto
+- `supabase db dump` per scaricare tutti i dati dal db remoto
+
+* il database viene creato localmente in base alle migrazioni scritte nella directory `@/supabase/migrations`
+
 ## Roadmap del Progetto
 
 Le fasi numerate sono ordinate in base alla priorità, partendo dalle fondamenta dal progetto e aggiungendo mano mano strati di funzionalità.
@@ -26,89 +70,45 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
   - [x] Programmazione Giornaliera.
 - [x] **Inserimento:** Una sezione di tecnici e atleti possono inserire il carico svolto durante gli allenamenti.
 
-### ✨ Fase 3: Funzionalità aggiuntive per UX Leggera
+### ✨ Fase 3: Funzionalità extra-excel per la UX
 
 - [ ] **Micro preset:** Possibilità di salvare delle settimane, degli allenamenti e dei macrocicli per facilitarne l'inserimento.
-  - [x] Preset per la programmazione settimanale.
-  - [ ] Preset per la programmazione giornaliera.
-- [ ] **Macro preset**
-  - [ ] Preset per determinati macrocicli.
-  - [ ] Preset per la preparazione a una gara (multi-settimana, multi-microciclo).
+  - [x] Preset e inserimento per la programmazione settimanale.
+  - [ ] Preset e inserimento per la programmazione giornaliera.
+- [ ] **Pagine dedicata** Creazione di una pagina dedicata interamente alla gestione dei preset. Questa pagina verrà poi smistata.
+  - [ ] Sezione 1: creazione del preset settimanale (microciclo)
+    - Nome della settimana
+    - Numero di esercizi per ogni giorno, per ogni attrezzo
+  - [ ] Sezione 2: creazione del preset multiplo (macrociclo)
+    - Nome del macrociclo
+    - Numero di settimane
+    - Tipo di microcilo per ogni settimana
 - [ ] **Gestione delle gare:** Calcolo automatico della programmazione, parametrizzata dal tecnico, data una gara calendarizzata.
 
 #### User Flow da ottenere
 
-- [x] Inserimento degli esercizi dei singoli atleti per ogni attrezzo.
-- [ ] Definizione dei tipi di settimane: Carico, Scarico, Gara...
-- [ ] ???
+- [x] Tecnico inserisce esercizi dei singoli atleti per ogni attrezzo.
+- [ ] Tecnico definisce una programmazione settimanale, in base al numero di esercizi da eseguire per ogni attrezzo per ogni giorno. Ogni preset di settimana ha un nome del tipo "Gara", "Studio", etc.
+- [ ] Tecnico inserisce i preset per una determinata settimana in base al tipo, potendoli modificare successivamente.
+- [ ] Tecnico dice quale atleta partecipa a quale settimana/gara, potendo personalizzare ulteriormente la programmazione.
 
-### 📊 Fase X.1: Analisi dati e Regole Avanzate
+In che modo cambia del flow attuale?
 
-- [ ] **Grafici e Analisi dati:** Una sezione che confronta la programmazione con l'inserimento, che visualizzi l'andamento con grafici e che renda comprensibile l'andamento dell'atleta.
+- prima la programmazione partiva dall'atleta; adesso deve finire con l'atleta
+- prima la programmazione andava inserita giorno per giorno, attrezzo per attrezzo, atleta per atleta; adesso viene generalizzata prima e personalizzata dopo
+- prima la programmazione si basava esclusivamente sul volume in UdE; adesso è definita in base agli esercizi definiti dal tecnico (che in futuro potranno essere collegato ai singoli elementi)
+
+### ⚡ Fase 4: Funzionalità avanzate
+
 - [ ] **Regole avanzate:** Implementazione delle regole avanzate dello standard nazionale.
   - [ ] Inizialmente aggiungendo dei semplici calcoli frontend per l'inserimento più accurato.
   - [ ] Successivamente collegando ogni elemento della salita alle regole da applicare.
-
-### 🧑🏻‍🔧 Fase X.2: Super Tecnico
-
 - [ ] **Nuovo ruolo:** Inserimento di un terzo ruolo, al di sopra del tecnico, che rifletta la figura di Direttore Tecnico ai vari livelli (Regionale, Nazionale...) con funzionalità aggiuntive di analisi di svariati atleti.
+- [ ] **Implementazione del CdP** Per poter creare esercizi da codice.
+- [ ] **Grafici e Analisi dati:** Una sezione che confronta la programmazione con l'inserimento, che visualizzi l'andamento con grafici e che renda comprensibile l'andamento dell'atleta.
 
-### 🌐 Fase Z.1: UI
+### 🌐 Fase 5: UI
 
 - [ ] **Miglioramento generale:** Tema e colori ben definiti, Tipografia, Libreria Componenti.
 - [ ] **Filtri:** Possibilità di cambiare modalità di visualizzazione per le varie programmazioni.
 - [ ] **Dashboard:** Inserimento di Dashboard per tecnici e atleti, che aiutino al massimo a visualizzare l'andamento.
-
-### ⚡ Fase Z.2: Ottimizzazioni varie
-
-- [x] **Speed Insights:** Inserimento di analisi per ottimizzare la velocità dell'app.
-- [ ] **RLS:** Inserimento di un maggior livello di sicurezza, lato database.
-- [ ] **Sviluppo Mobile:** Costruzione di una versione mobile on-device dell'app.
-
----
-
-## Problematiche Note
-
-Questa sezione elenca i problemi noti o i bug che sono stati identificati ma non ancora risolti. La loro risoluzione è pianificata per il futuro, ma non rappresenta una priorità immediata.
-
-### Front-end
-
-#### app
-
-- [x] Fare in modo che il login venga salvato.
-
-#### app/settimanale - Mobile
-
-- [x] Overflow del bottone per il cambio anno.
-- [x] Overflow del form per inserimento programmazione che ne impossibilita l'utilizzo.
-
-### Back-end
-
-#### URLs
-
-- [x] Dopo la corretta conferma dell'email, il redirect va cambiato dalla Dashboard Supabase.
-
-#### Database Schema
-
-- [x] Modificare relazione Atleti-Allenamenti. Dovrebbe essere Molti-a-Molti.
-- [x] Modificare l'eliminazione degli Atleti. Elimina diventa Disattiva; Possibilità di cambiare tecnico.
-
-## Gestione dei Branch
-
-La gestione dei branch è purtroppo un miscuglio non ben definito di CI/CD e di GitFlow, dato che non ho mai avuto esperienze lavorative con nessuno dei due (sto semplicemente prendendo ciò che mi sembra meglio da entrambi).
-
-- il branch `main` è quello di production, l'ultima versione stabile dell'app.
-- il branch `development` è quello di riferimento per lo sviluppo di nuove funzionalità e di testing.
-- tutti i branch che iniziano con un numero sono creati per la risoluzione delle GitHub Issue associata, possono derivare sia da `main` che da `development`.
-- tutti i branch che iniziano con _feat/_ sono dedicati a una singola funzionalità, difficilmente deriveranno da `main` ma non lo escludo a priori.
-- tutti i branch che iniziano con _hotfix/_ sono dedicati a fix di bug da risolvere velocemente, quasi sempre deriveranno da `main`.
-
-### Dev Workflow
-
-- `git branch <branch_name>` per creare un nuovo branch secondo le convenzioni di sopra
-- `git checkout <branch_name>` per cambiare e andare sul nuovo branch
-- `git push origin <branch_name>` per pubblicare per la prima volta il branch su GitHub
-- `git add .` per aggiungere tutti i cambiamenti
-- `npm run build` per verificare che la build non crei problemi
-- `git commit -m "<messaggio>"` per fare la commit locale
-- `git push origin <branch_name>` per pushare i cambiamenti sul proprio branch
