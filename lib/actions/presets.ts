@@ -240,9 +240,12 @@ export async function createMicrocyclePreset(
     return { error: "Invalid microcycle preset data" } as const;
   }
 
+  // Attach created_by to each row
+  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
+
   const { data, error } = await supabase
     .from("microcycles_presets")
-    .insert(parsed.data)
+    .insert(rows)
     .select();
   if (error) {
     console.error("Error creating microcycle preset:", error);
