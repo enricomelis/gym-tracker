@@ -1,8 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { type WeeklyGoalPreset } from "@/lib/types";
-import { Coach } from "@/lib/types";
+import { type WeeklyGoalPreset, type MicrocyclePreset } from "@/lib/types";
 import { z } from "zod";
 
 /**
@@ -80,47 +79,6 @@ export async function getWeeklyGoalPresets() {
   }
   return data as WeeklyGoalPreset[];
 }
-
-export type DailyRoutinePreset = {};
-
-export type TrainingSessionPreset = {
-  id: string;
-  name: string;
-  created_by: string;
-  week_day: number;
-  fx_preset_id: DailyRoutinePreset | null;
-  ph_preset_id: DailyRoutinePreset | null;
-  sr_preset_id: DailyRoutinePreset | null;
-  vt_preset_id: DailyRoutinePreset | null;
-  pb_preset_id: DailyRoutinePreset | null;
-  hb_preset_id: DailyRoutinePreset | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
-
-export type MacrocyclePreset = {
-  id: string;
-  name: string;
-  created_by: string;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
-
-export type MicrocyclePreset = {
-  id: string;
-  name: string;
-  allenamento_1: TrainingSessionPreset;
-  allenamento_2: TrainingSessionPreset;
-  allenamento_3: TrainingSessionPreset;
-  allenamento_4: TrainingSessionPreset;
-  allenamento_5: TrainingSessionPreset;
-  allenamento_6: TrainingSessionPreset;
-  allenamento_7: TrainingSessionPreset;
-  macrocycle_id: MacrocyclePreset | null;
-  created_by: Coach;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
 
 export async function createMicrocyclePreset(
   presets: Omit<MicrocyclePreset, "id" | "created_by">[],

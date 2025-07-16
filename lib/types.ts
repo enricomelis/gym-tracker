@@ -228,3 +228,44 @@ export type WeeklyGoalPreset = {
   base_volume?: number | null;
   created_by?: string;
 };
+
+export type DailyRoutinePreset = {};
+
+export type TrainingSessionPreset = {
+  id: string;
+  name: string;
+  created_by: string;
+  week_day: number;
+  fx_preset_id: string | null;
+  ph_preset_id: string | null;
+  sr_preset_id: string | null;
+  vt_preset_id: string | null;
+  pb_preset_id: string | null;
+  hb_preset_id: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type MacrocyclePreset = {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type MicrocyclePreset = {
+  id: string;
+  name: string;
+  allenamento_1_id: string;
+  allenamento_2_id: string;
+  allenamento_3_id: string;
+  allenamento_4_id: string;
+  allenamento_5_id: string;
+  allenamento_6_id: string;
+  allenamento_7_id: string;
+  macrocycle_id: string | null;
+  created_by: Coach;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
