@@ -4,8 +4,6 @@ import { useEffect, useState, useTransition } from "react";
 import {
   createMicrocyclePreset,
   getTrainingSessionPresets,
-  getMicrocyclePresets,
-  getDailyRoutinePresets,
 } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,18 +15,10 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { DailyRoutinePreset } from "@/lib/types";
+import { MicrocyclePreset } from "@/lib/types";
 
 // Types for options
 interface TrainingSessionPresetOption {
-  id: string;
-  name: string;
-}
-interface MacrocyclePresetOption {
-  id: string;
-  name: string;
-}
-interface DailyRoutinePresetOption {
   id: string;
   name: string;
 }
@@ -68,34 +58,15 @@ export default function MicrocyclePresetForm({
   const [trainingSessionOptions, setTrainingSessionOptions] = useState<
     TrainingSessionPresetOption[]
   >([]);
-  const [macrocycleOptions, setMacrocycleOptions] = useState<
-    MacrocyclePresetOption[]
-  >([]);
-  const [dailyRoutineOptions, setDailyRoutineOptions] = useState<
-    DailyRoutinePresetOption[]
-  >([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch options on mount
   useEffect(() => {
     async function fetchOptions() {
       setLoading(true);
-      const [sessions, macros, dailyRoutines] = await Promise.all([
-        getTrainingSessionPresets(),
-        getMicrocyclePresets(),
-        getDailyRoutinePresets(),
-      ]);
+      const sessions = await getTrainingSessionPresets();
       setTrainingSessionOptions(
         (sessions || []).map((s) => ({ id: s.id, name: s.name })),
-      );
-      setMacrocycleOptions(
-        (macros || []).map((m) => ({ id: m.id, name: m.name })),
-      );
-      setDailyRoutineOptions(
-        (dailyRoutines || []).map((d: DailyRoutinePreset) => ({
-          id: d.id,
-          name: d.name,
-        })),
       );
       setLoading(false);
     }
@@ -145,7 +116,10 @@ export default function MicrocyclePresetForm({
       return;
     }
     startTransition(async () => {
-      const payload = [
+      const payload: Omit<
+        MicrocyclePreset,
+        "id" | "created_by" | "created_at" | "updated_at"
+      >[] = [
         {
           name: preset.name.trim(),
           allenamento_1: preset.allenamento_1,
@@ -158,7 +132,7 @@ export default function MicrocyclePresetForm({
           macrocycle_id: preset.macrocycle_id || null,
         },
       ];
-      const result = await createMicrocyclePreset(payload as any);
+      const result = await createMicrocyclePreset(payload);
       if (result && "error" in result) {
         toast({
           title: "Errore",

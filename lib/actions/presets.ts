@@ -166,7 +166,10 @@ export async function getMicrocyclePresets() {
   return data as MicrocyclePreset[];
 }
 export async function createMicrocyclePreset(
-  presets: Omit<MicrocyclePreset, "id" | "created_by">[],
+  presets: Omit<
+    MicrocyclePreset,
+    "id" | "created_by" | "created_at" | "updated_at"
+  >[],
 ) {
   const supabase = await createClient();
 
