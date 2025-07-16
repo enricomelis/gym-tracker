@@ -92,6 +92,14 @@ export type Competition = {
   date: string;
 };
 
+export type Coach = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
 // Tipi per la programmazione
 export type WeeklyGoal = {
   id?: string;
