@@ -106,6 +106,7 @@ export default function WeeklyPlanner({
           />
         )}
         <div className="flex w-full min-w-0 items-center gap-2 md:w-auto">
+          <PresetButton presetType="microciclo" />
           <PresetButton presetType="settimanale" />
           <Button
             variant="outline"
