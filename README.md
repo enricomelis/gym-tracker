@@ -92,6 +92,19 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 - [ ] Tecnico inserisce i preset per una determinata settimana in base al tipo, potendoli modificare successivamente.
 - [ ] Tecnico dice quale atleta partecipa a quale settimana/gara, potendo personalizzare ulteriormente la programmazione.
 
+- [ ] Tecnico inserisce atleta ed esercizi relativi (/atleti)
+- [ ] Tecnico definisce i preset (/presets)
+  - [ ] Allenamento
+  - [ ] Microciclo
+  - [ ] Macrociclo
+- [ ] Tecnico inserisce la programmazione generica (/programmazione)
+- [ ] Tecnico definisce la gara, chi partecipa e a quali attrezzi (/gestione-gare)
+- [ ] Tecnico collega la programmazione ai singoli atleti
+  - [ ] prima della definizione della gara, (dentro /programmazione -> switch per Generica/Specifica)
+  - [ ] dopo la definizione della gara, controllando se e come sovrascrivere i dati già presenti (dentro /gestione-gare)
+
+Per ottenere tutto questo c'è da ristrutturare il database perché si stacca dall'excel.
+
 In che modo cambia del flow attuale?
 
 - prima la programmazione partiva dall'atleta; adesso deve finire con l'atleta
