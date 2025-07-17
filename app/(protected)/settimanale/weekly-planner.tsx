@@ -26,7 +26,6 @@ import {
 import WeeklyGoalForm from "./weekly-goal-form";
 import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
 import { useRole } from "@/lib/hooks/use-role";
-import PresetButton from "@/components/preset-button";
 
 type GroupedGoals = Record<number, WeeklyGoal[]>;
 
@@ -106,8 +105,6 @@ export default function WeeklyPlanner({
           />
         )}
         <div className="flex w-full min-w-0 items-center gap-2 md:w-auto">
-          <PresetButton presetType="microciclo" />
-          <PresetButton presetType="settimanale" />
           <Button
             variant="outline"
             className="aspect-square h-6 w-6 md:h-10 md:w-10"
