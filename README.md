@@ -82,7 +82,7 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
   - [ ] Sezione 2: creazione del preset multiplo (macrociclo)
     - Nome del macrociclo
     - Numero di settimane
-    - Tipo di microcilo per ogni settimana
+    - Tipo di microciclo per ogni settimana
 - [ ] **Gestione delle gare:** Calcolo automatico della programmazione, parametrizzata dal tecnico, data una gara calendarizzata.
 
 #### User Flow da ottenere
@@ -107,15 +107,16 @@ In che modo cambia del flow attuale?
   - Microciclo: `microcycles_presets` dove viene creata una settimana generica, composta da 7 allenamenti
   - Macrociclo: `macrocycles_presets` dove viene creato un periodo generico, formato da _n_ microcicli
 - Programmazione: dove il tecnico inserisce la programmazione generica in base ai preset che ha creato
-  - type/Generica
+  - type/Generica: fa la ricerca dentro `public.<table>` dove non ci sono riferimenti a date, atleti e altri particolari
     - view/Annuale: visione generale di tutto l'anno,
       - è una tabella Settimane x Giorni dove ogni cella è la quantità di esercizi ai vari attrezzi
       - colonne aggiuntive: microciclo e macrociclo relativi
     - view/Settimanale: visione particolare del microciclo corrente,
       - è una tabella Giorni x Attrezzi dove ogni cella è la quantità specifica per ogni attrezzo
       - colonne aggiuntive: macrociclo relativo
-  - type/Specifica + Dropdown (per scegliere l'Atleta)
-    -
+  - type/Specifica + Dropdown (per scegliere l'Atleta): fa la ricerca dentro `daily_routine_presets` in base all'_athlete_id_
+    - view/Annuale
+    - view/Settimanale
 - Gestione Gare:
   - section/programmazione: dove il tecnico definisce in che modo la programmazione generica si relazione con la data gara (ad esempio: una gara X ha una programmazione basata sul macrociclo Y; in questo modo la programmazione si può popolare automaticamente)
   - section/atleti: dove il tecnico inserisce quale atleta partecipa a quale gara, per quali attrezzi e con quali esercizi, così che la programmazione di quell'atleta possa essere correttamente personalizzata
