@@ -204,7 +204,7 @@ export default function MicrocyclePresetForm({
             className="flex flex-col gap-2 md:flex-row md:items-center"
           >
             <label className="w-32 text-sm font-medium">
-              Preset Allenamento {day}
+              Allenamento {day}
             </label>
             <Select
               value={
