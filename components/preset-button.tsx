@@ -18,10 +18,17 @@ type PresetType = "settimanale" | "giornaliera" | "allenamento" | "microciclo";
 
 export default function PresetButton({
   presetType,
+  onSave,
 }: {
   presetType: PresetType;
+  onSave?: () => void;
 }) {
   const [open, setOpen] = useState(false);
+
+  const handleSave = () => {
+    setOpen(false);
+    onSave?.();
+  };
 
   if (presetType === "settimanale") {
     return (
@@ -33,7 +40,7 @@ export default function PresetButton({
           <DialogHeader>
             <DialogTitle>Crea Preset Settimanale</DialogTitle>
           </DialogHeader>
-          <WeeklyGoalPresetForm onSave={() => setOpen(false)} />
+          <WeeklyGoalPresetForm onSave={handleSave} />
         </DialogContent>
       </Dialog>
     );
@@ -49,7 +56,7 @@ export default function PresetButton({
           <DialogHeader>
             <DialogTitle>Crea Preset Giornaliero</DialogTitle>
           </DialogHeader>
-          <DailyRoutinePresetForm onSave={() => setOpen(false)} />
+          <DailyRoutinePresetForm onSave={handleSave} />
         </DialogContent>
       </Dialog>
     );
@@ -65,7 +72,7 @@ export default function PresetButton({
           <DialogHeader>
             <DialogTitle>Crea Preset Sessione di Allenamento</DialogTitle>
           </DialogHeader>
-          <TrainingSessionPresetForm onSave={() => setOpen(false)} />
+          <TrainingSessionPresetForm onSave={handleSave} />
         </DialogContent>
       </Dialog>
     );
@@ -83,7 +90,7 @@ export default function PresetButton({
           <DialogHeader>
             <DialogTitle>Crea Preset Microciclo</DialogTitle>
           </DialogHeader>
-          <MicrocyclePresetForm onSave={() => setOpen(false)} />
+          <MicrocyclePresetForm onSave={handleSave} />
         </DialogContent>
       </Dialog>
     );
