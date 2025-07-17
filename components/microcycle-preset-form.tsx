@@ -3,7 +3,8 @@
 import { useEffect, useState, useTransition } from "react";
 import {
   createMicrocyclePreset,
-  getTrainingSessionPresets,
+  getDailyRoutinePresets,
+  getMacrocyclePresets,
 } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,10 +16,19 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { MicrocyclePreset } from "@/lib/types";
+import {
+  MicrocyclePreset,
+  DailyRoutinePreset,
+  MacrocyclePreset,
+} from "@/lib/types";
 
 // Types for options
-interface TrainingSessionPresetOption {
+interface DailyRoutinePresetOption {
+  id: string;
+  name: string;
+}
+
+interface MacrocyclePresetOption {
   id: string;
   name: string;
 }
@@ -55,18 +65,35 @@ export default function MicrocyclePresetForm({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [preset, setPreset] = useState<EditableMicrocyclePreset>(initialPreset);
-  const [trainingSessionOptions, setTrainingSessionOptions] = useState<
-    TrainingSessionPresetOption[]
+  const [dailyRoutineOptions, setDailyRoutineOptions] = useState<
+    DailyRoutinePresetOption[]
+  >([]);
+  const [macrocycleOptions, setMacrocycleOptions] = useState<
+    MacrocyclePresetOption[]
   >([]);
   const [loading, setLoading] = useState(true);
+  // Giorno su cui l'utente ha effettuato l'ultima modifica al select
+  const [activeDay, setActiveDay] = useState<number | null>(null);
 
   // Fetch options on mount
   useEffect(() => {
     async function fetchOptions() {
       setLoading(true);
-      const sessions = await getTrainingSessionPresets();
-      setTrainingSessionOptions(
-        (sessions || []).map((s) => ({ id: s.id, name: s.name })),
+      const [dailyRoutines, macrocycles] = await Promise.all([
+        getDailyRoutinePresets(),
+        getMacrocyclePresets(),
+      ]);
+      setDailyRoutineOptions(
+        (dailyRoutines || []).map((s: DailyRoutinePreset) => ({
+          id: s.id,
+          name: s.name,
+        })),
+      );
+      setMacrocycleOptions(
+        (macrocycles || []).map((s: MacrocyclePreset) => ({
+          id: s.id,
+          name: s.name,
+        })),
       );
       setLoading(false);
     }
@@ -154,10 +181,43 @@ export default function MicrocyclePresetForm({
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) =>
     e.target.select();
 
+  /** Copia il valore dell'allenamento selezionato per un giorno su tutti i giorni 1-5 */
+  const applyToWeek = (fromDay: number) => {
+    const selectedVal =
+      (preset[
+        `allenamento_${fromDay}` as keyof EditableMicrocyclePreset
+      ] as string) || "";
+    if (!selectedVal) return;
+    setPreset((prev) => {
+      const updated: EditableMicrocyclePreset = { ...prev };
+      for (let d = 1; d <= 5; d++) {
+        updated[`allenamento_${d}` as keyof EditableMicrocyclePreset] =
+          selectedVal;
+      }
+      return updated;
+    });
+    // Nasconde il bottone dopo l'applicazione
+    setActiveDay(null);
+  };
+
+  const clearAll = () => {
+    setPreset((prev) => ({
+      ...prev,
+      allenamento_1: "",
+      allenamento_2: "",
+      allenamento_3: "",
+      allenamento_4: "",
+      allenamento_5: "",
+      allenamento_6: "",
+      allenamento_7: "",
+    }));
+    setActiveDay(null);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+        <div className="md:col-span-8">
           <label className="text-sm font-medium">Nome Preset</label>
           <Input
             value={preset.name}
@@ -166,8 +226,17 @@ export default function MicrocyclePresetForm({
             disabled={isPending || loading}
           />
         </div>
-        <div className="flex items-end justify-end">
+        <div className="flex w-full flex-col gap-2 md:col-span-2 md:flex-row md:items-end md:justify-end md:gap-2">
           <Button
+            type="button"
+            variant="outline"
+            onClick={clearAll}
+            disabled={isPending || loading}
+          >
+            Rimuovi allenamenti
+          </Button>
+          <Button
+            className="md:col-span-2"
             onClick={handleSave}
             disabled={isPending || loading || !preset.name.trim()}
           >
@@ -175,9 +244,9 @@ export default function MicrocyclePresetForm({
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          {/* <label className="text-sm font-medium">Macrociclo (opzionale)</label>
+          <label className="text-sm font-medium">Macrociclo (opzionale)</label>
           <Select
             value={preset.macrocycle_id || "none"}
             onValueChange={(val) => handleChange("macrocycle_id", val)}
@@ -188,15 +257,15 @@ export default function MicrocyclePresetForm({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Nessuno</SelectItem>
-              {macrocycleOptions.map((opt) => (
+              {macrocycleOptions.map((opt: MacrocyclePresetOption) => (
                 <SelectItem key={opt.id} value={opt.id}>
                   {opt.name}
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select> */}
+          </Select>
         </div>
-      </div>
+      </div> */}
       <div className="space-y-4">
         {[1, 2, 3, 4, 5, 6, 7].map((day) => (
           <div
@@ -212,12 +281,13 @@ export default function MicrocyclePresetForm({
                   `allenamento_${day}` as keyof EditableMicrocyclePreset
                 ] || "none"
               }
-              onValueChange={(val) =>
+              onValueChange={(val) => {
+                setActiveDay(day);
                 handleChange(
                   `allenamento_${day}` as keyof EditableMicrocyclePreset,
                   val,
-                )
-              }
+                );
+              }}
               disabled={isPending || loading}
             >
               <SelectTrigger>
@@ -225,13 +295,29 @@ export default function MicrocyclePresetForm({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Nessuno</SelectItem>
-                {trainingSessionOptions.map((opt) => (
+                {dailyRoutineOptions.map((opt: DailyRoutinePresetOption) => (
                   <SelectItem key={opt.id} value={opt.id}>
                     {opt.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {day <= 5 &&
+              activeDay === day &&
+              preset[`allenamento_${day}` as keyof EditableMicrocyclePreset] &&
+              preset[`allenamento_${day}` as keyof EditableMicrocyclePreset] !==
+                "none" && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="mt-2 md:mt-0"
+                  onClick={() => applyToWeek(day)}
+                  disabled={isPending || loading}
+                >
+                  Applica a tutta la settimana
+                </Button>
+              )}
           </div>
         ))}
       </div>

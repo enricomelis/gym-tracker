@@ -7,9 +7,15 @@ import type {
   TrainingSessionPreset,
   WeeklyGoalPreset,
   MicrocyclePreset,
+  MacrocyclePreset,
 } from "@/lib/types";
 
-type PresetType = "giornaliera" | "allenamento" | "settimanale" | "microciclo";
+type PresetType =
+  | "giornaliera"
+  | "allenamento"
+  | "settimanale"
+  | "microciclo"
+  | "macrociclo";
 
 interface PresetColumnClientProps {
   type: PresetType;
@@ -18,7 +24,8 @@ interface PresetColumnClientProps {
     | DailyRoutinePreset[]
     | TrainingSessionPreset[]
     | WeeklyGoalPreset[]
-    | MicrocyclePreset[];
+    | MicrocyclePreset[]
+    | MacrocyclePreset[];
 }
 
 // Raggruppa preset per nome
@@ -28,6 +35,7 @@ const groupPresetsByName = (
     | TrainingSessionPreset
     | WeeklyGoalPreset
     | MicrocyclePreset
+    | MacrocyclePreset
   )[],
 ) => {
   const groups = new Map<string, typeof presets>();
@@ -45,6 +53,7 @@ const formatGroupedPresetInfo = (
     | TrainingSessionPreset
     | WeeklyGoalPreset
     | MicrocyclePreset
+    | MacrocyclePreset
   )[],
   type: PresetType,
 ): { primary: string; secondary: string; details: string } => {
@@ -163,6 +172,14 @@ const formatGroupedPresetInfo = (
       return {
         primary: name,
         secondary: `${trainingCount}/7 allenamenti`,
+        details: "",
+      };
+    }
+
+    case "macrociclo": {
+      return {
+        primary: name,
+        secondary: "Macrociclo",
         details: "",
       };
     }

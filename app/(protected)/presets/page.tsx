@@ -6,6 +6,7 @@ import {
   getTrainingSessionPresets,
   getWeeklyGoalPresets,
   getMicrocyclePresets,
+  getMacrocyclePresets,
 } from "@/lib/actions/presets";
 
 export default async function PresetsPage() {
@@ -28,17 +29,19 @@ export default async function PresetsPage() {
       trainingSessionPresets,
       weeklyGoalPresets,
       microcyclePresets,
+      macrocyclePresets,
     ] = await Promise.all([
       getDailyRoutinePresets(),
       getTrainingSessionPresets(),
       getWeeklyGoalPresets(),
       getMicrocyclePresets(),
+      getMacrocyclePresets(),
     ]);
 
     return (
       <div className="container mx-auto p-6">
         <h1 className="mb-6 text-2xl font-bold">Gestione Preset</h1>
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
           <PresetColumnClient
             type="giornaliera"
             title="Preset Giornalieri"
@@ -59,6 +62,11 @@ export default async function PresetsPage() {
             title="Preset Microcicli"
             presets={microcyclePresets}
           />
+          {/* <PresetColumnClient
+            type="macrociclo"
+            title="Preset Macrocicli"
+            presets={macrocyclePresets}
+          /> */}
         </div>
       </div>
     );

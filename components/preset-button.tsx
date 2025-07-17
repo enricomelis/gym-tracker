@@ -12,9 +12,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import MicrocyclePresetForm from "@/components/microcycle-preset-form";
+// import MacrocyclePresetForm from "@/components/macrocycle-preset-form";
 import { useState } from "react";
 
-type PresetType = "settimanale" | "giornaliera" | "allenamento" | "microciclo";
+type PresetType =
+  | "settimanale"
+  | "giornaliera"
+  | "allenamento"
+  | "microciclo"
+  | "macrociclo";
 
 export default function PresetButton({
   presetType,
@@ -95,6 +101,22 @@ export default function PresetButton({
       </Dialog>
     );
   }
+
+  // if (presetType === "macrociclo") {
+  //   return (
+  //     <Dialog open={open} onOpenChange={setOpen}>
+  //       <DialogTrigger asChild>
+  //         <Button variant="secondary">Nuovo Preset Macrociclo</Button>
+  //       </DialogTrigger>
+  //       <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-md">
+  //         <DialogHeader>
+  //           <DialogTitle>Crea Preset Macrociclo</DialogTitle>
+  //         </DialogHeader>
+  //         <MacrocyclePresetForm onSave={handleSave} />
+  //       </DialogContent>
+  //     </Dialog>
+  //   );
+  // }
 
   // Fallback
   return null;
