@@ -1,6 +1,7 @@
 import { getServerClient } from "@/lib/supabase/server";
 import { getAthletesForCoach, getCompetitions } from "@/lib/actions/athletes";
 import WeeklyPlanner from "./weekly-planner";
+import WeeklyPlannerSwitcher from "./weekly-planner-switcher";
 import { getUserRole } from "@/lib/role";
 
 export default async function SettimanalePage() {
@@ -33,20 +34,14 @@ export default async function SettimanalePage() {
       getAthletesForCoach(coach.id),
       getCompetitions(),
     ]);
+
     return (
       <div className="p-4 md:p-6">
         <h1 className="mb-4 text-2xl font-bold">Programmazione Settimanale</h1>
-        {athletes.length > 0 ? (
-          <WeeklyPlanner athletes={athletes} competitions={competitions} />
-        ) : (
-          <p>
-            Non hai ancora aggiunto nessun atleta. Aggiungine uno dalla pagina{" "}
-            <a href="/atleti" className="underline">
-              Atleti
-            </a>
-            .
-          </p>
-        )}
+        <WeeklyPlannerSwitcher
+          athletes={athletes}
+          competitions={competitions}
+        />
       </div>
     );
   }
@@ -76,7 +71,11 @@ export default async function SettimanalePage() {
         <h1 className="mb-4 text-2xl font-bold">
           La tua Programmazione Settimanale
         </h1>
-        <WeeklyPlanner athletes={[athlete]} competitions={competitions} />
+        <WeeklyPlanner
+          athletes={[athlete]}
+          competitions={competitions}
+          year={new Date().getFullYear()}
+        />
       </div>
     );
   }
