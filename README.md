@@ -87,11 +87,6 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 
 #### User Flow da ottenere
 
-- [x] Tecnico inserisce esercizi dei singoli atleti per ogni attrezzo.
-- [x] Tecnico definisce una programmazione settimanale, in base al numero di esercizi da eseguire per ogni attrezzo per ogni giorno. Ogni preset di settimana ha un nome del tipo "Gara", "Studio", etc.
-- [ ] Tecnico inserisce i preset per una determinata settimana in base al tipo, potendoli modificare successivamente.
-- [ ] Tecnico dice quale atleta partecipa a quale settimana/gara, potendo personalizzare ulteriormente la programmazione.
-
 - [ ] Tecnico inserisce atleta ed esercizi relativi (/atleti)
 - [ ] Tecnico definisce i preset (/presets)
   - [ ] Allenamento
