@@ -233,10 +233,10 @@ export type DailyRoutinePreset = {
   id: string;
   name: string;
   apparatus: "All" | "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
-  type: "Warmup" | "Conditioning" | "Flexibility" | "Other"; // adjust to match your daily_routine_type_enum
+  type: "I+" | "I" | "P" | "C" | "U" | "Std" | "G" | "S" | "B" | "D";
   quantity: number;
   target_sets: number;
-  target_execution: "A" | "B" | "C" | "D" | "E"; // adjust to match your execution_coefficient_enum
+  target_execution: "A+" | "A" | "B+" | "B" | "C+" | "C";
   created_by?: string | null;
 };
 

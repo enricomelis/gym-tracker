@@ -56,7 +56,6 @@ export async function createWeeklyGoalPreset(
     return { error: "Invalid preset data" } as const;
   }
 
-  // Attach created_by to each row
   const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
 
   const { data, error } = await supabase
@@ -124,7 +123,7 @@ export async function createTrainingSessionPreset(
 
   const baseSchema = z.object({
     name: z.string().min(1),
-    week_day: z.number().int().min(0).max(6),
+    week_day: z.number().int().min(0).max(6).nullable(),
     fx_preset_id: z.string().uuid().nullable(),
     ph_preset_id: z.string().uuid().nullable(),
     sr_preset_id: z.string().uuid().nullable(),
@@ -139,9 +138,11 @@ export async function createTrainingSessionPreset(
     return { error: "Invalid training session preset data" } as const;
   }
 
+  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
+
   const { data, error } = await supabase
     .from("training_sessions_presets")
-    .insert(parsed.data)
+    .insert(rows)
     .select();
 
   if (error) {
@@ -240,7 +241,6 @@ export async function createMicrocyclePreset(
     return { error: "Invalid microcycle preset data" } as const;
   }
 
-  // Attach created_by to each row
   const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
 
   const { data, error } = await supabase
@@ -267,4 +267,56 @@ export async function getDailyRoutinePresets() {
     return [] as DailyRoutinePreset[];
   }
   return data as DailyRoutinePreset[];
+}
+
+export async function createDailyRoutinePreset(
+  presets: Omit<DailyRoutinePreset, "id" | "created_by">[],
+) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "User not found" } as const;
+  }
+
+  const { data: coach, error: coachError } = await supabase
+    .from("coaches")
+    .select("id")
+    .eq("supabase_id", user.id)
+    .single();
+
+  if (coachError || !coach) {
+    return { error: "Coach profile not found" } as const;
+  }
+
+  const baseSchema = z.object({
+    name: z.string().min(1),
+    apparatus: z.enum(["All", "FX", "PH", "SR", "VT", "PB", "HB"]),
+    type: z.enum(["I+", "I", "P", "C", "U", "Std", "G", "S", "B", "D"]),
+    quantity: z.number().int().min(1),
+    target_sets: z.number().int().min(1),
+    target_execution: z.enum(["A+", "A", "B+", "B", "C+", "C"]),
+  });
+
+  const parsed = z.array(baseSchema).safeParse(presets);
+  if (!parsed.success) {
+    return { error: "Invalid daily routine preset data" } as const;
+  }
+
+  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
+
+  const { data, error } = await supabase
+    .from("daily_routine_presets")
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error("Error creating daily routine preset:", error);
+    return { error: error.message } as const;
+  }
+
+  return { success: true, data } as const;
 }
