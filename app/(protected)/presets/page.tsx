@@ -1,6 +1,12 @@
 import { getServerClient } from "@/lib/supabase/server";
 import { getUserRole } from "@/lib/role";
-import PresetButton from "@/components/preset-button";
+import PresetColumnClient from "./preset-column-client";
+import {
+  getDailyRoutinePresets,
+  getTrainingSessionPresets,
+  getWeeklyGoalPresets,
+  getMicrocyclePresets,
+} from "@/lib/actions/presets";
 
 export default async function PresetsPage() {
   const supabase = await getServerClient();
@@ -16,14 +22,43 @@ export default async function PresetsPage() {
   const role = await getUserRole(supabase, user.id);
 
   if (role === "coach") {
+    // Carica tutti i preset dal database
+    const [
+      dailyRoutinePresets,
+      trainingSessionPresets,
+      weeklyGoalPresets,
+      microcyclePresets,
+    ] = await Promise.all([
+      getDailyRoutinePresets(),
+      getTrainingSessionPresets(),
+      getWeeklyGoalPresets(),
+      getMicrocyclePresets(),
+    ]);
+
     return (
       <div className="container mx-auto p-6">
         <h1 className="mb-6 text-2xl font-bold">Gestione Preset</h1>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <PresetButton presetType="giornaliera" />
-          <PresetButton presetType="allenamento" />
-          <PresetButton presetType="settimanale" />
-          <PresetButton presetType="microciclo" />
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <PresetColumnClient
+            type="giornaliera"
+            title="Preset Giornalieri"
+            presets={dailyRoutinePresets}
+          />
+          {/* <PresetColumnClient
+            type="allenamento"
+            title="Preset Allenamento"
+            presets={trainingSessionPresets}
+          /> */}
+          <PresetColumnClient
+            type="settimanale"
+            title="Preset Settimanali"
+            presets={weeklyGoalPresets}
+          />
+          <PresetColumnClient
+            type="microciclo"
+            title="Preset Microcicli"
+            presets={microcyclePresets}
+          />
         </div>
       </div>
     );
