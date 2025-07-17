@@ -20,6 +20,7 @@ const coachLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/atleti", label: "Atleti", icon: Users },
   { href: "/presets", label: "Presets", icon: Settings },
+  { href: "/settimanale-nuova", label: "Settimanale Nuova", icon: Calendar },
   { href: "/settimanale", label: "Settimanale", icon: Calendar },
   { href: "/giornaliera", label: "Giornaliera", icon: ClipboardList },
   { href: "/allenamenti", label: "Allenamenti", icon: Dumbbell },
