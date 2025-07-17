@@ -90,7 +90,7 @@ export default function MicrocycleWeekForm({
       }
     }
     fetchInitial();
-  }, [weekNumber, year]);
+  }, [weekNumber, year, emptyPlan.name]);
 
   /* ---------------------- PRESET APPLICATOR --------------------- */
   const presetNames = Array.from(new Set(allPresets.map((p) => p.name)));

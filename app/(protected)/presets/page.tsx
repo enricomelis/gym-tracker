@@ -3,10 +3,8 @@ import { getUserRole } from "@/lib/role";
 import PresetColumnClient from "./preset-column-client";
 import {
   getDailyRoutinePresets,
-  getTrainingSessionPresets,
   getWeeklyGoalPresets,
   getMicrocyclePresets,
-  getMacrocyclePresets,
 } from "@/lib/actions/presets";
 
 export default async function PresetsPage() {
@@ -24,19 +22,12 @@ export default async function PresetsPage() {
 
   if (role === "coach") {
     // Carica tutti i preset dal database
-    const [
-      dailyRoutinePresets,
-      trainingSessionPresets,
-      weeklyGoalPresets,
-      microcyclePresets,
-      macrocyclePresets,
-    ] = await Promise.all([
-      getDailyRoutinePresets(),
-      getTrainingSessionPresets(),
-      getWeeklyGoalPresets(),
-      getMicrocyclePresets(),
-      getMacrocyclePresets(),
-    ]);
+    const [dailyRoutinePresets, weeklyGoalPresets, microcyclePresets] =
+      await Promise.all([
+        getDailyRoutinePresets(),
+        getWeeklyGoalPresets(),
+        getMicrocyclePresets(),
+      ]);
 
     return (
       <div className="container mx-auto p-6">

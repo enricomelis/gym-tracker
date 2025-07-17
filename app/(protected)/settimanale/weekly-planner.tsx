@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getYear, getWeek } from "date-fns";
+import { getWeek } from "date-fns";
 import React from "react";
 
 import type { WeeklyGoal, Competition, Athlete } from "@/lib/types";
 import { getGroupedWeeklyGoals } from "@/lib/actions/weekly-planning";
 import { getWeeksInYear, getWeekDateRange } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,

@@ -4,7 +4,6 @@ import { useEffect, useState, useTransition } from "react";
 import {
   createMicrocyclePreset,
   getDailyRoutinePresets,
-  getMacrocyclePresets,
 } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,19 +15,10 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  MicrocyclePreset,
-  DailyRoutinePreset,
-  MacrocyclePreset,
-} from "@/lib/types";
+import { MicrocyclePreset, DailyRoutinePreset } from "@/lib/types";
 
 // Types for options
 interface DailyRoutinePresetOption {
-  id: string;
-  name: string;
-}
-
-interface MacrocyclePresetOption {
   id: string;
   name: string;
 }
@@ -68,9 +58,6 @@ export default function MicrocyclePresetForm({
   const [dailyRoutineOptions, setDailyRoutineOptions] = useState<
     DailyRoutinePresetOption[]
   >([]);
-  const [macrocycleOptions, setMacrocycleOptions] = useState<
-    MacrocyclePresetOption[]
-  >([]);
   const [loading, setLoading] = useState(true);
   // Giorno su cui l'utente ha effettuato l'ultima modifica al select
   const [activeDay, setActiveDay] = useState<number | null>(null);
@@ -79,18 +66,9 @@ export default function MicrocyclePresetForm({
   useEffect(() => {
     async function fetchOptions() {
       setLoading(true);
-      const [dailyRoutines, macrocycles] = await Promise.all([
-        getDailyRoutinePresets(),
-        getMacrocyclePresets(),
-      ]);
+      const [dailyRoutines] = await Promise.all([getDailyRoutinePresets()]);
       setDailyRoutineOptions(
         (dailyRoutines || []).map((s: DailyRoutinePreset) => ({
-          id: s.id,
-          name: s.name,
-        })),
-      );
-      setMacrocycleOptions(
-        (macrocycles || []).map((s: MacrocyclePreset) => ({
           id: s.id,
           name: s.name,
         })),
