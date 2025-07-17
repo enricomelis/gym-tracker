@@ -98,6 +98,29 @@ In che modo cambia del flow attuale?
 - prima la programmazione andava inserita giorno per giorno, attrezzo per attrezzo, atleta per atleta; adesso viene generalizzata prima e personalizzata dopo
 - prima la programmazione si basava esclusivamente sul volume in UdE; adesso è definita in base agli esercizi definiti dal tecnico (che in futuro potranno essere collegato ai singoli elementi)
 
+#### Ristrutturazione della UI, bozza
+
+- Atleti: dove il tecnico inserisce i suoi atleti e i vari esercizi generici
+- Preset: dove il tecnico crea, bottom-up, i vari preset (Attrezzo?, Allenamento, Settimana/Microciclo, Periodo/Macrociclo)
+  - Attrezzo?: non presente, potrebbe avere senso
+  - Allenamento: `daily_routine_presets` dove viene inserita la quantità di ogni tipo di esercizio per ogni attrezzo
+  - Microciclo: `microcycles_presets` dove viene creata una settimana generica, composta da 7 allenamenti
+  - Macrociclo: `macrocycles_presets` dove viene creato un periodo generico, formato da _n_ microcicli
+- Programmazione: dove il tecnico inserisce la programmazione generica in base ai preset che ha creato
+  - type/Generica
+    - view/Annuale: visione generale di tutto l'anno,
+      - è una tabella Settimane x Giorni dove ogni cella è la quantità di esercizi ai vari attrezzi
+      - colonne aggiuntive: microciclo e macrociclo relativi
+    - view/Settimanale: visione particolare del microciclo corrente,
+      - è una tabella Giorni x Attrezzi dove ogni cella è la quantità specifica per ogni attrezzo
+      - colonne aggiuntive: macrociclo relativo
+  - type/Specifica + Dropdown (per scegliere l'Atleta)
+    -
+- Gestione Gare:
+  - section/programmazione: dove il tecnico definisce in che modo la programmazione generica si relazione con la data gara (ad esempio: una gara X ha una programmazione basata sul macrociclo Y; in questo modo la programmazione si può popolare automaticamente)
+  - section/atleti: dove il tecnico inserisce quale atleta partecipa a quale gara, per quali attrezzi e con quali esercizi, così che la programmazione di quell'atleta possa essere correttamente personalizzata
+- Analisi dati: sempre la solita che prima o poi verrà creata
+
 ### ⚡ Fase 4: Funzionalità avanzate
 
 - [ ] **Regole avanzate:** Implementazione delle regole avanzate dello standard nazionale.
