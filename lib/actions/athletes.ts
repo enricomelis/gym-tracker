@@ -3,7 +3,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { APPARATUS_TYPES, type Apparatus } from "@/lib/types";
+import { APPARATUS_TYPES, type Apparatus, ExerciseType } from "@/lib/types";
+import { EXERCISE_TYPES_VAULT, EXERCISE_TYPES_NOT_VAULT } from "@/lib/types";
 
 export type CreateAthleteState = {
   errors?: {
@@ -270,8 +271,13 @@ export async function addAthleteRoutine(
   routine_volume: number,
   routine_notes: string,
   apparatus: Apparatus,
+  type: ExerciseType,
 ) {
   const supabase = await createClient();
+
+  // Determina i tipi validi in base all'apparato
+  const validTypes =
+    apparatus === "VT" ? EXERCISE_TYPES_VAULT : EXERCISE_TYPES_NOT_VAULT;
 
   // Validate input with Zod
   const routineSchema = z.object({
@@ -280,6 +286,7 @@ export async function addAthleteRoutine(
     routine_volume: z.number().int().min(1),
     routine_notes: z.string().nullable().optional(),
     apparatus: z.enum(APPARATUS_TYPES as [string, ...string[]]),
+    type: z.enum(validTypes as [string, ...string[]]),
   });
 
   const parsed = routineSchema.safeParse({
@@ -288,6 +295,7 @@ export async function addAthleteRoutine(
     routine_volume,
     routine_notes,
     apparatus,
+    type,
   });
 
   if (!parsed.success) {
@@ -314,8 +322,13 @@ export async function updateAthleteRoutine(
   routine_volume: number,
   routine_notes: string,
   apparatus: Apparatus,
+  type: ExerciseType,
 ) {
   const supabase = await createClient();
+
+  // Determina i tipi validi in base all'apparato
+  const validTypes =
+    apparatus === "VT" ? EXERCISE_TYPES_VAULT : EXERCISE_TYPES_NOT_VAULT;
 
   // Validate input with Zod
   const routineSchema = z.object({
@@ -325,6 +338,7 @@ export async function updateAthleteRoutine(
     routine_volume: z.number().int().min(1),
     routine_notes: z.string().nullable().optional(),
     apparatus: z.enum(APPARATUS_TYPES as [string, ...string[]]),
+    type: z.enum(validTypes as [string, ...string[]]),
   });
 
   const parsed = routineSchema.safeParse({
@@ -334,6 +348,7 @@ export async function updateAthleteRoutine(
     routine_volume,
     routine_notes,
     apparatus,
+    type,
   });
 
   if (!parsed.success) {
@@ -349,6 +364,7 @@ export async function updateAthleteRoutine(
       routine_volume,
       routine_notes,
       apparatus,
+      type,
     })
     .eq("id", id);
 

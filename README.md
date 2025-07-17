@@ -72,31 +72,63 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 
 ### ✨ Fase 3: Funzionalità extra-excel per la UX
 
-- [ ] **Micro preset:** Possibilità di salvare delle settimane, degli allenamenti e dei macrocicli per facilitarne l'inserimento.
+- [x] **Micro preset:** Possibilità di salvare delle settimane, degli allenamenti e dei macrocicli per facilitarne l'inserimento.
   - [x] Preset e inserimento per la programmazione settimanale.
-  - [ ] Preset e inserimento per la programmazione giornaliera.
+  - [x] Preset e inserimento per la programmazione giornaliera.
 - [ ] **Pagine dedicata** Creazione di una pagina dedicata interamente alla gestione dei preset. Questa pagina verrà poi smistata.
-  - [ ] Sezione 1: creazione del preset settimanale (microciclo)
+  - [x] Sezione 1: creazione del preset settimanale (microciclo)
     - Nome della settimana
     - Numero di esercizi per ogni giorno, per ogni attrezzo
   - [ ] Sezione 2: creazione del preset multiplo (macrociclo)
     - Nome del macrociclo
     - Numero di settimane
-    - Tipo di microcilo per ogni settimana
+    - Tipo di microciclo per ogni settimana
 - [ ] **Gestione delle gare:** Calcolo automatico della programmazione, parametrizzata dal tecnico, data una gara calendarizzata.
 
 #### User Flow da ottenere
 
-- [x] Tecnico inserisce esercizi dei singoli atleti per ogni attrezzo.
-- [ ] Tecnico definisce una programmazione settimanale, in base al numero di esercizi da eseguire per ogni attrezzo per ogni giorno. Ogni preset di settimana ha un nome del tipo "Gara", "Studio", etc.
-- [ ] Tecnico inserisce i preset per una determinata settimana in base al tipo, potendoli modificare successivamente.
-- [ ] Tecnico dice quale atleta partecipa a quale settimana/gara, potendo personalizzare ulteriormente la programmazione.
+- [ ] Tecnico inserisce atleta ed esercizi relativi (/atleti)
+- [ ] Tecnico definisce i preset (/presets)
+  - [ ] Allenamento
+  - [ ] Microciclo
+  - [ ] Macrociclo
+- [ ] Tecnico inserisce la programmazione generica (/programmazione)
+- [ ] Tecnico definisce la gara, chi partecipa e a quali attrezzi (/gestione-gare)
+- [ ] Tecnico collega la programmazione ai singoli atleti
+  - [ ] prima della definizione della gara, (dentro /programmazione -> switch per Generica/Specifica)
+  - [ ] dopo la definizione della gara, controllando se e come sovrascrivere i dati già presenti (dentro /gestione-gare)
+
+Per ottenere tutto questo c'è da ristrutturare il database perché si stacca dall'excel.
 
 In che modo cambia del flow attuale?
 
 - prima la programmazione partiva dall'atleta; adesso deve finire con l'atleta
 - prima la programmazione andava inserita giorno per giorno, attrezzo per attrezzo, atleta per atleta; adesso viene generalizzata prima e personalizzata dopo
 - prima la programmazione si basava esclusivamente sul volume in UdE; adesso è definita in base agli esercizi definiti dal tecnico (che in futuro potranno essere collegato ai singoli elementi)
+
+#### Ristrutturazione della UI, bozza
+
+- Atleti: dove il tecnico inserisce i suoi atleti e i vari esercizi generici
+- Preset: dove il tecnico crea, bottom-up, i vari preset (Attrezzo?, Allenamento, Settimana/Microciclo, Periodo/Macrociclo)
+  - Attrezzo?: non presente, potrebbe avere senso
+  - Allenamento: `daily_routine_presets` dove viene inserita la quantità di ogni tipo di esercizio per ogni attrezzo
+  - Microciclo: `microcycles_presets` dove viene creata una settimana generica, composta da 7 allenamenti
+  - Macrociclo: `macrocycles_presets` dove viene creato un periodo generico, formato da _n_ microcicli
+- Programmazione: dove il tecnico inserisce la programmazione generica in base ai preset che ha creato
+  - type/Generica: fa la ricerca dentro `public.<table>` dove non ci sono riferimenti a date, atleti e altri particolari
+    - view/Annuale: visione generale di tutto l'anno,
+      - è una tabella Settimane x Giorni dove ogni cella è la quantità di esercizi ai vari attrezzi
+      - colonne aggiuntive: microciclo e macrociclo relativi
+    - view/Settimanale: visione particolare del microciclo corrente,
+      - è una tabella Giorni x Attrezzi dove ogni cella è la quantità specifica per ogni attrezzo
+      - colonne aggiuntive: macrociclo relativo
+  - type/Specifica + Dropdown (per scegliere l'Atleta): fa la ricerca dentro `daily_routine_presets` in base all'_athlete_id_
+    - view/Annuale
+    - view/Settimanale
+- Gestione Gare:
+  - section/programmazione: dove il tecnico definisce in che modo la programmazione generica si relazione con la data gara (ad esempio: una gara X ha una programmazione basata sul macrociclo Y; in questo modo la programmazione si può popolare automaticamente)
+  - section/atleti: dove il tecnico inserisce quale atleta partecipa a quale gara, per quali attrezzi e con quali esercizi, così che la programmazione di quell'atleta possa essere correttamente personalizzata
+- Analisi dati: sempre la solita che prima o poi verrà creata
 
 ### ⚡ Fase 4: Funzionalità avanzate
 

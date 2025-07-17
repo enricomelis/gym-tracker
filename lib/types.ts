@@ -92,6 +92,14 @@ export type Competition = {
   date: string;
 };
 
+export type Coach = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
 // Tipi per la programmazione
 export type WeeklyGoal = {
   id?: string;
@@ -219,4 +227,54 @@ export type WeeklyGoalPreset = {
   target_penalty: number;
   base_volume?: number | null;
   created_by?: string;
+};
+
+export type DailyRoutinePreset = {
+  id: string;
+  name: string;
+  apparatus: "All" | "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
+  type: "I+" | "I" | "P" | "C" | "U" | "Std" | "G" | "S" | "B" | "D";
+  quantity: number;
+  target_sets: number;
+  target_execution: "A+" | "A" | "B+" | "B" | "C+" | "C";
+  created_by?: string | null;
+};
+
+export type TrainingSessionPreset = {
+  id: string;
+  name: string;
+  created_by: string;
+  week_day: number | null;
+  fx_preset_id: string | null;
+  ph_preset_id: string | null;
+  sr_preset_id: string | null;
+  vt_preset_id: string | null;
+  pb_preset_id: string | null;
+  hb_preset_id: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type MacrocyclePreset = {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type MicrocyclePreset = {
+  id: string;
+  name: string;
+  allenamento_1: string | null;
+  allenamento_2: string | null;
+  allenamento_3: string | null;
+  allenamento_4: string | null;
+  allenamento_5: string | null;
+  allenamento_6: string | null;
+  allenamento_7: string | null;
+  macrocycle_id: string | null;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
 };

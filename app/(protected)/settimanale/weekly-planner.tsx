@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getYear, getWeek } from "date-fns";
+import { getWeek } from "date-fns";
 import React from "react";
 
 import type { WeeklyGoal, Competition, Athlete } from "@/lib/types";
 import { getGroupedWeeklyGoals } from "@/lib/actions/weekly-planning";
 import { getWeeksInYear, getWeekDateRange } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +25,6 @@ import {
 import WeeklyGoalForm from "./weekly-goal-form";
 import AthleteSelectSwitcher from "@/components/athlete-select-switcher";
 import { useRole } from "@/lib/hooks/use-role";
-import PresetButton from "@/components/preset-button";
 
 type GroupedGoals = Record<number, WeeklyGoal[]>;
 
@@ -42,15 +40,16 @@ const apparatusList: Array<WeeklyGoal["apparatus"]> = [
 export default function WeeklyPlanner({
   athletes,
   competitions,
+  year,
 }: {
   athletes: Athlete[];
   competitions: Competition[];
+  year: number;
 }) {
   const [isFetching, setIsFetching] = useState(false);
   const [selectedAthleteId, setSelectedAthleteId] = useState<string>(
     athletes[0]?.id || "",
   );
-  const [year, setYear] = useState(getYear(new Date()));
   const [groupedGoals, setGroupedGoals] = useState<GroupedGoals>({});
   const [editingWeek, setEditingWeek] = useState<number | null>(null);
 
@@ -98,33 +97,13 @@ export default function WeeklyPlanner({
           <div className="w-full rounded border bg-muted px-3 py-2 text-center font-semibold md:w-[200px]">
             {athletes[0]?.first_name} {athletes[0]?.last_name}
           </div>
-        ) : (
+        ) : athletes.length === 0 ? null : (
           <AthleteSelectSwitcher
             athletes={athletes}
             selectedAthleteId={selectedAthleteId}
             onChange={setSelectedAthleteId}
           />
         )}
-        <div className="flex w-full min-w-0 items-center gap-2 md:w-auto">
-          <PresetButton presetType="settimanale" />
-          <Button
-            variant="outline"
-            className="aspect-square h-6 w-6 md:h-10 md:w-10"
-            onClick={() => setYear(year - 1)}
-          >
-            &lt;
-          </Button>
-          <span className="flex-1 truncate text-center font-semibold md:w-24">
-            {year}
-          </span>
-          <Button
-            variant="outline"
-            className="aspect-square h-6 w-6 md:h-10 md:w-10"
-            onClick={() => setYear(year + 1)}
-          >
-            &gt;
-          </Button>
-        </div>
       </div>
 
       <div className="relative max-h-[calc(100vh-200px)] overflow-auto rounded-md border">
