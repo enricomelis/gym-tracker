@@ -9,7 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import React, { useState } from "react";
-import { type Apparatus, APPARATUS_TYPES } from "@/lib/types";
+import {
+  type Apparatus,
+  APPARATUS_TYPES,
+  ExerciseType,
+  EXERCISE_TYPES_VAULT,
+  EXERCISE_TYPES_NOT_VAULT,
+} from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -23,6 +29,7 @@ type AthleteRoutineFormProps = {
   routine_name?: string;
   routine_volume?: number;
   routine_notes?: string;
+  routine_type?: ExerciseType;
   apparatus?: Apparatus | "";
   id?: string;
   onSuccess?: () => void;
@@ -33,6 +40,7 @@ export default function AthleteRoutineForm({
   routine_name = "",
   routine_volume = 0,
   routine_notes = "",
+  routine_type = "I",
   apparatus = "",
   id,
   onSuccess,
@@ -46,7 +54,16 @@ export default function AthleteRoutineForm({
   const [selectedApparatus, setSelectedApparatus] = useState<Apparatus | "">(
     apparatus,
   );
+  const [selectedType, setSelectedType] = useState<ExerciseType | "">(
+    routine_type,
+  );
   const [submitted, setSubmitted] = useState(false);
+
+  // Determina i tipi validi in base all'apparato selezionato
+  const typeOptions =
+    selectedApparatus === "VT"
+      ? EXERCISE_TYPES_VAULT
+      : EXERCISE_TYPES_NOT_VAULT;
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) =>
     e.target.select();
@@ -64,6 +81,7 @@ export default function AthleteRoutineForm({
         typeof volume === "string" ? parseInt(volume) || 0 : volume,
         notes,
         selectedApparatus as Apparatus,
+        selectedType as ExerciseType,
       );
     } else {
       result = await addAthleteRoutine(
@@ -72,6 +90,7 @@ export default function AthleteRoutineForm({
         typeof volume === "string" ? parseInt(volume) || 0 : volume,
         notes,
         selectedApparatus as Apparatus,
+        selectedType as ExerciseType,
       );
     }
     setIsPending(false);
@@ -102,7 +121,10 @@ export default function AthleteRoutineForm({
             <Label htmlFor="apparatus">Attrezzo</Label>
             <Select
               value={selectedApparatus}
-              onValueChange={(val) => setSelectedApparatus(val as Apparatus)}
+              onValueChange={(val) => {
+                setSelectedApparatus(val as Apparatus);
+                setSelectedType(val === "VT" ? "G" : "I");
+              }}
               required
             >
               <SelectTrigger id="apparatus">
@@ -112,6 +134,26 @@ export default function AthleteRoutineForm({
                 {APPARATUS_TYPES.map((app) => (
                   <SelectItem key={app} value={app}>
                     {app}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="routine_type">Tipo routine</Label>
+            <Select
+              value={selectedType}
+              onValueChange={(val) => setSelectedType(val as ExerciseType)}
+              required
+              disabled={!selectedApparatus}
+            >
+              <SelectTrigger id="routine_type">
+                <SelectValue placeholder="Seleziona tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                {typeOptions.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
                   </SelectItem>
                 ))}
               </SelectContent>
