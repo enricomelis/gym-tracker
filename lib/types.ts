@@ -274,7 +274,7 @@ export type MicrocyclePreset = {
   allenamento_6: string | null;
   allenamento_7: string | null;
   macrocycle_id: string | null;
-  created_by: Coach;
+  created_by: string;
   created_at?: string | null;
   updated_at?: string | null;
 };

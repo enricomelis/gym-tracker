@@ -7,6 +7,7 @@ import type {
   MicrocyclePreset,
   TrainingSessionPreset,
   DailyRoutinePreset,
+  MacrocyclePreset,
 } from "@/lib/types";
 import { z } from "zod";
 
@@ -319,6 +320,71 @@ export async function createDailyRoutinePreset(
 
   if (error) {
     console.error("Error creating daily routine preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data } as const;
+}
+
+export async function getMacrocyclePresets() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("macrocycles_presets")
+    .select("*")
+    .order("name");
+
+  if (error) {
+    console.error("Error fetching macrocycle presets:", error);
+    return [] as MacrocyclePreset[];
+  }
+  return data as MacrocyclePreset[];
+}
+
+export async function createMacrocyclePreset(
+  presets: Omit<
+    MacrocyclePreset,
+    "id" | "created_by" | "created_at" | "updated_at"
+  >[],
+) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "User not found" } as const;
+  }
+
+  const { data: coach, error: coachError } = await supabase
+    .from("coaches")
+    .select("id")
+    .eq("supabase_id", user.id)
+    .single();
+
+  if (coachError || !coach) {
+    return { error: "Coach profile not found" } as const;
+  }
+
+  const baseSchema = z.object({
+    name: z.string().min(1),
+  });
+
+  const parsed = z.array(baseSchema).safeParse(presets);
+  if (!parsed.success) {
+    return { error: "Invalid macrocycle preset data" } as const;
+  }
+
+  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
+
+  const { data, error } = await supabase
+    .from("macrocycles_presets")
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error("Error creating macrocycle preset:", error);
     return { error: error.message } as const;
   }
 
