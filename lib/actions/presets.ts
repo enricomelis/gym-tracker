@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 import type {
   WeeklyGoalPreset,
   MicrocyclePreset,
@@ -68,6 +69,7 @@ export async function createWeeklyGoalPreset(
     return { error: error.message } as const;
   }
 
+  revalidatePath("/presets");
   return { success: true, data } as const;
 }
 
@@ -150,6 +152,7 @@ export async function createTrainingSessionPreset(
     return { error: error.message } as const;
   }
 
+  revalidatePath("/presets");
   return { success: true, data } as const;
 }
 
@@ -252,6 +255,7 @@ export async function createMicrocyclePreset(
     return { error: error.message } as const;
   }
 
+  revalidatePath("/presets");
   return { success: true, data } as const;
 }
 
@@ -318,5 +322,6 @@ export async function createDailyRoutinePreset(
     return { error: error.message } as const;
   }
 
+  revalidatePath("/presets");
   return { success: true, data } as const;
 }
