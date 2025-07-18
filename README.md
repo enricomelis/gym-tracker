@@ -87,7 +87,7 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 
 #### User Flow da ottenere
 
-- [ ] Tecnico inserisce atleta ed esercizi relativi (/atleti)
+- [x] Tecnico inserisce atleta ed esercizi relativi (/atleti)
 - [ ] Tecnico definisce i preset (/presets)
   - [ ] Allenamento
   - [ ] Microciclo
