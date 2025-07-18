@@ -222,14 +222,6 @@ CREATE UNIQUE INDEX ON "presets_microcycles_weekdays" ("microcycle_id", "day_num
 
 CREATE UNIQUE INDEX ON "presets_macrocycles_microcycles" ("macrocycle_id", "week_number");
 
-CREATE OR REPLACE FUNCTION public.update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -240,31 +232,6 @@ BEGIN
       COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
       COALESCE(NEW.raw_user_meta_data->>'last_name', '')
     );
-  ELSIF NEW.raw_user_meta_data->>'role' = 'athlete' THEN
-    IF NEW.raw_user_meta_data->>'registration_number' IS NULL THEN
-      RAISE EXCEPTION 'Registration number is required for athlete registration';
-    END IF;
-    
-    IF NEW.raw_user_meta_data->>'coach_id' IS NULL THEN
-      RAISE EXCEPTION 'Coach ID is required for athlete registration';
-    END IF;
-    
-    INSERT INTO public.athletes (
-      supabase_id, 
-      first_name, 
-      last_name, 
-      current_coach_id,
-      registration_number,
-      category
-    )
-    VALUES (
-      NEW.id,
-      COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
-      COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
-      (NEW.raw_user_meta_data->>'coach_id')::uuid,
-      (NEW.raw_user_meta_data->>'registration_number')::int,
-      COALESCE((NEW.raw_user_meta_data->>'category')::category_enum, 'Junior')
-    );
   END IF;
   
   RETURN NEW;
@@ -274,22 +241,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
-CREATE TRIGGER update_coaches_updated_at BEFORE UPDATE ON coaches FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_athletes_updated_at BEFORE UPDATE ON athletes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_presets_apparatus_updated_at BEFORE UPDATE ON presets_apparatus FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_presets_weekdays_updated_at BEFORE UPDATE ON presets_weekdays FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_presets_microcycles_updated_at BEFORE UPDATE ON presets_microcycles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_presets_macrocycles_updated_at BEFORE UPDATE ON presets_macrocycles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_competitions_updated_at BEFORE UPDATE ON competitions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_presets_training_sessions_updated_at BEFORE UPDATE ON presets_training_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_athlete_routines_updated_at BEFORE UPDATE ON athlete_routines FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_planning_macrocycles_updated_at BEFORE UPDATE ON planning_macrocycles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_planning_microcycles_updated_at BEFORE UPDATE ON planning_microcycles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_planning_training_sessions_updated_at BEFORE UPDATE ON planning_training_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_planning_apparatus_updated_at BEFORE UPDATE ON planning_apparatus FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_athletes_competitions_updated_at BEFORE UPDATE ON athletes_competitions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_athletes_competitions_routines_apparatus_updated_at BEFORE UPDATE ON athletes_competitions_routines_apparatus FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 COMMENT ON COLUMN "coaches"."supabase_id" IS 'references auth.users';
 
