@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 // Export dei tipi usati nell'app
 
 export type Apparatus = "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
@@ -207,7 +209,7 @@ export type TrainingSet = {
 };
 
 // Tipi per la gestione dei presets
-export type AthleteRoutine = {
+export type OldAthleteRoutine = {
   id: string;
   athlete_id: string;
   routine_name: string;
@@ -278,3 +280,101 @@ export type MicrocyclePreset = {
   created_at?: string | null;
   updated_at?: string | null;
 };
+
+// nuovi tipi
+export type AthletesRoutines = {
+  id: string;
+  athlete_id: string;
+  routine_id: string;
+  created_by: string;
+};
+
+export type Routine = {
+  id: string;
+  name: string;
+  volume: number;
+  notes: string;
+  apparatus: Apparatus;
+  type: DatabaseExerciseType;
+  created_by: string;
+};
+
+// Zod schemas for validation
+
+// Database enum values (from excel_routine_type)
+export type DatabaseExerciseType =
+  | "I+"
+  | "Int"
+  | "Par"
+  | "Com"
+  | "Usc"
+  | "Std"
+  | "G"
+  | "S"
+  | "B"
+  | "D";
+
+// Mapping between UI types and database types
+export const UI_TO_DB_EXERCISE_TYPE: Record<
+  ExerciseType,
+  DatabaseExerciseType
+> = {
+  "I+": "I+",
+  I: "Int",
+  P: "Par",
+  C: "Com",
+  U: "Usc",
+  Std: "Std",
+  G: "G",
+  S: "S",
+  B: "B",
+  D: "D",
+};
+
+export const DB_TO_UI_EXERCISE_TYPE: Record<
+  DatabaseExerciseType,
+  ExerciseType
+> = {
+  "I+": "I+",
+  Int: "I",
+  Par: "P",
+  Com: "C",
+  Usc: "U",
+  Std: "Std",
+  G: "G",
+  S: "S",
+  B: "B",
+  D: "D",
+};
+
+export const RoutineSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(255),
+  volume: z.number().int().min(0).max(1000),
+  notes: z.string().optional(),
+  apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"]),
+  type: z.enum(["I+", "Int", "Par", "Com", "Usc", "Std", "G", "S", "B", "D"]),
+  created_by: z.string().uuid(),
+});
+
+export const CreateRoutineSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Il nome della routine è obbligatorio")
+    .max(255, "Il nome non può superare i 255 caratteri"),
+  volume: z
+    .number()
+    .int()
+    .min(0, "Il volume deve essere un numero positivo")
+    .max(1000, "Il volume non può superare 1000"),
+  notes: z.string().optional(),
+  apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"], {
+    errorMap: () => ({ message: "Apparato non valido" }),
+  }),
+  type: z.enum(["I+", "Int", "Par", "Com", "Usc", "Std", "G", "S", "B", "D"], {
+    errorMap: () => ({ message: "Tipo di routine non valido" }),
+  }),
+  created_by: z.string().uuid("ID coach non valido"),
+});
+
+export type CreateRoutineInput = z.infer<typeof CreateRoutineSchema>;

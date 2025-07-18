@@ -3,8 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { APPARATUS_TYPES, type Apparatus, ExerciseType } from "@/lib/types";
-import { EXERCISE_TYPES_VAULT, EXERCISE_TYPES_NOT_VAULT } from "@/lib/types";
+import { CreateRoutineSchema, type CreateRoutineInput } from "@/lib/types";
 
 export type CreateAthleteState = {
   errors?: {
@@ -265,128 +264,120 @@ export async function reactivateAthlete(athleteId: string) {
   return { success: true };
 }
 
-export async function addAthleteRoutine(
-  athlete_id: string,
-  routine_name: string,
-  routine_volume: number,
-  routine_notes: string,
-  apparatus: Apparatus,
-  type: ExerciseType,
-) {
+export async function createRoutine(routine: CreateRoutineInput) {
   const supabase = await createClient();
-
-  // Determina i tipi validi in base all'apparato
-  const validTypes =
-    apparatus === "VT" ? EXERCISE_TYPES_VAULT : EXERCISE_TYPES_NOT_VAULT;
 
   // Validate input with Zod
-  const routineSchema = z.object({
-    athlete_id: z.string().uuid(),
-    routine_name: z.string().min(1),
-    routine_volume: z.number().int().min(1),
-    routine_notes: z.string().nullable().optional(),
-    apparatus: z.enum(APPARATUS_TYPES as [string, ...string[]]),
-    type: z.enum(validTypes as [string, ...string[]]),
-  });
+  const validationResult = CreateRoutineSchema.safeParse(routine);
 
-  const parsed = routineSchema.safeParse({
-    athlete_id,
-    routine_name,
-    routine_volume,
-    routine_notes,
-    apparatus,
-    type,
-  });
-
-  if (!parsed.success) {
-    console.error("Invalid routine data", parsed.error);
-    return { error: "Invalid routine data" } as const;
+  if (!validationResult.success) {
+    const errors = validationResult.error.errors.map((err) => err.message);
+    return {
+      error: `Validazione fallita: ${errors.join(", ")}`,
+      details: validationResult.error.errors,
+    };
   }
 
-  const { data, error } = await supabase.from("athlete_routines").insert({
-    ...parsed.data,
-  });
-
-  if (error) {
-    console.error("Error adding athlete routine:", error);
-    return { error: error.message } as const;
-  }
-
-  return { success: true, data } as const;
-}
-
-export async function updateAthleteRoutine(
-  id: string,
-  athlete_id: string,
-  routine_name: string,
-  routine_volume: number,
-  routine_notes: string,
-  apparatus: Apparatus,
-  type: ExerciseType,
-) {
-  const supabase = await createClient();
-
-  // Determina i tipi validi in base all'apparato
-  const validTypes =
-    apparatus === "VT" ? EXERCISE_TYPES_VAULT : EXERCISE_TYPES_NOT_VAULT;
-
-  // Validate input with Zod
-  const routineSchema = z.object({
-    id: z.string().uuid(),
-    athlete_id: z.string().uuid(),
-    routine_name: z.string().min(1),
-    routine_volume: z.number().int().min(1),
-    routine_notes: z.string().nullable().optional(),
-    apparatus: z.enum(APPARATUS_TYPES as [string, ...string[]]),
-    type: z.enum(validTypes as [string, ...string[]]),
-  });
-
-  const parsed = routineSchema.safeParse({
-    id,
-    athlete_id,
-    routine_name,
-    routine_volume,
-    routine_notes,
-    apparatus,
-    type,
-  });
-
-  if (!parsed.success) {
-    console.error("Invalid routine data", parsed.error);
-    return { error: "Invalid routine data" } as const;
-  }
-
-  const { error } = await supabase
-    .from("athlete_routines")
-    .update({
-      athlete_id,
-      routine_name,
-      routine_volume,
-      routine_notes,
-      apparatus,
-      type,
-    })
-    .eq("id", id);
-
-  if (error) {
-    console.error("Error updating athlete routine:", error);
-    return { error: error.message } as const;
-  }
-
-  return { success: true } as const;
-}
-
-export async function getAthleteRoutines(athleteId: string) {
-  const supabase = await createClient();
   const { data, error } = await supabase
-    .from("athlete_routines")
-    .select("*")
-    .eq("athlete_id", athleteId);
+    .from("routines")
+    .insert([validationResult.data])
+    .select("id")
+    .single();
 
   if (error) {
-    console.error("Error fetching athlete routines:", error);
+    console.error("Error creating routine:", error);
+    return { error: error.message };
+  }
+
+  return { success: true, routineId: data.id };
+}
+
+export async function getRoutines() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("routines").select("*");
+
+  if (error) {
+    console.error("Error fetching routines:", error);
     return [];
   }
 
   return data;
+}
+
+export async function connectRoutineToAthlete(
+  athleteId: string,
+  routineId: string,
+) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "User not found" };
+  }
+
+  // Get the coach ID from the user's supabase_id
+  const { data: coach, error: coachError } = await supabase
+    .from("coaches")
+    .select("id")
+    .eq("supabase_id", user.id)
+    .single();
+
+  if (coachError || !coach) {
+    return { error: "Coach not found" };
+  }
+
+  const { error } = await supabase.from("athletes_routines").insert([
+    {
+      athlete_id: athleteId,
+      routine_id: routineId,
+      created_by: coach.id, // Use coach.id instead of user.id
+    },
+  ]);
+
+  if (error) {
+    console.error("Error connecting routine to athlete:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath("/atleti");
+  return { success: true };
+}
+
+export async function getRoutinesForAthlete(athleteId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("athletes_routines")
+    .select("*")
+    .eq("athlete_id", athleteId);
+
+  if (error) {
+    console.error("Error fetching routines for athlete:", error);
+    return [];
+  }
+
+  return data;
+}
+
+export async function disconnectRoutineFromAthlete(
+  athleteId: string,
+  routineId: string,
+) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("athletes_routines")
+    .delete()
+    .eq("athlete_id", athleteId)
+    .eq("routine_id", routineId);
+
+  if (error) {
+    console.error("Error disconnecting routine from athlete:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath("/atleti");
+  return { success: true };
 }

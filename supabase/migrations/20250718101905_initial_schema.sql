@@ -125,12 +125,22 @@ CREATE TABLE "presets_training_sessions" (
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "athlete_routines" (
+CREATE TABLE "routines" (
+  "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  "name" text NOT NULL DEFAULT '',
+  "volume" int NOT NULL DEFAULT 0,
+  "notes" text,
+  "apparatus" apparatus_enum NOT NULL,
+  "type" excel_routine_type NOT NULL,
+  "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "updated_at" timestamptz NOT NULL DEFAULT (now())
+);
+
+CREATE TABLE "athletes_routines" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "athlete_id" uuid REFERENCES athletes(id) ON DELETE SET NULL,
-  "name" text NOT NULL DEFAULT '',
-  "excel_volume" int,
-  "notes" text,
+  "routine_id" uuid REFERENCES routines(id) ON DELETE SET NULL,
   "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
@@ -211,7 +221,7 @@ CREATE TABLE "athletes_competitions_routines_apparatus" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "athlete_competition_id" uuid REFERENCES athletes_competitions(id) ON DELETE SET NULL,
   "apparatus" apparatus_enum NOT NULL,
-  "routine_competed_id" uuid REFERENCES athlete_routines(id) ON DELETE SET NULL,
+  "routine_competed_id" uuid REFERENCES athletes_routines(id) ON DELETE SET NULL,
   "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
