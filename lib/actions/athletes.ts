@@ -3,7 +3,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { APPARATUS_TYPES, type Apparatus, ExerciseType } from "@/lib/types";
+import {
+  APPARATUS_TYPES,
+  type Apparatus,
+  ExerciseType,
+  type AthletesRoutines,
+  type Routine,
+} from "@/lib/types";
 import { EXERCISE_TYPES_VAULT, EXERCISE_TYPES_NOT_VAULT } from "@/lib/types";
 
 export type CreateAthleteState = {
@@ -263,130 +269,4 @@ export async function reactivateAthlete(athleteId: string) {
 
   revalidatePath("/atleti");
   return { success: true };
-}
-
-export async function addAthleteRoutine(
-  athlete_id: string,
-  routine_name: string,
-  routine_volume: number,
-  routine_notes: string,
-  apparatus: Apparatus,
-  type: ExerciseType,
-) {
-  const supabase = await createClient();
-
-  // Determina i tipi validi in base all'apparato
-  const validTypes =
-    apparatus === "VT" ? EXERCISE_TYPES_VAULT : EXERCISE_TYPES_NOT_VAULT;
-
-  // Validate input with Zod
-  const routineSchema = z.object({
-    athlete_id: z.string().uuid(),
-    routine_name: z.string().min(1),
-    routine_volume: z.number().int().min(1),
-    routine_notes: z.string().nullable().optional(),
-    apparatus: z.enum(APPARATUS_TYPES as [string, ...string[]]),
-    type: z.enum(validTypes as [string, ...string[]]),
-  });
-
-  const parsed = routineSchema.safeParse({
-    athlete_id,
-    routine_name,
-    routine_volume,
-    routine_notes,
-    apparatus,
-    type,
-  });
-
-  if (!parsed.success) {
-    console.error("Invalid routine data", parsed.error);
-    return { error: "Invalid routine data" } as const;
-  }
-
-  const { data, error } = await supabase.from("athlete_routines").insert({
-    ...parsed.data,
-  });
-
-  if (error) {
-    console.error("Error adding athlete routine:", error);
-    return { error: error.message } as const;
-  }
-
-  return { success: true, data } as const;
-}
-
-export async function updateAthleteRoutine(
-  id: string,
-  athlete_id: string,
-  routine_name: string,
-  routine_volume: number,
-  routine_notes: string,
-  apparatus: Apparatus,
-  type: ExerciseType,
-) {
-  const supabase = await createClient();
-
-  // Determina i tipi validi in base all'apparato
-  const validTypes =
-    apparatus === "VT" ? EXERCISE_TYPES_VAULT : EXERCISE_TYPES_NOT_VAULT;
-
-  // Validate input with Zod
-  const routineSchema = z.object({
-    id: z.string().uuid(),
-    athlete_id: z.string().uuid(),
-    routine_name: z.string().min(1),
-    routine_volume: z.number().int().min(1),
-    routine_notes: z.string().nullable().optional(),
-    apparatus: z.enum(APPARATUS_TYPES as [string, ...string[]]),
-    type: z.enum(validTypes as [string, ...string[]]),
-  });
-
-  const parsed = routineSchema.safeParse({
-    id,
-    athlete_id,
-    routine_name,
-    routine_volume,
-    routine_notes,
-    apparatus,
-    type,
-  });
-
-  if (!parsed.success) {
-    console.error("Invalid routine data", parsed.error);
-    return { error: "Invalid routine data" } as const;
-  }
-
-  const { error } = await supabase
-    .from("athlete_routines")
-    .update({
-      athlete_id,
-      routine_name,
-      routine_volume,
-      routine_notes,
-      apparatus,
-      type,
-    })
-    .eq("id", id);
-
-  if (error) {
-    console.error("Error updating athlete routine:", error);
-    return { error: error.message } as const;
-  }
-
-  return { success: true } as const;
-}
-
-export async function getAthleteRoutines(athleteId: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("athlete_routines")
-    .select("*")
-    .eq("athlete_id", athleteId);
-
-  if (error) {
-    console.error("Error fetching athlete routines:", error);
-    return [];
-  }
-
-  return data;
 }

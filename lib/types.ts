@@ -207,7 +207,7 @@ export type TrainingSet = {
 };
 
 // Tipi per la gestione dei presets
-export type AthleteRoutine = {
+export type OldAthleteRoutine = {
   id: string;
   athlete_id: string;
   routine_name: string;
@@ -277,4 +277,22 @@ export type MicrocyclePreset = {
   created_by: string;
   created_at?: string | null;
   updated_at?: string | null;
+};
+
+// nuovi tipi
+export type AthletesRoutines = {
+  id: string;
+  athlete_id: string;
+  routine_id: string;
+  created_by: string;
+};
+
+export type Routine = {
+  id: string;
+  name: string;
+  volume: number;
+  notes: string;
+  apparatus: Apparatus;
+  type: ExerciseType;
+  created_by: string;
 };
