@@ -62,6 +62,7 @@ CREATE TABLE "athletes" (
   "society_id" uuid REFERENCES societies(id) ON DELETE SET NULL,
   "registration_number" int UNIQUE NOT NULL,
   "is_active" bool NOT NULL DEFAULT true,
+  "birth_date" date,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
