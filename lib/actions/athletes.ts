@@ -3,16 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import {
-  APPARATUS_TYPES,
-  type Apparatus,
-  ExerciseType,
-  type AthletesRoutines,
-  type Routine,
-  CreateRoutineSchema,
-  type CreateRoutineInput,
-} from "@/lib/types";
-import { EXERCISE_TYPES_VAULT, EXERCISE_TYPES_NOT_VAULT } from "@/lib/types";
+import { CreateRoutineSchema, type CreateRoutineInput } from "@/lib/types";
 
 export type CreateAthleteState = {
   errors?: {
@@ -287,16 +278,18 @@ export async function createRoutine(routine: CreateRoutineInput) {
     };
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("routines")
-    .insert([validationResult.data]);
+    .insert([validationResult.data])
+    .select("id")
+    .single();
 
   if (error) {
     console.error("Error creating routine:", error);
     return { error: error.message };
   }
 
-  return { success: true };
+  return { success: true, routineId: data.id };
 }
 
 export async function getRoutines() {
@@ -325,11 +318,22 @@ export async function connectRoutineToAthlete(
     return { error: "User not found" };
   }
 
+  // Get the coach ID from the user's supabase_id
+  const { data: coach, error: coachError } = await supabase
+    .from("coaches")
+    .select("id")
+    .eq("supabase_id", user.id)
+    .single();
+
+  if (coachError || !coach) {
+    return { error: "Coach not found" };
+  }
+
   const { error } = await supabase.from("athletes_routines").insert([
     {
       athlete_id: athleteId,
       routine_id: routineId,
-      created_by: user.id,
+      created_by: coach.id, // Use coach.id instead of user.id
     },
   ]);
 
@@ -355,4 +359,25 @@ export async function getRoutinesForAthlete(athleteId: string) {
   }
 
   return data;
+}
+
+export async function disconnectRoutineFromAthlete(
+  athleteId: string,
+  routineId: string,
+) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("athletes_routines")
+    .delete()
+    .eq("athlete_id", athleteId)
+    .eq("routine_id", routineId);
+
+  if (error) {
+    console.error("Error disconnecting routine from athlete:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath("/atleti");
+  return { success: true };
 }

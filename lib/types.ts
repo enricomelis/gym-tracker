@@ -295,8 +295,56 @@ export type Routine = {
   volume: number;
   notes: string;
   apparatus: Apparatus;
-  type: ExerciseType;
+  type: DatabaseExerciseType;
   created_by: string;
+};
+
+// Zod schemas for validation
+
+// Database enum values (from excel_routine_type)
+export type DatabaseExerciseType =
+  | "I+"
+  | "Int"
+  | "Par"
+  | "Com"
+  | "Usc"
+  | "Std"
+  | "G"
+  | "S"
+  | "B"
+  | "D";
+
+// Mapping between UI types and database types
+export const UI_TO_DB_EXERCISE_TYPE: Record<
+  ExerciseType,
+  DatabaseExerciseType
+> = {
+  "I+": "I+",
+  I: "Int",
+  P: "Par",
+  C: "Com",
+  U: "Usc",
+  Std: "Std",
+  G: "G",
+  S: "S",
+  B: "B",
+  D: "D",
+};
+
+export const DB_TO_UI_EXERCISE_TYPE: Record<
+  DatabaseExerciseType,
+  ExerciseType
+> = {
+  "I+": "I+",
+  Int: "I",
+  Par: "P",
+  Com: "C",
+  Usc: "U",
+  Std: "Std",
+  G: "G",
+  S: "S",
+  B: "B",
+  D: "D",
 };
 
 export const RoutineSchema = z.object({
@@ -305,7 +353,7 @@ export const RoutineSchema = z.object({
   volume: z.number().int().min(0).max(1000),
   notes: z.string().optional(),
   apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"]),
-  type: z.enum(["I+", "I", "P", "C", "U", "Std", "G", "S", "B", "D"]),
+  type: z.enum(["I+", "Int", "Par", "Com", "Usc", "Std", "G", "S", "B", "D"]),
   created_by: z.string().uuid(),
 });
 
@@ -323,7 +371,7 @@ export const CreateRoutineSchema = z.object({
   apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"], {
     errorMap: () => ({ message: "Apparato non valido" }),
   }),
-  type: z.enum(["I+", "I", "P", "C", "U", "Std", "G", "S", "B", "D"], {
+  type: z.enum(["I+", "Int", "Par", "Com", "Usc", "Std", "G", "S", "B", "D"], {
     errorMap: () => ({ message: "Tipo di routine non valido" }),
   }),
   created_by: z.string().uuid("ID coach non valido"),
