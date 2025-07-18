@@ -29,7 +29,7 @@ export default async function GiornalieraPage() {
     const { data: athletes, error: athletesError } = await supabase
       .from("athletes")
       .select(
-        "id, first_name, last_name, date_of_birth, registration_number, category, current_coach_id, registered_society_id, created_at, updated_at, supabase_id",
+        "id, first_name, last_name, birth_date, registration_number, category, current_coach_id, registered_society_id, created_at, updated_at, supabase_id",
       )
       .eq("current_coach_id", coach.id);
     if (athletesError) {
@@ -57,7 +57,7 @@ export default async function GiornalieraPage() {
     const { data: athlete, error: athleteError } = await supabase
       .from("athletes")
       .select(
-        "id, first_name, last_name, date_of_birth, registration_number, category, current_coach_id, registered_society_id, created_at, updated_at, supabase_id",
+        "id, first_name, last_name, birth_date, registration_number, category, current_coach_id, registered_society_id, created_at, updated_at, supabase_id",
       )
       .eq("supabase_id", user.id)
       .single();

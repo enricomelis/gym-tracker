@@ -37,7 +37,7 @@ type Athlete = {
   id: string;
   first_name: string;
   last_name: string;
-  date_of_birth: string;
+  birth_date: string | null;
   registration_number: number;
   category: string;
   current_coach_id: string;
@@ -142,7 +142,10 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
   return (
     <div className="space-y-4">
       <p>
-        <strong>Data di nascita:</strong> {formatDate(athlete.date_of_birth)}
+        <strong>Data di nascita:</strong>{" "}
+        {athlete.birth_date
+          ? formatDate(athlete.birth_date)
+          : "Non specificata"}
       </p>
       <p>
         <strong>Tessera:</strong> {athlete.registration_number}

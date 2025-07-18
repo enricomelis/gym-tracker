@@ -149,7 +149,7 @@ export type Athlete = {
   id: string;
   first_name: string;
   last_name: string;
-  date_of_birth: string;
+  birth_date: string | null;
   registration_number: number;
   category: "Allievi" | "Junior" | "Senior";
   current_coach_id: string;

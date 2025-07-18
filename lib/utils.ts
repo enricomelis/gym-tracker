@@ -17,10 +17,20 @@ export const hasEnvVars =
   process.env.NEXT_PUBLIC_SUPABASE_URL &&
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string | null): string {
+  if (!dateString) {
+    return "Non specificata";
+  }
+
   const date = new Date(dateString);
-  const day = date.getUTCDate().toString().padStart(2, "0");
-  const year = date.getUTCFullYear();
+
+  // Check if the date is valid
+  if (isNaN(date.getTime())) {
+    return "Data non valida";
+  }
+
+  const day = date.getDate().toString().padStart(2, "0");
+  const year = date.getFullYear();
   const monthNames = [
     "Gennaio",
     "Febbraio",
@@ -35,7 +45,7 @@ export function formatDate(dateString: string): string {
     "Novembre",
     "Dicembre",
   ];
-  const month = monthNames[date.getUTCMonth()];
+  const month = monthNames[date.getMonth()];
 
   return `${day} ${month} ${year}`;
 }

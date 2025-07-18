@@ -51,19 +51,18 @@ export default async function SettimanalePage() {
       supabase
         .from("athletes")
         .select(
-          "id, current_coach_id, first_name, last_name, date_of_birth, registration_number, category, registered_society_id, created_at, updated_at, supabase_id",
+          "id, current_coach_id, first_name, last_name, birth_date, registration_number, category, registered_society_id, created_at, updated_at, supabase_id",
         )
         .eq("supabase_id", user.id)
         .single(),
       getCompetitions(),
     ]);
 
-    const athlete = athleteRes.data;
-    const athleteError = athleteRes.error;
-
-    if (!athlete || athleteError) {
+    if (athleteRes.error || !athleteRes.data) {
       return <div>Errore nel caricamento del profilo atleta.</div>;
     }
+
+    const athlete = athleteRes.data;
 
     // Atleta: mostra solo la sua programmazione
     return (

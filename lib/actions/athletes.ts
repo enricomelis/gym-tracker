@@ -59,16 +59,16 @@ export async function getSocieties() {
 }
 
 function getCategory(
-  dateOfBirth: string | null,
+  birthDate: string | null,
 ): "Allievi" | "Junior" | "Senior" {
-  if (!dateOfBirth) {
+  if (!birthDate) {
     return "Senior";
   }
-  const birthDate = new Date(dateOfBirth);
+  const birthDateObj = new Date(birthDate);
   const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+  let age = today.getFullYear() - birthDateObj.getFullYear();
+  const m = today.getMonth() - birthDateObj.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDateObj.getDate())) {
     age--;
   }
 
@@ -84,7 +84,7 @@ function getCategory(
 const athleteSchema = z.object({
   first_name: z.string().min(1, { message: "Il nome è obbligatorio" }),
   last_name: z.string().min(1, { message: "Il cognome è obbligatorio" }),
-  date_of_birth: z.string().refine((d) => !Number.isNaN(Date.parse(d)), {
+  birth_date: z.string().refine((d) => !Number.isNaN(Date.parse(d)), {
     message: "Data di nascita non valida",
   }),
   registration_number: z.coerce
@@ -128,7 +128,7 @@ export async function createAthlete(
   const parsed = athleteSchema.safeParse({
     first_name: formData.get("firstName") as string,
     last_name: formData.get("lastName") as string,
-    date_of_birth: formData.get("dateOfBirth") as string,
+    birth_date: formData.get("dateOfBirth") as string,
     registration_number,
     society_id: formData.get("societyId") as string | null,
   });
@@ -144,7 +144,7 @@ export async function createAthlete(
   const {
     first_name,
     last_name,
-    date_of_birth,
+    birth_date,
     registration_number: regNum,
     society_id,
   } = parsed.data;
@@ -169,12 +169,12 @@ export async function createAthlete(
   const rawFormData = {
     first_name,
     last_name,
-    date_of_birth,
+    birth_date,
     registration_number: regNum,
     registered_society_id: society_id ?? null,
   };
 
-  const category = getCategory(date_of_birth);
+  const category = getCategory(birth_date);
 
   const { error } = await supabase.from("athletes").insert([
     {
