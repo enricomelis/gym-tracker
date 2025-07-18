@@ -2,6 +2,14 @@ import { z } from "zod";
 
 // Export dei tipi usati nell'app
 
+// TODO: rimuovere i tipi che non servono più
+// - Macro, Micro, ExerciseType
+// - Tipi di per programmazione
+// - Tipi per i presets
+
+// TODO: modificare i tipi
+// - ExerciseTypeVolumeMultipliers
+
 export type Apparatus = "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
 export const APPARATUS_TYPES: Apparatus[] = [
   "FX",
