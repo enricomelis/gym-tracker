@@ -310,3 +310,49 @@ export async function getRoutines() {
 
   return data;
 }
+
+export async function connectRoutineToAthlete(
+  athleteId: string,
+  routineId: string,
+) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "User not found" };
+  }
+
+  const { error } = await supabase.from("athletes_routines").insert([
+    {
+      athlete_id: athleteId,
+      routine_id: routineId,
+      created_by: user.id,
+    },
+  ]);
+
+  if (error) {
+    console.error("Error connecting routine to athlete:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath("/atleti");
+  return { success: true };
+}
+
+export async function getRoutinesForAthlete(athleteId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("athletes_routines")
+    .select("*")
+    .eq("athlete_id", athleteId);
+
+  if (error) {
+    console.error("Error fetching routines for athlete:", error);
+    return [];
+  }
+
+  return data;
+}
