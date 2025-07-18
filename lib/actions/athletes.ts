@@ -9,6 +9,8 @@ import {
   ExerciseType,
   type AthletesRoutines,
   type Routine,
+  CreateRoutineSchema,
+  type CreateRoutineInput,
 } from "@/lib/types";
 import { EXERCISE_TYPES_VAULT, EXERCISE_TYPES_NOT_VAULT } from "@/lib/types";
 
@@ -269,4 +271,42 @@ export async function reactivateAthlete(athleteId: string) {
 
   revalidatePath("/atleti");
   return { success: true };
+}
+
+export async function createRoutine(routine: CreateRoutineInput) {
+  const supabase = await createClient();
+
+  // Validate input with Zod
+  const validationResult = CreateRoutineSchema.safeParse(routine);
+
+  if (!validationResult.success) {
+    const errors = validationResult.error.errors.map((err) => err.message);
+    return {
+      error: `Validazione fallita: ${errors.join(", ")}`,
+      details: validationResult.error.errors,
+    };
+  }
+
+  const { error } = await supabase
+    .from("routines")
+    .insert([validationResult.data]);
+
+  if (error) {
+    console.error("Error creating routine:", error);
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+export async function getRoutines() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("routines").select("*");
+
+  if (error) {
+    console.error("Error fetching routines:", error);
+    return [];
+  }
+
+  return data;
 }

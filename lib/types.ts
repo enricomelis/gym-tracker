@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 // Export dei tipi usati nell'app
 
 export type Apparatus = "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
@@ -296,3 +298,35 @@ export type Routine = {
   type: ExerciseType;
   created_by: string;
 };
+
+export const RoutineSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(255),
+  volume: z.number().int().min(0).max(1000),
+  notes: z.string().optional(),
+  apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"]),
+  type: z.enum(["I+", "I", "P", "C", "U", "Std", "G", "S", "B", "D"]),
+  created_by: z.string().uuid(),
+});
+
+export const CreateRoutineSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Il nome della routine è obbligatorio")
+    .max(255, "Il nome non può superare i 255 caratteri"),
+  volume: z
+    .number()
+    .int()
+    .min(0, "Il volume deve essere un numero positivo")
+    .max(1000, "Il volume non può superare 1000"),
+  notes: z.string().optional(),
+  apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"], {
+    errorMap: () => ({ message: "Apparato non valido" }),
+  }),
+  type: z.enum(["I+", "I", "P", "C", "U", "Std", "G", "S", "B", "D"], {
+    errorMap: () => ({ message: "Tipo di routine non valido" }),
+  }),
+  created_by: z.string().uuid("ID coach non valido"),
+});
+
+export type CreateRoutineInput = z.infer<typeof CreateRoutineSchema>;
