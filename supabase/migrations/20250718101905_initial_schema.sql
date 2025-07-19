@@ -73,6 +73,7 @@ CREATE TABLE "presets_apparatus" (
   "apparatus" apparatus_enum NOT NULL,
   "quantity" int NOT NULL DEFAULT 1,
   "execution_grade" excel_execution_grades DEFAULT 'A',
+  "base_volume" int,
   "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
