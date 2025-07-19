@@ -8,8 +8,13 @@ import type {
   TrainingSessionPreset,
   DailyRoutinePreset,
   MacrocyclePreset,
+  NewApparatusPreset,
+  NewTrainingSessionPreset,
+  NewWeekdayPreset,
+  NewWeekdaysSessionsPreset,
 } from "@/lib/types";
 import { z } from "zod";
+import { getAuthenticatedCoach } from "@/lib/utils/auth";
 
 /**
  * Insert multiple weekly goal preset rows (one per apparatus) sharing the same preset name.
@@ -17,25 +22,12 @@ import { z } from "zod";
 export async function createWeeklyGoalPreset(
   presets: Omit<WeeklyGoalPreset, "id" | "created_by">[],
 ) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "User not found" } as const;
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
   }
 
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", user.id)
-    .single();
-
-  if (coachError || !coach) {
-    return { error: "Coach profile not found" } as const;
-  }
+  const { coach, supabase } = authResult;
 
   const baseSchema = z.object({
     name: z.string().min(1),
@@ -90,9 +82,8 @@ export async function getWeeklyGoalPresets() {
 export async function getTrainingSessionPresets() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("training_sessions_presets")
-    .select("*")
-    .order("name");
+    .from("presets_training_sessions")
+    .select("*");
 
   if (error) {
     console.error("Error fetching training session presets:", error);
@@ -104,25 +95,12 @@ export async function getTrainingSessionPresets() {
 export async function createTrainingSessionPreset(
   presets: Omit<TrainingSessionPreset, "id" | "created_by">[],
 ) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "User not found" } as const;
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
   }
 
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", user.id)
-    .single();
-
-  if (coachError || !coach) {
-    return { error: "Coach profile not found" } as const;
-  }
+  const { coach, supabase } = authResult;
 
   const baseSchema = z.object({
     name: z.string().min(1),
@@ -170,31 +148,19 @@ export async function getMicrocyclePresets() {
   }
   return data as MicrocyclePreset[];
 }
+
 export async function createMicrocyclePreset(
   presets: Omit<
     MicrocyclePreset,
     "id" | "created_by" | "created_at" | "updated_at"
   >[],
 ) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "User not found" } as const;
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
   }
 
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", user.id)
-    .single();
-
-  if (coachError || !coach) {
-    return { error: "Coach profile not found" } as const;
-  }
+  const { coach, supabase } = authResult;
 
   const baseSchema = z.object({
     name: z.string().min(1),
@@ -277,25 +243,12 @@ export async function getDailyRoutinePresets() {
 export async function createDailyRoutinePreset(
   presets: Omit<DailyRoutinePreset, "id" | "created_by">[],
 ) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "User not found" } as const;
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
   }
 
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", user.id)
-    .single();
-
-  if (coachError || !coach) {
-    return { error: "Coach profile not found" } as const;
-  }
+  const { coach, supabase } = authResult;
 
   const baseSchema = z.object({
     name: z.string().min(1),
@@ -347,25 +300,12 @@ export async function createMacrocyclePreset(
     "id" | "created_by" | "created_at" | "updated_at"
   >[],
 ) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "User not found" } as const;
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
   }
 
-  const { data: coach, error: coachError } = await supabase
-    .from("coaches")
-    .select("id")
-    .eq("supabase_id", user.id)
-    .single();
-
-  if (coachError || !coach) {
-    return { error: "Coach profile not found" } as const;
-  }
+  const { coach, supabase } = authResult;
 
   const baseSchema = z.object({
     name: z.string().min(1),
@@ -390,4 +330,267 @@ export async function createMacrocyclePreset(
 
   revalidatePath("/presets");
   return { success: true, data } as const;
+}
+
+// -- new preset actions --
+export async function createApparatusPreset(
+  presets: Omit<
+    NewApparatusPreset,
+    "id" | "created_by" | "created_at" | "updated_at"
+  >[],
+) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { coach, supabase } = authResult;
+
+  const baseSchema = z.object({
+    apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"]),
+    quantity: z.number().int().min(1),
+    execution: z.enum(["A+", "A", "B+", "B", "C+", "C"]),
+  });
+
+  const parsed = z.array(baseSchema).safeParse(presets);
+  if (!parsed.success) {
+    return { error: "Invalid apparatus preset data" } as const;
+  }
+
+  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
+
+  const { data, error } = await supabase
+    .from("presets_apparatus")
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error("Error creating apparatus preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data } as const;
+}
+
+export async function getApparatusPresets() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("presets_apparatus")
+    .select("*")
+    .order("apparatus");
+
+  if (error) {
+    console.error("Error fetching apparatus presets:", error);
+    return [] as NewApparatusPreset[];
+  }
+  return data as NewApparatusPreset[];
+}
+
+export async function createSessionPreset(
+  presets: Omit<
+    NewTrainingSessionPreset,
+    "id" | "created_by" | "created_at" | "updated_at"
+  >[],
+) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { coach, supabase } = authResult;
+
+  const baseSchema = z.object({
+    name: z.string().min(1),
+    fx_preset_id: z.string().uuid().nullable(),
+    ph_preset_id: z.string().uuid().nullable(),
+    sr_preset_id: z.string().uuid().nullable(),
+    vt_preset_id: z.string().uuid().nullable(),
+    pb_preset_id: z.string().uuid().nullable(),
+    hb_preset_id: z.string().uuid().nullable(),
+  });
+
+  const parsed = z.array(baseSchema).safeParse(presets);
+  if (!parsed.success) {
+    return { error: "Invalid training session preset data" } as const;
+  }
+
+  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
+
+  const { data, error } = await supabase
+    .from("presets_training_sessions")
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error("Error creating training session preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data } as const;
+}
+
+export async function getSessionPresets() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("presets_training_sessions")
+    .select("*");
+
+  if (error) {
+    console.error("Error fetching training session presets:", error);
+    return [] as NewTrainingSessionPreset[];
+  }
+  return data as NewTrainingSessionPreset[];
+}
+
+export async function createWeekdayPreset(
+  presets: Omit<
+    NewWeekdayPreset,
+    "id" | "created_by" | "created_at" | "updated_at"
+  >[],
+) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { coach, supabase } = authResult;
+
+  const baseSchema = z.object({});
+
+  const parsed = z.array(baseSchema).safeParse(presets);
+  if (!parsed.success) {
+    return { error: "Invalid weekday preset data" } as const;
+  }
+
+  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
+
+  const { data, error } = await supabase
+    .from("presets_weekdays")
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error("Error creating weekday preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data } as const;
+}
+
+export async function getWeekdayPresets() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("presets_weekdays").select("*");
+
+  if (error) {
+    console.error("Error fetching weekday presets:", error);
+    return [] as NewWeekdayPreset[];
+  }
+  return data as NewWeekdayPreset[];
+}
+
+export async function createWeekdaysSessionsPreset(
+  presets: Omit<NewWeekdaysSessionsPreset, "id">[],
+) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { coach, supabase } = authResult;
+
+  const baseSchema = z.object({
+    weekday_id: z.string().uuid(),
+    training_session_id: z.string().uuid(),
+    session_number: z.number().int().min(1),
+  });
+
+  const parsed = z.array(baseSchema).safeParse(presets);
+  if (!parsed.success) {
+    return { error: "Invalid weekdays sessions preset data" } as const;
+  }
+
+  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
+
+  const { data, error } = await supabase
+    .from("presets_weekdays_sessions")
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error("Error creating weekdays sessions preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data } as const;
+}
+
+export async function getWeekdaysSessionsPresets() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("presets_weekdays_sessions")
+    .select("*");
+
+  if (error) {
+    console.error("Error fetching weekdays sessions presets:", error);
+    return [] as NewWeekdaysSessionsPreset[];
+  }
+  return data as NewWeekdaysSessionsPreset[];
+}
+
+// Unified function to get all four preset types efficiently
+export async function getUnifiedPresets() {
+  const supabase = await createClient();
+
+  // Single auth call, then reuse client for all operations
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: "User not found" } as const;
+  }
+
+  const { data: coach } = await supabase
+    .from("coaches")
+    .select("id")
+    .eq("supabase_id", user.id)
+    .single();
+
+  if (!coach) {
+    return { error: "Coach profile not found" } as const;
+  }
+
+  // Parallel execution with shared client - much faster!
+  const [
+    apparatusPresets,
+    sessionPresets,
+    weekdayPresets,
+    weekdaysSessionsPresets,
+  ] = await Promise.all([
+    supabase
+      .from("presets_apparatus")
+      .select("*")
+      .eq("created_by", coach.id)
+      .order("apparatus"),
+    supabase
+      .from("presets_training_sessions")
+      .select("*")
+      .eq("created_by", coach.id),
+    supabase.from("presets_weekdays").select("*").eq("created_by", coach.id),
+    supabase
+      .from("presets_weekdays_sessions")
+      .select("*")
+      .eq("created_by", coach.id)
+      .order("weekday_id"),
+  ]);
+
+  return {
+    apparatusPresets: apparatusPresets.data || [],
+    sessionPresets: sessionPresets.data || [],
+    weekdayPresets: weekdayPresets.data || [],
+    weekdaysSessionsPresets: weekdaysSessionsPresets.data || [],
+  };
 }

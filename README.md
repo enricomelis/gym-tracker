@@ -89,6 +89,7 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 
 - [x] Tecnico inserisce atleta ed esercizi relativi (/atleti)
 - [ ] Tecnico definisce i preset (/presets)
+  - [ ] Attrezzo
   - [ ] Allenamento
   - [ ] Microciclo
   - [ ] Macrociclo

@@ -290,27 +290,27 @@ export type MicrocyclePreset = {
 };
 
 // nuovi tipi
-export type AthletesRoutines = {
+export type NewAthletesRoutines = {
   id: string;
   athlete_id: string;
   routine_id: string;
   created_by: string;
 };
 
-export type Routine = {
+export type NewRoutine = {
   id: string;
   name: string;
   volume: number;
   notes: string;
   apparatus: Apparatus;
-  type: DatabaseExerciseType;
+  type: NewDatabaseExerciseType;
   created_by: string;
 };
 
 // Zod schemas for validation
 
 // Database enum values (from excel_routine_type)
-export type DatabaseExerciseType =
+export type NewDatabaseExerciseType =
   | "I+"
   | "Int"
   | "Par"
@@ -325,7 +325,7 @@ export type DatabaseExerciseType =
 // Mapping between UI types and database types
 export const UI_TO_DB_EXERCISE_TYPE: Record<
   ExerciseType,
-  DatabaseExerciseType
+  NewDatabaseExerciseType
 > = {
   "I+": "I+",
   I: "Int",
@@ -340,7 +340,7 @@ export const UI_TO_DB_EXERCISE_TYPE: Record<
 };
 
 export const DB_TO_UI_EXERCISE_TYPE: Record<
-  DatabaseExerciseType,
+  NewDatabaseExerciseType,
   ExerciseType
 > = {
   "I+": "I+",
@@ -355,7 +355,7 @@ export const DB_TO_UI_EXERCISE_TYPE: Record<
   D: "D",
 };
 
-export const RoutineSchema = z.object({
+export const NewRoutineSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(255),
   volume: z.number().int().min(0).max(1000),
@@ -365,7 +365,7 @@ export const RoutineSchema = z.object({
   created_by: z.string().uuid(),
 });
 
-export const CreateRoutineSchema = z.object({
+export const NewCreateRoutineSchema = z.object({
   name: z
     .string()
     .min(1, "Il nome della routine è obbligatorio")
@@ -385,4 +385,48 @@ export const CreateRoutineSchema = z.object({
   created_by: z.string().uuid("ID coach non valido"),
 });
 
-export type CreateRoutineInput = z.infer<typeof CreateRoutineSchema>;
+export type NewCreateRoutineInput = z.infer<typeof NewCreateRoutineSchema>;
+
+export type NewApparatusPreset = {
+  id: string;
+  apparatus: Apparatus;
+  quantity: number;
+  execution: ExecutionCoeff;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type NewPresetType =
+  | "attrezzo"
+  | "allenamento"
+  | "giornaliero"
+  | "microciclo"
+  | "macrociclo";
+
+export type NewTrainingSessionPreset = {
+  id: string;
+  fx_preset_id: string | null;
+  ph_preset_id: string | null;
+  sr_preset_id: string | null;
+  vt_preset_id: string | null;
+  pb_preset_id: string | null;
+  hb_preset_id: string | null;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type NewWeekdayPreset = {
+  id: string;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type NewWeekdaysSessionsPreset = {
+  id: string;
+  weekday_id: string;
+  training_session_id: string;
+  session_number: number;
+};
