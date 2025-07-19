@@ -347,9 +347,10 @@ export async function createApparatusPreset(
   const { coach, supabase } = authResult;
 
   const baseSchema = z.object({
+    name: z.string().min(1),
     apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"]),
     quantity: z.number().int().min(1),
-    execution: z.enum(["A+", "A", "B+", "B", "C+", "C"]),
+    execution_grade: z.enum(["A+", "A", "B+", "B", "C+", "C"]),
   });
 
   const parsed = z.array(baseSchema).safeParse(presets);
@@ -457,7 +458,10 @@ export async function createWeekdayPreset(
 
   const { coach, supabase } = authResult;
 
-  const baseSchema = z.object({});
+  const baseSchema = z.object({
+    weekday_number: z.number().int().min(0).max(6),
+    name: z.string().min(1),
+  });
 
   const parsed = z.array(baseSchema).safeParse(presets);
   if (!parsed.success) {
@@ -502,8 +506,9 @@ export async function createWeekdaysSessionsPreset(
   const { coach, supabase } = authResult;
 
   const baseSchema = z.object({
+    name: z.string().min(1),
     weekday_id: z.string().uuid(),
-    training_session_id: z.string().uuid(),
+    session_id: z.string().uuid(),
     session_number: z.number().int().min(1),
   });
 

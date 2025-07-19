@@ -69,6 +69,7 @@ CREATE TABLE "athletes" (
 
 CREATE TABLE "presets_apparatus" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  "name" text NOT NULL,
   "apparatus" apparatus_enum NOT NULL,
   "quantity" int NOT NULL DEFAULT 1,
   "execution_grade" excel_execution_grades DEFAULT 'A',
@@ -80,6 +81,7 @@ CREATE TABLE "presets_apparatus" (
 CREATE TABLE "presets_weekdays" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "weekday_number" int NOT NULL,
+  "name" text NOT NULL,
   "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
@@ -115,6 +117,7 @@ CREATE TABLE "competitions" (
 
 CREATE TABLE "presets_training_sessions" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  "name" text NOT NULL,
   "fx_preset_id" uuid REFERENCES presets_apparatus(id) ON DELETE SET NULL,
   "ph_preset_id" uuid REFERENCES presets_apparatus(id) ON DELETE SET NULL,
   "sr_preset_id" uuid REFERENCES presets_apparatus(id) ON DELETE SET NULL,
@@ -149,6 +152,7 @@ CREATE TABLE "athletes_routines" (
 
 CREATE TABLE "presets_weekdays_sessions" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  "name" text NOT NULL,
   "weekday_id" uuid REFERENCES presets_weekdays(id) ON DELETE SET NULL,
   "session_id" uuid REFERENCES presets_training_sessions(id) ON DELETE SET NULL,
   "session_number" int NOT NULL DEFAULT 1,
@@ -159,6 +163,7 @@ CREATE TABLE "presets_weekdays_sessions" (
 
 CREATE TABLE "presets_microcycles_weekdays" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  "name" text NOT NULL,
   "microcycle_id" uuid REFERENCES presets_microcycles(id) ON DELETE SET NULL,
   "weekday_id" uuid REFERENCES presets_weekdays(id) ON DELETE SET NULL,
   "day_number" int NOT NULL DEFAULT 1,
@@ -169,6 +174,7 @@ CREATE TABLE "presets_microcycles_weekdays" (
 
 CREATE TABLE "presets_macrocycles_microcycles" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  "name" text NOT NULL,
   "macrocycle_id" uuid REFERENCES presets_macrocycles(id) ON DELETE SET NULL,
   "microcycle_id" uuid REFERENCES presets_microcycles(id) ON DELETE SET NULL,
   "week_number" int NOT NULL DEFAULT 1,

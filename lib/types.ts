@@ -389,9 +389,10 @@ export type NewCreateRoutineInput = z.infer<typeof NewCreateRoutineSchema>;
 
 export type NewApparatusPreset = {
   id: string;
+  name: string;
   apparatus: Apparatus;
   quantity: number;
-  execution: ExecutionCoeff;
+  execution_grade: ExecutionCoeff;
   created_by: string;
   created_at?: string | null;
   updated_at?: string | null;
@@ -406,6 +407,7 @@ export type NewPresetType =
 
 export type NewTrainingSessionPreset = {
   id: string;
+  name: string;
   fx_preset_id: string | null;
   ph_preset_id: string | null;
   sr_preset_id: string | null;
@@ -420,6 +422,7 @@ export type NewTrainingSessionPreset = {
 export type NewWeekdayPreset = {
   id: string;
   weekday_number: number;
+  name: string;
   created_by: string;
   created_at?: string | null;
   updated_at?: string | null;
@@ -427,8 +430,9 @@ export type NewWeekdayPreset = {
 
 export type NewWeekdaysSessionsPreset = {
   id: string;
+  name: string;
   weekday_id: string;
-  training_session_id: string;
+  session_id: string;
   session_number: number;
   created_by: string;
   created_at?: string | null;
