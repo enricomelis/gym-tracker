@@ -459,7 +459,7 @@ export async function createWeekdayPreset(
   const { coach, supabase } = authResult;
 
   const baseSchema = z.object({
-    weekday_number: z.number().int().min(0).max(6),
+    weekday_number: z.number().int().min(0).max(7),
     name: z.string().min(1),
   });
 
@@ -496,7 +496,10 @@ export async function getWeekdayPresets() {
 }
 
 export async function createWeekdaysSessionsPreset(
-  presets: Omit<NewWeekdaysSessionsPreset, "id">[],
+  presets: Omit<
+    NewWeekdaysSessionsPreset,
+    "id" | "created_by" | "created_at" | "updated_at"
+  >[],
 ) {
   const authResult = await getAuthenticatedCoach();
   if ("error" in authResult) {

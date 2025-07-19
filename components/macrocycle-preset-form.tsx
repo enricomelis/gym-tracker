@@ -14,6 +14,7 @@ export default function MacrocyclePresetForm({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [name, setName] = useState("");
+  const [lengthInWeeks, setLengthInWeeks] = useState(1);
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -21,8 +22,21 @@ export default function MacrocyclePresetForm({
       return;
     }
 
+    if (lengthInWeeks < 1) {
+      toast({
+        title: "Durata deve essere almeno 1 settimana",
+        variant: "destructive",
+      });
+      return;
+    }
+
     startTransition(async () => {
-      const result = await createMacrocyclePreset([{ name: name.trim() }]);
+      const result = await createMacrocyclePreset([
+        {
+          name: name.trim(),
+          // length_in_weeks: lengthInWeeks
+        },
+      ]);
       if (result && "error" in result) {
         toast({
           title: "Errore",
@@ -36,6 +50,7 @@ export default function MacrocyclePresetForm({
           duration: 1500,
         });
         setName("");
+        setLengthInWeeks(1);
         if (onSave) await onSave();
       }
     });
@@ -48,7 +63,19 @@ export default function MacrocyclePresetForm({
         value={name}
         onChange={(e) => setName(e.target.value)}
         disabled={isPending}
+        placeholder="Inserisci nome preset"
       />
+
+      <label className="text-sm font-medium">Durata in Settimane</label>
+      <Input
+        type="number"
+        min="1"
+        value={lengthInWeeks}
+        onChange={(e) => setLengthInWeeks(parseInt(e.target.value) || 1)}
+        disabled={isPending}
+        placeholder="Numero di settimane"
+      />
+
       <Button onClick={handleSave} disabled={isPending || !name.trim()}>
         {isPending ? "Salvataggio..." : "Salva Preset"}
       </Button>

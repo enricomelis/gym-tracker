@@ -1,7 +1,7 @@
 import { getServerClient } from "@/lib/supabase/server";
 import { getUserRole } from "@/lib/role";
-import PresetColumnClient from "./preset-column-client";
 import { getUnifiedPresets } from "@/lib/actions/presets";
+import PresetColumns from "@/components/preset-columns";
 
 export default async function PresetsPage() {
   const supabase = await getServerClient();
@@ -38,16 +38,12 @@ export default async function PresetsPage() {
     <div className="container mx-auto p-6">
       <h1 className="mb-6 text-2xl font-bold">Gestione Preset</h1>
 
-      {/* Debug info - remove in production */}
-      <div className="mt-8 rounded-lg bg-muted p-4">
-        <h3 className="mb-2 font-semibold">Debug Info:</h3>
-        <div className="text-sm">
-          <p>Apparatus Presets: {apparatusPresets.length}</p>
-          <p>Session Presets: {sessionPresets.length}</p>
-          <p>Weekday Presets: {weekdayPresets.length}</p>
-          <p>Weekdays Sessions Presets: {weekdaysSessionsPresets.length}</p>
-        </div>
-      </div>
+      <PresetColumns
+        apparatusPresets={apparatusPresets}
+        sessionPresets={sessionPresets}
+        weekdayPresets={weekdayPresets}
+        weekdaysSessionsPresets={weekdaysSessionsPresets}
+      />
     </div>
   );
 }
