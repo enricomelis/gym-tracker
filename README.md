@@ -88,11 +88,12 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 #### User Flow da ottenere
 
 - [x] Tecnico inserisce atleta ed esercizi relativi (/atleti)
-- [ ] Tecnico definisce i preset (/presets)
-  - [ ] Attrezzo
-  - [ ] Allenamento
-  - [ ] Microciclo
-  - [ ] Macrociclo
+- [x] Tecnico definisce i preset (/presets)
+  - [x] Attrezzo
+  - [x] Allenamento
+  - [x] Microciclo
+  - [x] Macrociclo
+- [ ] Tecnico inserisce i preset in modo Top-Down
 - [ ] Tecnico inserisce la programmazione generica (/programmazione)
 - [ ] Tecnico definisce la gara, chi partecipa e a quali attrezzi (/gestione-gare)
 - [ ] Tecnico collega la programmazione ai singoli atleti

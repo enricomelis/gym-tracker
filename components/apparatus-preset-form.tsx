@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { APPARATUS_TYPES, EXECUTION_COEFF_TYPES } from "@/lib/types";
+import { APPARATUS_TYPES, EXECUTION_COEFF_TYPES, type Apparatus, type ExecutionCoeff } from "@/lib/types";
 
 export default function ApparatusPresetForm({
   onSave,
@@ -77,9 +77,9 @@ export default function ApparatusPresetForm({
       const result = await createApparatusPreset([
         {
           name: name.trim(),
-          apparatus: apparatus as any,
+          apparatus: apparatus as Apparatus,
           quantity,
-          execution_grade: executionGrade as any,
+          execution_grade: executionGrade as ExecutionCoeff,
         },
       ]);
 

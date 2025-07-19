@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from "react";
 import { format } from "date-fns";
 import React from "react";
 
-import type { WeeklyGoal, WeeklyGoalPreset, Competition } from "@/lib/types";
+import type { WeeklyGoal, Competition } from "@/lib/types";
 import {
   upsertWeeklyGoals,
   deleteWeeklyGoals,
@@ -46,10 +46,8 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  getWeeklyGoalPresets,
-  createWeeklyGoalPreset,
-} from "@/lib/actions/presets";
+// Note: Weekly goal presets are now handled inline in the form
+// Old preset logic has been moved to lib/backup/old-preset-logic.ts
 
 const apparatusList: Array<WeeklyGoal["apparatus"]> = [
   "FX",
@@ -95,98 +93,19 @@ export default function WeeklyGoalForm({
   const [isPending, startTransition] = useTransition();
   const [weeklyGoals, setWeeklyGoals] = useState<EditableWeeklyGoal[]>([]);
 
-  // Preset state
-  const [allPresets, setAllPresets] = useState<WeeklyGoalPreset[]>([]);
-  const presetNames = Array.from(new Set(allPresets.map((p) => p.name)));
-
-  useEffect(() => {
-    async function fetchPresets() {
-      const presets = await getWeeklyGoalPresets();
-      setAllPresets(presets);
-    }
-    fetchPresets();
-  }, []);
-
-  const applyPreset = (name: string) => {
-    if (!name) return;
-    const rows = allPresets.filter((p) => p.name === name);
-    if (rows.length === 0) return;
-    const rowMap = new Map(rows.map((r) => [r.apparatus, r]));
-    const macro = rows[0]?.macro ?? "Mixed";
-    const micro = rows[0]?.micro ?? "Increasing Load";
-
-    setWeeklyGoals((prev) =>
-      prev.map((g) => {
-        const row = rowMap.get(g.apparatus);
-        if (!row) return g;
-        return {
-          ...g,
-          macro,
-          micro,
-          exercise_volume: row.exercise_volume,
-          dismount_volume: row.dismount_volume,
-          base_volume:
-            g.apparatus === "VT" ? (row.base_volume ?? null) : g.base_volume,
-          target_penalty: row.target_penalty,
-        };
-      }),
-    );
-  };
+  // Note: Preset functionality has been removed as part of the refactor
+  // Weekly goals are now managed directly in the form
 
   // Save as preset dialog state
   const [savePresetOpen, setSavePresetOpen] = useState(false);
   const [newPresetName, setNewPresetName] = useState("");
 
   const handleSaveAsPreset = () => {
-    if (!newPresetName.trim()) {
-      toast({ title: "Nome obbligatorio", variant: "destructive" });
-      return;
-    }
-
-    startTransition(async () => {
-      const rows = weeklyGoals
-        .filter((g) => {
-          const ex = Number(g.exercise_volume) || 0;
-          const dis = Number(g.dismount_volume) || 0;
-          const base = g.apparatus === "VT" ? Number(g.base_volume) || 0 : 0;
-          const pen = Number(g.target_penalty) || 0;
-          return ex > 0 || dis > 0 || base > 0 || pen > 0;
-        })
-        .map((g) => ({
-          name: newPresetName.trim(),
-          apparatus: g.apparatus,
-          macro: g.macro,
-          micro: g.micro,
-          exercise_volume: Number(g.exercise_volume) || 0,
-          dismount_volume: Number(g.dismount_volume) || 0,
-          target_penalty: Number(g.target_penalty) || 0,
-          base_volume: g.apparatus === "VT" ? Number(g.base_volume) || 0 : null,
-        }));
-
-      if (rows.length === 0) {
-        toast({
-          title: "Nessun dato da salvare",
-          description: "Inserisci almeno un valore prima di creare un preset.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const result = await createWeeklyGoalPreset(rows);
-      if ("error" in result) {
-        toast({
-          title: "Errore",
-          description: result.error,
-          variant: "destructive",
-        });
-      } else {
-        toast({ title: "Preset salvato", duration: 1500 });
-        setSavePresetOpen(false);
-        setNewPresetName("");
-        // Refresh preset list
-        const presets = await getWeeklyGoalPresets();
-        setAllPresets(presets);
-      }
+    // Note: Preset save functionality has been removed as part of the refactor
+    toast({
+      title: "Funzionalità non disponibile",
+      description: "Il salvataggio preset è stato rimosso nel refactor.",
+      variant: "destructive",
     });
   };
 

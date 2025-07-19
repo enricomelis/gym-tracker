@@ -73,11 +73,9 @@ export default function PresetColumns({
   macrocyclesMicrocyclesPresets,
 }: PresetColumnsProps) {
   const [activeForm, setActiveForm] = useState<PresetType | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleFormSave = () => {
     setActiveForm(null);
-    setRefreshKey((prev) => prev + 1);
     // Force a page refresh to get updated data
     window.location.reload();
   };
@@ -530,13 +528,15 @@ export default function PresetColumns({
                 <div className="space-y-1 text-xs text-muted-foreground">
                   <div>
                     Macrociclo:{" "}
-                    {macrocyclePresets.find((m) => m.id === preset.macrocycle_id)
-                      ?.name || "N/A"}
+                    {macrocyclePresets.find(
+                      (m) => m.id === preset.macrocycle_id,
+                    )?.name || "N/A"}
                   </div>
                   <div>
                     Microciclo:{" "}
-                    {microcyclePresets.find((m) => m.id === preset.microcycle_id)
-                      ?.name || "N/A"}
+                    {microcyclePresets.find(
+                      (m) => m.id === preset.microcycle_id,
+                    )?.name || "N/A"}
                   </div>
                   <div>Settimana N°: {preset.week_number}</div>
                 </div>

@@ -20,9 +20,9 @@ const coachLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/atleti", label: "Atleti", icon: Users },
   { href: "/presets", label: "Presets", icon: Settings },
-  { href: "/microcicli", label: "Microcicli", icon: Calendar },
-  { href: "/settimanale", label: "Settimanale", icon: Calendar },
-  { href: "/giornaliera", label: "Giornaliera", icon: ClipboardList },
+  // { href: "/microcicli", label: "Microcicli", icon: Calendar }, // Temporarily disabled during refactoring
+  // { href: "/settimanale", label: "Settimanale", icon: Calendar }, // Temporarily disabled during refactoring
+  // { href: "/giornaliera", label: "Giornaliera", icon: ClipboardList }, // Temporarily disabled during refactoring
   { href: "/allenamenti", label: "Allenamenti", icon: Dumbbell },
   { href: "/analisi-dati", label: "Analisi Dati", icon: BarChart2 },
 ];
@@ -48,8 +48,8 @@ export default function Sidebar({
   // Link per atleti
   const athleteLinks = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/settimanale", label: "Settimanale", icon: Calendar },
-    { href: "/giornaliera", label: "Giornaliera", icon: ClipboardList },
+    // { href: "/settimanale", label: "Settimanale", icon: Calendar }, // Temporarily disabled during refactoring
+    // { href: "/giornaliera", label: "Giornaliera", icon: ClipboardList }, // Temporarily disabled during refactoring
     { href: "/allenamenti", label: "Allenamenti", icon: Dumbbell },
   ];
 

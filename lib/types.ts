@@ -2,13 +2,9 @@ import { z } from "zod";
 
 // Export dei tipi usati nell'app
 
-// TODO: rimuovere i tipi che non servono più
-// - Macro, Micro, ExerciseType
-// - Tipi di per programmazione
-// - Tipi per i presets
-
-// TODO: modificare i tipi
-// - ExerciseTypeVolumeMultipliers
+// ============================================================================
+// TIPI FONDAMENTALI (mantenuti per compatibilità con sistema allenamenti)
+// ============================================================================
 
 export type Apparatus = "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
 export const APPARATUS_TYPES: Apparatus[] = [
@@ -18,21 +14,6 @@ export const APPARATUS_TYPES: Apparatus[] = [
   "VT",
   "PB",
   "HB",
-];
-
-export type Macro = "Mixed" | "Competition";
-export const MACRO_TYPES: Macro[] = ["Mixed", "Competition"];
-
-export type Micro =
-  | "Increasing Load"
-  | "Decreasing Load"
-  | "Model"
-  | "Competition Week";
-export const MICRO_TYPES: Micro[] = [
-  "Increasing Load",
-  "Decreasing Load",
-  "Model",
-  "Competition Week",
 ];
 
 export type ExecutionCoeff = "A+" | "A" | "B+" | "B" | "C+" | "C";
@@ -96,6 +77,10 @@ export const ExecutionPenaltyMap: Record<ExecutionCoeff, number> = {
   C: 2.5,
 };
 
+// ============================================================================
+// TIPI PER GESTIONE ATLETI E COACH
+// ============================================================================
+
 export type Competition = {
   id: string;
   location: string;
@@ -110,51 +95,6 @@ export type Coach = {
   updated_at?: string | null;
 };
 
-// Tipi per la programmazione
-export type WeeklyGoal = {
-  id?: string;
-  athlete_id: string;
-  week_number: number;
-  year: number;
-  apparatus: "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
-  macro: "Mixed" | "Competition";
-  micro: "Increasing Load" | "Decreasing Load" | "Model" | "Competition Week";
-  exercise_volume: number;
-  dismount_volume: number;
-  target_penalty: number;
-  base_volume?: number | null;
-  camp?: string | null;
-  competition_id?: string | null;
-};
-
-export type DailyRoutine = {
-  id?: string;
-  session_id: string;
-  apparatus: "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
-  type: "I+" | "I" | "P" | "C" | "U" | "Std" | "G" | "S" | "B" | "D";
-  quantity: number;
-  target_sets: number; // n_salite
-  target_execution: "A+" | "A" | "B+" | "B" | "C+" | "C";
-};
-
-export type TrainingSession = {
-  id: string;
-  date: string;
-  session_number: number;
-  daily_routines: DailyRoutine[];
-};
-
-export type EnrichedTrainingSession = {
-  id: string;
-  date: string;
-  session_number: number;
-  week_number: number;
-  total_volume: number;
-  average_intensity: number;
-  routines: DailyRoutine[];
-};
-
-// Tipi per la gestione degli atleti
 export type Athlete = {
   id: string;
   first_name: string;
@@ -170,7 +110,10 @@ export type Athlete = {
   is_active?: boolean;
 };
 
-// Tipi per la gestione delle sessioni di allenamento
+// ============================================================================
+// TIPI PER SESSIONI DI ALLENAMENTO (sistema attivo)
+// ============================================================================
+
 export type UpdateApparatusSessionPayload = {
   id: string;
   base_volume: number;
@@ -216,80 +159,10 @@ export type TrainingSet = {
   intensity: number;
 };
 
-// Tipi per la gestione dei presets
-export type OldAthleteRoutine = {
-  id: string;
-  athlete_id: string;
-  routine_name: string;
-  routine_volume: number;
-  routine_notes: string;
-  apparatus: Apparatus;
-};
+// ============================================================================
+// NUOVI TIPI PER SISTEMA PRESET (prefisso "New")
+// ============================================================================
 
-export type WeeklyGoalPreset = {
-  id?: string;
-  name: string;
-  apparatus: "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
-  macro: "Mixed" | "Competition";
-  micro: "Increasing Load" | "Decreasing Load" | "Model" | "Competition Week";
-  exercise_volume: number;
-  dismount_volume: number;
-  target_penalty: number;
-  base_volume?: number | null;
-  created_by?: string;
-};
-
-export type DailyRoutinePreset = {
-  id: string;
-  name: string;
-  apparatus: "All" | "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
-  type: "I+" | "I" | "P" | "C" | "U" | "Std" | "G" | "S" | "B" | "D";
-  quantity: number;
-  target_sets: number;
-  target_execution: "A+" | "A" | "B+" | "B" | "C+" | "C";
-  created_by?: string | null;
-};
-
-export type TrainingSessionPreset = {
-  id: string;
-  name: string;
-  created_by: string;
-  week_day: number | null;
-  fx_preset_id: string | null;
-  ph_preset_id: string | null;
-  sr_preset_id: string | null;
-  vt_preset_id: string | null;
-  pb_preset_id: string | null;
-  hb_preset_id: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
-
-export type MacrocyclePreset = {
-  id: string;
-  name: string;
-  created_by: string;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
-
-export type MicrocyclePreset = {
-  id: string;
-  name: string;
-  allenamento_1: string | null;
-  allenamento_2: string | null;
-  allenamento_3: string | null;
-  allenamento_4: string | null;
-  allenamento_5: string | null;
-  allenamento_6: string | null;
-  allenamento_7: string | null;
-  macrocycle_id: string | null;
-  created_by: string;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
-
-// nuovi tipi
 export type NewAthletesRoutines = {
   id: string;
   athlete_id: string;
@@ -306,8 +179,6 @@ export type NewRoutine = {
   type: NewDatabaseExerciseType;
   created_by: string;
 };
-
-// Zod schemas for validation
 
 // Database enum values (from excel_routine_type)
 export type NewDatabaseExerciseType =
