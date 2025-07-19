@@ -457,3 +457,23 @@ export type NewMicrocyclesWeekdaysPreset = {
   created_at?: string | null;
   updated_at?: string | null;
 };
+
+export type NewMacrocyclePreset = {
+  id: string;
+  name: string;
+  length_in_weeks: number;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type NewMacrocyclesMicrocyclesPreset = {
+  id: string;
+  name: string;
+  macrocycle_id: string;
+  microcycle_id: string;
+  week_number: number;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};

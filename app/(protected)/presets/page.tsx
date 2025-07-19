@@ -34,6 +34,8 @@ export default async function PresetsPage() {
     weekdaysSessionsPresets,
     microcyclePresets,
     microcyclesWeekdaysPresets,
+    macrocyclePresets,
+    macrocyclesMicrocyclesPresets,
   } = presetsResult;
 
   return (
@@ -47,6 +49,8 @@ export default async function PresetsPage() {
         weekdaysSessionsPresets={weekdaysSessionsPresets}
         microcyclePresets={microcyclePresets}
         microcyclesWeekdaysPresets={microcyclesWeekdaysPresets}
+        macrocyclePresets={macrocyclePresets}
+        macrocyclesMicrocyclesPresets={macrocyclesMicrocyclesPresets}
       />
     </div>
   );

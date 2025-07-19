@@ -18,6 +18,8 @@ import type {
   NewWeekdayPreset,
   NewWeekdaysSessionsPreset,
   NewMicrocyclesWeekdaysPreset,
+  NewMacrocyclePreset,
+  NewMacrocyclesMicrocyclesPreset,
 } from "@/lib/types";
 import ApparatusPresetForm from "@/components/apparatus-preset-form";
 import SessionPresetForm from "@/components/session-preset-form";
@@ -25,6 +27,8 @@ import WeekdayPresetForm from "@/components/weekday-preset-form";
 import WeekdaysSessionsPresetForm from "@/components/weekdays-sessions-preset-form";
 import MicrocyclePresetForm from "@/components/microcycle-preset-form";
 import MicrocyclesWeekdaysPresetForm from "@/components/microcycles-weekdays-preset-form";
+import MacrocyclePresetForm from "@/components/macrocycle-preset-form";
+import MacrocyclesMicrocyclesPresetForm from "@/components/macrocycles-microcycles-preset-form";
 
 interface PresetColumnsProps {
   apparatusPresets: NewApparatusPreset[];
@@ -33,6 +37,8 @@ interface PresetColumnsProps {
   weekdaysSessionsPresets: NewWeekdaysSessionsPreset[];
   microcyclePresets: NewMicrocyclePreset[];
   microcyclesWeekdaysPresets: NewMicrocyclesWeekdaysPreset[];
+  macrocyclePresets: NewMacrocyclePreset[];
+  macrocyclesMicrocyclesPresets: NewMacrocyclesMicrocyclesPreset[];
 }
 
 type PresetType =
@@ -41,7 +47,9 @@ type PresetType =
   | "weekday"
   | "weekdaysessions"
   | "microcycle"
-  | "microcyclesweekdays";
+  | "microcyclesweekdays"
+  | "macrocycle"
+  | "macrocyclesmicrocycles";
 
 const WEEKDAYS = [
   "Generico",
@@ -61,6 +69,8 @@ export default function PresetColumns({
   weekdaysSessionsPresets,
   microcyclePresets,
   microcyclesWeekdaysPresets,
+  macrocyclePresets,
+  macrocyclesMicrocyclesPresets,
 }: PresetColumnsProps) {
   const [activeForm, setActiveForm] = useState<PresetType | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -89,7 +99,7 @@ export default function PresetColumns({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
       {/* Apparatus Presets Column */}
       <Card>
         <CardHeader>
@@ -111,8 +121,8 @@ export default function PresetColumns({
         <CardContent className="space-y-4">
           {activeForm === "apparatus" && (
             <div className="rounded-lg border bg-muted/50 p-4">
-              <ApparatusPresetForm 
-                onSave={handleFormSave} 
+              <ApparatusPresetForm
+                onSave={handleFormSave}
                 onCancel={() => setActiveForm(null)}
               />
             </div>
@@ -234,8 +244,8 @@ export default function PresetColumns({
         <CardContent className="space-y-4">
           {activeForm === "weekday" && (
             <div className="rounded-lg border bg-muted/50 p-4">
-              <WeekdayPresetForm 
-                onSave={handleFormSave} 
+              <WeekdayPresetForm
+                onSave={handleFormSave}
                 onCancel={() => setActiveForm(null)}
               />
             </div>
@@ -342,8 +352,8 @@ export default function PresetColumns({
         <CardContent className="space-y-4">
           {activeForm === "microcycle" && (
             <div className="rounded-lg border bg-muted/50 p-4">
-              <MicrocyclePresetForm 
-                onSave={handleFormSave} 
+              <MicrocyclePresetForm
+                onSave={handleFormSave}
                 onCancel={() => setActiveForm(null)}
               />
             </div>
@@ -421,6 +431,118 @@ export default function PresetColumns({
               </div>
             ))}
             {microcyclesWeekdaysPresets.length === 0 && (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                Nessuna associazione salvata
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Macrocycle Presets Column */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Preset Macrocicli</CardTitle>
+          <CardDescription>
+            Configurazioni per i macrocicli di allenamento con durata
+          </CardDescription>
+          <Button
+            onClick={() =>
+              setActiveForm(activeForm === "macrocycle" ? null : "macrocycle")
+            }
+            variant={activeForm === "macrocycle" ? "secondary" : "outline"}
+            size="sm"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Aggiungi Preset Macrociclo
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {activeForm === "macrocycle" && (
+            <div className="rounded-lg border bg-muted/50 p-4">
+              <MacrocyclePresetForm
+                onSave={handleFormSave}
+                onCancel={() => setActiveForm(null)}
+              />
+            </div>
+          )}
+
+          <div className="max-h-96 space-y-2 overflow-y-auto">
+            {macrocyclePresets.map((preset) => (
+              <div key={preset.id} className="rounded-lg border bg-card p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <h4 className="text-sm font-medium">{preset.name}</h4>
+                  <Badge variant="outline">
+                    {preset.length_in_weeks} sett.
+                  </Badge>
+                </div>
+              </div>
+            ))}
+            {macrocyclePresets.length === 0 && (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                Nessun preset macrociclo salvato
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Macrocycles Microcycles Presets Column */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Preset Macrocicli-Microcicli</CardTitle>
+          <CardDescription>
+            Associazioni tra macrocicli e microcicli con numero settimana
+          </CardDescription>
+          <Button
+            onClick={() =>
+              setActiveForm(
+                activeForm === "macrocyclesmicrocycles"
+                  ? null
+                  : "macrocyclesmicrocycles",
+              )
+            }
+            variant={
+              activeForm === "macrocyclesmicrocycles" ? "secondary" : "outline"
+            }
+            size="sm"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Aggiungi Associazione
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {activeForm === "macrocyclesmicrocycles" && (
+            <div className="rounded-lg border bg-muted/50 p-4">
+              <MacrocyclesMicrocyclesPresetForm
+                onSave={handleFormSave}
+                onCancel={() => setActiveForm(null)}
+                availableMacrocycles={macrocyclePresets}
+                availableMicrocycles={microcyclePresets}
+              />
+            </div>
+          )}
+
+          <div className="max-h-96 space-y-2 overflow-y-auto">
+            {macrocyclesMicrocyclesPresets.map((preset) => (
+              <div key={preset.id} className="rounded-lg border bg-card p-3">
+                <h4 className="mb-2 text-sm font-medium">{preset.name}</h4>
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  <div>
+                    Macrociclo:{" "}
+                    {macrocyclePresets.find((m) => m.id === preset.macrocycle_id)
+                      ?.name || "N/A"}
+                  </div>
+                  <div>
+                    Microciclo:{" "}
+                    {microcyclePresets.find((m) => m.id === preset.microcycle_id)
+                      ?.name || "N/A"}
+                  </div>
+                  <div>Settimana N°: {preset.week_number}</div>
+                </div>
+              </div>
+            ))}
+            {macrocyclesMicrocyclesPresets.length === 0 && (
               <p className="py-4 text-center text-sm text-muted-foreground">
                 Nessuna associazione salvata
               </p>
