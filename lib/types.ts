@@ -419,6 +419,7 @@ export type NewTrainingSessionPreset = {
 
 export type NewWeekdayPreset = {
   id: string;
+  weekday_number: number;
   created_by: string;
   created_at?: string | null;
   updated_at?: string | null;
@@ -429,4 +430,7 @@ export type NewWeekdaysSessionsPreset = {
   weekday_id: string;
   training_session_id: string;
   session_number: number;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
 };

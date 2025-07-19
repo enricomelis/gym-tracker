@@ -3,7 +3,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { CreateRoutineSchema, type CreateRoutineInput } from "@/lib/types";
+import {
+  NewCreateRoutineSchema,
+  type NewCreateRoutineInput,
+} from "@/lib/types";
 
 export type CreateAthleteState = {
   errors?: {
@@ -264,11 +267,11 @@ export async function reactivateAthlete(athleteId: string) {
   return { success: true };
 }
 
-export async function createRoutine(routine: CreateRoutineInput) {
+export async function createRoutine(routine: NewCreateRoutineInput) {
   const supabase = await createClient();
 
   // Validate input with Zod
-  const validationResult = CreateRoutineSchema.safeParse(routine);
+  const validationResult = NewCreateRoutineSchema.safeParse(routine);
 
   if (!validationResult.success) {
     const errors = validationResult.error.errors.map((err) => err.message);
