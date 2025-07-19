@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { createWeeklyGoalPreset } from "@/lib/actions/presets";
+import { createWeeklyGoalPreset } from "@/lib/backup/old-preset-logic";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import type { WeeklyGoalPreset } from "@/lib/types";
+import type { WeeklyGoalPreset } from "@/lib/backup/old-preset-logic";
 
 // Apparatus list and enums reused from WeeklyGoalPreset type
 const apparatusList: Array<WeeklyGoalPreset["apparatus"]> = [

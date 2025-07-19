@@ -8,7 +8,7 @@ export async function getWeeklyGoals(
   athleteId: string,
   weekNumber: number,
   year: number,
-) {
+): Promise<WeeklyGoal[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("apparatus_weekly_goals")

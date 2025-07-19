@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import React from "react";
 import {
-  type Routine,
+  type NewRoutine,
   APPARATUS_TYPES,
   DB_TO_UI_EXERCISE_TYPE,
 } from "@/lib/types";
@@ -59,7 +59,7 @@ type AthleteRoutineWithDetails = {
   athlete_id: string;
   routine_id: string;
   created_by: string;
-  routine: Routine;
+  routine: NewRoutine;
 };
 
 export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
@@ -74,7 +74,7 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
   const [showConfirm, setShowConfirm] = React.useState(false);
   const [showSelector, setShowSelector] = React.useState(false);
   const [showAddRoutine, setShowAddRoutine] = React.useState(false);
-  const [availableRoutines, setAvailableRoutines] = React.useState<Routine[]>(
+  const [availableRoutines, setAvailableRoutines] = React.useState<NewRoutine[]>(
     [],
   );
   const [athleteRoutines, setAthleteRoutines] = React.useState<

@@ -1,3 +1,7 @@
+// Temporarily disabled during refactoring
+// Original implementation preserved below for reference
+
+/*
 import { getServerClient } from "@/lib/supabase/server";
 import { getAthletesForCoach, getCompetitions } from "@/lib/actions/athletes";
 import WeeklyPlanner from "./weekly-planner";
@@ -81,4 +85,24 @@ export default async function SettimanalePage() {
 
   // Nessun ruolo valido
   return <div>Ruolo non riconosciuto. Contatta l&#39;amministratore.</div>;
+}
+*/
+
+export default function SettimanalePage() {
+  return (
+    <div className="flex h-[calc(100vh-200px)] items-center justify-center">
+      <div className="text-center">
+        <h1 className="mb-4 text-2xl font-bold text-muted-foreground">
+          Programmazione Settimanale
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Questa funzionalità è temporaneamente disabilitata durante il
+          refactoring.
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Tornerà presto con una nuova interfaccia migliorata.
+        </p>
+      </div>
+    </div>
+  );
 }

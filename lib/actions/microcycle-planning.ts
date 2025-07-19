@@ -2,14 +2,14 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
-import type { MicrocyclePreset } from "@/lib/types";
+import type { NewMicrocyclePreset } from "@/lib/types";
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------------------------------------------------
 
 export type WeeklyMicrocycle = Omit<
-  MicrocyclePreset,
+  NewMicrocyclePreset,
   "created_at" | "updated_at" | "id" | "created_by"
 > & {
   id?: string;
