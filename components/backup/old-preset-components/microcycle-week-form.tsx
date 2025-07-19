@@ -3,8 +3,9 @@
 import { useEffect, useState, useTransition } from "react";
 import {
   getDailyRoutinePresets,
-  getMicrocyclePresets,
-} from "@/lib/actions/presets";
+  getMicrocyclePresetsOld,
+  MicrocyclePreset,
+} from "@/lib/backup/old-preset-logic";
 import {
   upsertMicrocyclePlan,
   deleteMicrocyclePlan,
@@ -38,9 +39,7 @@ export default function MicrocycleWeekForm({
   const [dailyOptions, setDailyOptions] = useState<
     { id: string; name: string }[]
   >([]);
-  const [allPresets, setAllPresets] = useState<
-    import("@/lib/types").MicrocyclePreset[]
-  >([]);
+  const [allPresets, setAllPresets] = useState<MicrocyclePreset[]>([]);
   const [isPending, startTransition] = useTransition();
 
   type EditablePlan = {
@@ -72,21 +71,23 @@ export default function MicrocycleWeekForm({
       const [opts, existing, presets] = await Promise.all([
         getDailyRoutinePresets(),
         getMicrocycleForWeek(weekNumber, year),
-        getMicrocyclePresets(),
+        getMicrocyclePresetsOld(),
       ]);
       setDailyOptions(opts.map((o) => ({ id: o.id, name: o.name })));
       setAllPresets(presets);
       if (existing) {
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         setPlan({
           name: existing.name || emptyPlan.name,
-          allenamento_1: existing.allenamento_1 || "",
-          allenamento_2: existing.allenamento_2 || "",
-          allenamento_3: existing.allenamento_3 || "",
-          allenamento_4: existing.allenamento_4 || "",
-          allenamento_5: existing.allenamento_5 || "",
-          allenamento_6: existing.allenamento_6 || "",
-          allenamento_7: existing.allenamento_7 || "",
+          allenamento_1: (existing as any).allenamento_1 || "",
+          allenamento_2: (existing as any).allenamento_2 || "",
+          allenamento_3: (existing as any).allenamento_3 || "",
+          allenamento_4: (existing as any).allenamento_4 || "",
+          allenamento_5: (existing as any).allenamento_5 || "",
+          allenamento_6: (existing as any).allenamento_6 || "",
+          allenamento_7: (existing as any).allenamento_7 || "",
         });
+        /* eslint-enable @typescript-eslint/no-explicit-any */
       }
     }
     fetchInitial();

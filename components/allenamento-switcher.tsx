@@ -1,12 +1,7 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
-
-export type TrainingSession = {
-  id: string;
-  date: string;
-  session_number: number;
-};
+import type { TrainingSession } from "@/lib/types";
 
 type AllenamentoSwitcherProps = {
   sessions: TrainingSession[];

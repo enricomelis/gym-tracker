@@ -81,56 +81,53 @@ export async function getDailyTrainings(
     });
   }
 
-  const trainingSessions: EnrichedTrainingSession[] = sessions.map(
-    (session) => {
-      const weekNumber = getWeek(new Date(session.date), { weekStartsOn: 1 });
+  const trainingSessions: EnrichedTrainingSession[] = sessions.map((session) => {
+    const weekNumber = getWeek(new Date(session.date), { weekStartsOn: 1 });
 
-      let totalVolume = 0;
-      const routineIntensities: number[] = [];
+    let totalVolume = 0;
+    const routineIntensities: number[] = [];
 
-      for (const routine of session.daily_routines) {
-        const weeklyGoalKey = `${weekNumber}-${routine.apparatus}`;
-        const weeklyGoal = weeklyGoalsMap.get(weeklyGoalKey);
+    for (const routine of session.daily_routines) {
+      const weeklyGoalKey = `${weekNumber}-${routine.apparatus}`;
+      const weeklyGoal = weeklyGoalsMap.get(weeklyGoalKey);
 
-        if (!weeklyGoal) continue;
+      if (!weeklyGoal) continue;
 
-        const routineBaseVolume =
-          routine.type === "U" ? weeklyGoal.dismount : weeklyGoal.exercise;
+      const routineBaseVolume =
+        routine.type === "U" ? weeklyGoal.dismount : weeklyGoal.exercise;
 
-        const multiplier =
-          volumeMultipliers[routine.type as keyof typeof volumeMultipliers] ??
-          0;
-        const penalty =
-          executionPenaltyMap[
-            routine.target_execution as keyof typeof executionPenaltyMap
-          ];
-        const CoE = (10 - penalty) / 10;
+      const multiplier =
+        volumeMultipliers[routine.type as keyof typeof volumeMultipliers] ?? 0;
+      const penalty =
+        executionPenaltyMap[
+          routine.target_execution as keyof typeof executionPenaltyMap
+        ];
+      const CoE = (10 - penalty) / 10;
 
-        const volume = routineBaseVolume * multiplier * routine.quantity;
-        totalVolume += volume;
+      const volume = routineBaseVolume * multiplier * routine.quantity;
+      totalVolume += volume;
 
-        const sets = routine.target_sets;
-        const intensity = sets > 0 ? (volume * CoE) / sets : 0;
-        routineIntensities.push(intensity);
-      }
+      const sets = routine.target_sets;
+      const intensity = sets > 0 ? (volume * CoE) / sets : 0;
+      routineIntensities.push(intensity);
+    }
 
-      const averageIntensity =
-        routineIntensities.length > 0
-          ? routineIntensities.reduce((a, b) => a + b, 0) /
-            routineIntensities.length
-          : 0;
+    const averageIntensity =
+      routineIntensities.length > 0
+        ? routineIntensities.reduce((a, b) => a + b, 0) /
+          routineIntensities.length
+        : 0;
 
-      return {
-        id: session.id,
-        date: session.date,
-        session_number: session.session_number,
-        week_number: weekNumber,
-        total_volume: Math.round(totalVolume),
-        average_intensity: parseFloat(averageIntensity.toFixed(2)),
-        routines: session.daily_routines,
-      };
-    },
-  );
+    return {
+      id: session.id,
+      date: session.date,
+      session_number: session.session_number,
+      week_number: weekNumber,
+      total_volume: Math.round(totalVolume),
+      average_intensity: parseFloat(averageIntensity.toFixed(2)),
+      routines: session.daily_routines,
+    };
+  });
 
   return trainingSessions;
 }

@@ -93,7 +93,9 @@ export default async function AtletiPage() {
                 <CardContent>
                   <p>
                     <strong>Data di nascita:</strong>{" "}
-                    {formatDate(athlete.date_of_birth)}
+                    {athlete.birth_date
+                      ? formatDate(athlete.birth_date)
+                      : "Non specificata"}
                   </p>
                   <p>
                     <strong>Tessera:</strong> {athlete.registration_number}

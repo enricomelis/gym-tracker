@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import {
   createTrainingSessionPreset,
   getDailyRoutinePresets,
-} from "@/lib/actions/presets";
+} from "@/lib/backup/old-preset-logic";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -23,7 +23,10 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import type { TrainingSessionPreset, DailyRoutinePreset } from "@/lib/types";
+import type {
+  TrainingSessionPreset as TrainingSessionPresetOld,
+  DailyRoutinePreset as DailyRoutinePresetOld,
+} from "@/lib/backup/old-preset-logic";
 
 const apparatusList = ["FX", "PH", "SR", "VT", "PB", "HB"] as const;
 const weekDays = [
@@ -67,7 +70,7 @@ export default function TrainingSessionPresetForm({
   const [isPending, startTransition] = useTransition();
   const [preset, setPreset] = useState<EditablePreset>(initialPreset);
   const [dailyRoutinePresets, setDailyRoutinePresets] = useState<
-    DailyRoutinePreset[]
+    DailyRoutinePresetOld[]
   >([]);
   const [loading, setLoading] = useState(true);
 
@@ -120,7 +123,7 @@ export default function TrainingSessionPresetForm({
     }
 
     startTransition(async () => {
-      const payload: Omit<TrainingSessionPreset, "id" | "created_by">[] = [
+      const payload: Omit<TrainingSessionPresetOld, "id" | "created_by">[] = [
         {
           name: preset.name.trim(),
           week_day: preset.week_day,

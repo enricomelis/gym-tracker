@@ -1,8 +1,7 @@
 "use client";
 
-import AllenamentoSwitcher, {
-  TrainingSession,
-} from "@/components/allenamento-switcher";
+import AllenamentoSwitcher from "@/components/allenamento-switcher";
+import type { TrainingSession } from "@/lib/types";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 

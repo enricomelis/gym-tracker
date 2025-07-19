@@ -1,6 +1,13 @@
 "use client";
 
-import { deleteAthlete, changeAthleteCoach } from "@/lib/actions/athletes";
+import {
+  deleteAthlete,
+  changeAthleteCoach,
+  getRoutinesForAthlete,
+  getRoutines,
+  connectRoutineToAthlete,
+  disconnectRoutineFromAthlete,
+} from "@/lib/actions/athletes";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -24,8 +31,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import React from "react";
+import {
+  type NewRoutine,
+  APPARATUS_TYPES,
+  DB_TO_UI_EXERCISE_TYPE,
+} from "@/lib/types";
 import AthleteRoutineForm from "@/components/athlete-routine-form";
-import { type AthleteRoutine, APPARATUS_TYPES } from "@/lib/types";
 
 type Coach = {
   id: string;
@@ -37,10 +48,18 @@ type Athlete = {
   id: string;
   first_name: string;
   last_name: string;
-  date_of_birth: string;
+  birth_date: string | null;
   registration_number: number;
   category: string;
   current_coach_id: string;
+};
+
+type AthleteRoutineWithDetails = {
+  id: string;
+  athlete_id: string;
+  routine_id: string;
+  created_by: string;
+  routine: NewRoutine;
 };
 
 export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
@@ -54,23 +73,28 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
   );
   const [showConfirm, setShowConfirm] = React.useState(false);
   const [showSelector, setShowSelector] = React.useState(false);
-  const [showAddExercise, setShowAddExercise] = React.useState(false);
-  const [editingRoutine, setEditingRoutine] =
-    React.useState<AthleteRoutine | null>(null);
-
+  const [showAddRoutine, setShowAddRoutine] = React.useState(false);
+  const [availableRoutines, setAvailableRoutines] = React.useState<NewRoutine[]>(
+    [],
+  );
   const [athleteRoutines, setAthleteRoutines] = React.useState<
-    AthleteRoutine[]
+    AthleteRoutineWithDetails[]
   >([]);
 
   const fetchAthleteRoutines = React.useCallback(async () => {
-    const supabase = getBrowserClient();
-    const { data, error } = await supabase
-      .from("athlete_routines")
-      .select("*")
-      .eq("athlete_id", athlete.id);
-    if (!error && data) {
-      setAthleteRoutines(data);
-    }
+    const routines = await getRoutinesForAthlete(athlete.id);
+    // Fetch routine details for each athlete routine
+    const allRoutines = await getRoutines();
+    const routinesMap = new Map(allRoutines.map((r) => [r.id, r]));
+
+    const athleteRoutinesWithDetails = routines
+      .map((ar) => ({
+        ...ar,
+        routine: routinesMap.get(ar.routine_id)!,
+      }))
+      .filter((ar) => ar.routine); // Filter out any routines that don't exist
+
+    setAthleteRoutines(athleteRoutinesWithDetails);
   }, [athlete.id]);
 
   React.useEffect(() => {
@@ -92,6 +116,14 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
       }
     }
     fetchCoaches();
+  }, []);
+
+  React.useEffect(() => {
+    async function fetchAvailableRoutines() {
+      const routines = await getRoutines();
+      setAvailableRoutines(routines);
+    }
+    fetchAvailableRoutines();
   }, []);
 
   async function handleDeactivate() {
@@ -139,10 +171,49 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
     }
   }
 
+  async function handleConnectRoutine(routineId: string) {
+    const result = await connectRoutineToAthlete(athlete.id, routineId);
+    if (result?.error) {
+      toast({
+        title: "Errore",
+        description: `Impossibile collegare l&apos;esercizio: ${result.error}`,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Successo",
+        description: "Esercizio collegato con successo.",
+        duration: 1000,
+      });
+      await fetchAthleteRoutines();
+    }
+  }
+
+  async function handleDisconnectRoutine(routineId: string) {
+    const result = await disconnectRoutineFromAthlete(athlete.id, routineId);
+    if (result?.error) {
+      toast({
+        title: "Errore",
+        description: `Impossibile rimuovere l&apos;esercizio: ${result.error}`,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Successo",
+        description: "Esercizio rimossa con successo.",
+        duration: 1000,
+      });
+      await fetchAthleteRoutines();
+    }
+  }
+
   return (
     <div className="space-y-4">
       <p>
-        <strong>Data di nascita:</strong> {formatDate(athlete.date_of_birth)}
+        <strong>Data di nascita:</strong>{" "}
+        {athlete.birth_date
+          ? formatDate(athlete.birth_date)
+          : "Non specificata"}
       </p>
       <p>
         <strong>Tessera:</strong> {athlete.registration_number}
@@ -157,27 +228,129 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
           .slice()
           .sort(
             (a, b) =>
-              APPARATUS_TYPES.indexOf(a.apparatus) -
-              APPARATUS_TYPES.indexOf(b.apparatus),
+              APPARATUS_TYPES.indexOf(a.routine.apparatus) -
+              APPARATUS_TYPES.indexOf(b.routine.apparatus),
           )
-          .map((routine) => (
-            <button
-              key={routine.id}
-              type="button"
-              className="w-full rounded border px-2 py-1 text-left hover:bg-muted focus:bg-muted focus:outline-none"
-              onClick={() => {
-                setEditingRoutine(routine);
-                setShowAddExercise(true);
-              }}
-            >
-              <strong>{routine.apparatus}: </strong>
-              {routine.routine_name} | {routine.routine_volume} |{" "}
-              {routine.routine_notes
-                ? `(${routine.routine_notes})`
-                : "Nessuna nota"}
-            </button>
+          .map((athleteRoutine) => (
+            <div key={athleteRoutine.id} className="rounded border px-3 py-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <strong>{athleteRoutine.routine.apparatus}: </strong>
+                  {athleteRoutine.routine.name} | Volume:{" "}
+                  {athleteRoutine.routine.volume} | Tipo:{" "}
+                  {
+                    DB_TO_UI_EXERCISE_TYPE[
+                      athleteRoutine.routine
+                        .type as keyof typeof DB_TO_UI_EXERCISE_TYPE
+                    ]
+                  }
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    handleDisconnectRoutine(athleteRoutine.routine_id)
+                  }
+                >
+                  Rimuovi
+                </Button>
+              </div>
+              {athleteRoutine.routine.notes && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Note: {athleteRoutine.routine.notes}
+                </p>
+              )}
+            </div>
           ))}
+
+        {athleteRoutines.length === 0 && (
+          <p className="text-muted-foreground">Nessuna routine assegnata.</p>
+        )}
       </div>
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button className="w-full">Aggiungi Esercizio</Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aggiungi Esercizio</AlertDialogTitle>
+          </AlertDialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Seleziona un esercizio da assegnare a questo atleta:
+            </p>
+            <div className="max-h-60 space-y-2 overflow-y-auto">
+              {availableRoutines
+                .filter(
+                  (routine) =>
+                    !athleteRoutines.some((ar) => ar.routine_id === routine.id),
+                )
+                .map((routine) => (
+                  <div
+                    key={routine.id}
+                    className="flex items-center justify-between rounded border p-2 hover:bg-muted"
+                  >
+                    <div>
+                      <strong>{routine.apparatus}: </strong>
+                      {routine.name} | Volume: {routine.volume} | Tipo:{" "}
+                      {
+                        DB_TO_UI_EXERCISE_TYPE[
+                          routine.type as keyof typeof DB_TO_UI_EXERCISE_TYPE
+                        ]
+                      }
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleConnectRoutine(routine.id)}
+                    >
+                      Assegna
+                    </Button>
+                  </div>
+                ))}
+              {availableRoutines.filter(
+                (routine) =>
+                  !athleteRoutines.some((ar) => ar.routine_id === routine.id),
+              ).length === 0 && (
+                <p className="py-4 text-center text-muted-foreground">
+                  Non ci sono esercizi disponibili.
+                </p>
+              )}
+            </div>
+            <div className="border-t pt-4">
+              <p className="mb-2 text-sm text-muted-foreground">
+                Non trovi l&apos;esercizio che cerchi?
+              </p>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setShowAddRoutine(true);
+                }}
+              >
+                Crea Nuovo Esercizio
+              </Button>
+            </div>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showAddRoutine} onOpenChange={setShowAddRoutine}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Crea Nuovo Esercizio</AlertDialogTitle>
+          </AlertDialogHeader>
+          <div className="space-y-4">
+            <AthleteRoutineForm
+              athlete_id={athlete.id}
+              onSuccess={async () => {
+                setShowAddRoutine(false);
+                await fetchAthleteRoutines();
+              }}
+            />
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog>
         <AlertDialogTrigger asChild>
@@ -243,38 +416,6 @@ export default function AthleteDetails({ athlete }: { athlete: Athlete }) {
           </Button>
         </div>
       )}
-
-      <AlertDialog
-        open={showAddExercise}
-        onOpenChange={(open) => {
-          setShowAddExercise(open);
-          if (!open) setEditingRoutine(null);
-        }}
-      >
-        <AlertDialogTrigger asChild>
-          <Button className="w-full">Aggiungi Esercizio</Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {editingRoutine ? "Modifica Esercizio" : "Aggiungi Esercizio"}
-            </AlertDialogTitle>
-          </AlertDialogHeader>
-          <AthleteRoutineForm
-            athlete_id={athlete.id}
-            id={editingRoutine?.id}
-            routine_name={editingRoutine?.routine_name ?? ""}
-            routine_volume={editingRoutine?.routine_volume ?? 0}
-            routine_notes={editingRoutine?.routine_notes ?? ""}
-            apparatus={editingRoutine?.apparatus ?? ""}
-            onSuccess={async () => {
-              setShowAddExercise(false);
-              setEditingRoutine(null);
-              await fetchAthleteRoutines();
-            }}
-          />
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Confirm dialog */}
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>

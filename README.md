@@ -72,26 +72,13 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
 
 ### ✨ Fase 3: Funzionalità extra-excel per la UX
 
-- [x] **Micro preset:** Possibilità di salvare delle settimane, degli allenamenti e dei macrocicli per facilitarne l'inserimento.
-  - [x] Preset e inserimento per la programmazione settimanale.
-  - [x] Preset e inserimento per la programmazione giornaliera.
-- [ ] **Pagine dedicata** Creazione di una pagina dedicata interamente alla gestione dei preset. Questa pagina verrà poi smistata.
-  - [x] Sezione 1: creazione del preset settimanale (microciclo)
-    - Nome della settimana
-    - Numero di esercizi per ogni giorno, per ogni attrezzo
-  - [ ] Sezione 2: creazione del preset multiplo (macrociclo)
-    - Nome del macrociclo
-    - Numero di settimane
-    - Tipo di microciclo per ogni settimana
-- [ ] **Gestione delle gare:** Calcolo automatico della programmazione, parametrizzata dal tecnico, data una gara calendarizzata.
-
-#### User Flow da ottenere
-
-- [ ] Tecnico inserisce atleta ed esercizi relativi (/atleti)
-- [ ] Tecnico definisce i preset (/presets)
-  - [ ] Allenamento
-  - [ ] Microciclo
-  - [ ] Macrociclo
+- [x] Tecnico inserisce atleta ed esercizi relativi (/atleti)
+- [x] Tecnico definisce i preset (/presets)
+  - [x] Attrezzo
+  - [x] Allenamento
+  - [x] Microciclo
+  - [x] Macrociclo
+- [ ] Tecnico inserisce i preset in modo Top-Down
 - [ ] Tecnico inserisce la programmazione generica (/programmazione)
 - [ ] Tecnico definisce la gara, chi partecipa e a quali attrezzi (/gestione-gare)
 - [ ] Tecnico collega la programmazione ai singoli atleti
@@ -110,10 +97,10 @@ In che modo cambia del flow attuale?
 
 - Atleti: dove il tecnico inserisce i suoi atleti e i vari esercizi generici
 - Preset: dove il tecnico crea, bottom-up, i vari preset (Attrezzo?, Allenamento, Settimana/Microciclo, Periodo/Macrociclo)
-  - Attrezzo?: non presente, potrebbe avere senso
-  - Allenamento: `daily_routine_presets` dove viene inserita la quantità di ogni tipo di esercizio per ogni attrezzo
-  - Microciclo: `microcycles_presets` dove viene creata una settimana generica, composta da 7 allenamenti
-  - Macrociclo: `macrocycles_presets` dove viene creato un periodo generico, formato da _n_ microcicli
+  - Attrezzo
+  - Allenamento
+  - Microciclo
+  - Macrociclo
 - Programmazione: dove il tecnico inserisce la programmazione generica in base ai preset che ha creato
   - type/Generica: fa la ricerca dentro `public.<table>` dove non ci sono riferimenti a date, atleti e altri particolari
     - view/Annuale: visione generale di tutto l'anno,

@@ -1,12 +1,31 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { createMacrocyclePreset } from "@/lib/actions/presets";
+import { createWeekdayPreset } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { useToast } from "@/components/ui/use-toast";
 
-export default function MacrocyclePresetForm({
+const WEEKDAYS = [
+  { value: 0, label: "Generico" },
+  { value: 1, label: "Lunedì" },
+  { value: 2, label: "Martedì" },
+  { value: 3, label: "Mercoledì" },
+  { value: 4, label: "Giovedì" },
+  { value: 5, label: "Venerdì" },
+  { value: 6, label: "Sabato" },
+  { value: 7, label: "Domenica" },
+];
+
+export default function WeekdayPresetForm({
   onSave,
   onCancel,
 }: {
@@ -16,7 +35,7 @@ export default function MacrocyclePresetForm({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [name, setName] = useState("");
-  const [lengthInWeeks, setLengthInWeeks] = useState(1);
+  const [weekdayNumber, setWeekdayNumber] = useState<number | null>(null);
 
   // Handle ESC key to cancel
   useEffect(() => {
@@ -45,19 +64,19 @@ export default function MacrocyclePresetForm({
       return;
     }
 
-    if (lengthInWeeks < 1) {
+    if (weekdayNumber === null) {
       toast({
-        title: "Durata deve essere almeno 1 settimana",
+        title: "Giorno della settimana obbligatorio",
         variant: "destructive",
       });
       return;
     }
 
     startTransition(async () => {
-      const result = await createMacrocyclePreset([
+      const result = await createWeekdayPreset([
         {
           name: name.trim(),
-          length_in_weeks: lengthInWeeks,
+          weekday_number: weekdayNumber,
         },
       ]);
 
@@ -70,11 +89,11 @@ export default function MacrocyclePresetForm({
       } else {
         toast({
           title: "Successo",
-          description: "Preset macrociclo salvato.",
+          description: "Preset giorno salvato.",
           duration: 1500,
         });
         setName("");
-        setLengthInWeeks(1);
+        setWeekdayNumber(null);
         if (onSave) await onSave();
       }
     });
@@ -83,7 +102,7 @@ export default function MacrocyclePresetForm({
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-sm font-medium">Nome Preset Macrociclo</label>
+        <label className="text-sm font-medium">Nome Preset Giorno</label>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -94,24 +113,31 @@ export default function MacrocyclePresetForm({
       </div>
 
       <div>
-        <label className="text-sm font-medium">Durata in Settimane</label>
-        <Input
-          type="number"
-          min="1"
-          value={lengthInWeeks}
-          onChange={(e) => setLengthInWeeks(parseInt(e.target.value) || 1)}
-          onFocus={handleFocus}
+        <label className="text-sm font-medium">Giorno della Settimana</label>
+        <Select
+          value={weekdayNumber?.toString() || ""}
+          onValueChange={(value) => setWeekdayNumber(parseInt(value))}
           disabled={isPending}
-          placeholder="Numero settimane"
-        />
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Seleziona giorno" />
+          </SelectTrigger>
+          <SelectContent>
+            {WEEKDAYS.map((day) => (
+              <SelectItem key={day.value} value={day.value.toString()}>
+                {day.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <Button
         onClick={handleSave}
-        disabled={isPending || !name.trim() || lengthInWeeks < 1}
+        disabled={isPending || !name.trim() || weekdayNumber === null}
         className="w-full"
       >
-        {isPending ? "Salvataggio..." : "Salva Preset Macrociclo"}
+        {isPending ? "Salvataggio..." : "Salva Preset Giorno"}
       </Button>
     </div>
   );
