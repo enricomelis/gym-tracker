@@ -4,27 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  Users,
-  Calendar,
-  ClipboardList,
-  BarChart2,
-  LayoutDashboard,
-  ChevronLeft,
-  Dumbbell,
-  Settings,
-} from "lucide-react";
+import { Users, LayoutDashboard, ChevronLeft, Settings } from "lucide-react";
 import { useEffect } from "react";
 
 const coachLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/atleti", label: "Atleti", icon: Users },
   { href: "/presets", label: "Presets", icon: Settings },
-  // { href: "/microcicli", label: "Microcicli", icon: Calendar }, // Temporarily disabled during refactoring
-  // { href: "/settimanale", label: "Settimanale", icon: Calendar }, // Temporarily disabled during refactoring
-  // { href: "/giornaliera", label: "Giornaliera", icon: ClipboardList }, // Temporarily disabled during refactoring
-  { href: "/allenamenti", label: "Allenamenti", icon: Dumbbell },
-  { href: "/analisi-dati", label: "Analisi Dati", icon: BarChart2 },
+  // { href: "/allenamenti", label: "Allenamenti", icon: Dumbbell },
+  // { href: "/analisi-dati", label: "Analisi Dati", icon: BarChart2 },
 ];
 
 export default function Sidebar({
@@ -46,12 +34,7 @@ export default function Sidebar({
   }, [pathname]);
 
   // Link per atleti
-  const athleteLinks = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    // { href: "/settimanale", label: "Settimanale", icon: Calendar }, // Temporarily disabled during refactoring
-    // { href: "/giornaliera", label: "Giornaliera", icon: ClipboardList }, // Temporarily disabled during refactoring
-    { href: "/allenamenti", label: "Allenamenti", icon: Dumbbell },
-  ];
+  const athleteLinks = coachLinks;
 
   const linksToShow = role === "athlete" ? athleteLinks : coachLinks;
 

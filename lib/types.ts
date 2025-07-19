@@ -160,6 +160,53 @@ export type TrainingSet = {
 };
 
 // ============================================================================
+// TIPI PER SISTEMA GIORNALIERO E SETTIMANALE (temporaneamente mantenuti per compatibilità)
+// ============================================================================
+
+export type DailyRoutine = {
+  id?: string;
+  session_id: string;
+  apparatus: "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
+  type: "I+" | "I" | "P" | "C" | "U" | "Std" | "G" | "S" | "B" | "D";
+  quantity: number;
+  target_sets: number; // n_salite
+  target_execution: "A+" | "A" | "B+" | "B" | "C+" | "C";
+};
+
+export type TrainingSession = {
+  id: string;
+  date: string;
+  session_number: number;
+  daily_routines: DailyRoutine[];
+};
+
+export type EnrichedTrainingSession = {
+  id: string;
+  date: string;
+  session_number: number;
+  week_number: number;
+  total_volume: number;
+  average_intensity: number;
+  routines: DailyRoutine[];
+};
+
+export type WeeklyGoal = {
+  id?: string;
+  athlete_id: string;
+  week_number: number;
+  year: number;
+  apparatus: "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
+  macro: "Mixed" | "Competition";
+  micro: "Increasing Load" | "Decreasing Load" | "Model" | "Competition Week";
+  exercise_volume: number;
+  dismount_volume: number;
+  target_penalty: number;
+  base_volume?: number | null;
+  camp?: string | null;
+  competition_id?: string | null;
+};
+
+// ============================================================================
 // NUOVI TIPI PER SISTEMA PRESET (prefisso "New")
 // ============================================================================
 

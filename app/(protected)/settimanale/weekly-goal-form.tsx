@@ -38,14 +38,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 // Note: Weekly goal presets are now handled inline in the form
 // Old preset logic has been moved to lib/backup/old-preset-logic.ts
 
@@ -95,19 +88,6 @@ export default function WeeklyGoalForm({
 
   // Note: Preset functionality has been removed as part of the refactor
   // Weekly goals are now managed directly in the form
-
-  // Save as preset dialog state
-  const [savePresetOpen, setSavePresetOpen] = useState(false);
-  const [newPresetName, setNewPresetName] = useState("");
-
-  const handleSaveAsPreset = () => {
-    // Note: Preset save functionality has been removed as part of the refactor
-    toast({
-      title: "Funzionalità non disponibile",
-      description: "Il salvataggio preset è stato rimosso nel refactor.",
-      variant: "destructive",
-    });
-  };
 
   useEffect(() => {
     const goalsMap = new Map(initialGoals.map((g) => [g.apparatus, g]));
@@ -488,42 +468,6 @@ export default function WeeklyGoalForm({
         </Table>
       </div>
       <div className="flex flex-wrap items-end justify-center gap-4 pt-4">
-        <div className="flex items-center gap-2">
-          <Select onValueChange={applyPreset}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Seleziona Preset" />
-            </SelectTrigger>
-            <SelectContent>
-              {presetNames.map((name) => (
-                <SelectItem key={name} value={name}>
-                  {name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Dialog open={savePresetOpen} onOpenChange={setSavePresetOpen}>
-            <DialogTrigger asChild>
-              <Button variant="secondary">Salva come Preset</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-sm">
-              <DialogHeader>
-                <DialogTitle>Nome del Preset</DialogTitle>
-              </DialogHeader>
-              <Input
-                value={newPresetName}
-                onChange={(e) => setNewPresetName(e.target.value)}
-                placeholder="Inserisci nome"
-              />
-              <DialogFooter>
-                <Button onClick={handleSaveAsPreset} disabled={isPending}>
-                  {isPending ? "Salvataggio..." : "Salva"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-
         {initialGoals.length > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>

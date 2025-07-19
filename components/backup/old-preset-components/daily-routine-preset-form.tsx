@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { createDailyRoutinePreset } from "@/lib/actions/presets";
+import { createDailyRoutinePreset } from "@/lib/backup/old-preset-logic";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import type { DailyRoutinePreset } from "@/lib/types";
+import type { DailyRoutinePreset } from "@/lib/backup/old-preset-logic";
 
 const apparatusList: Array<DailyRoutinePreset["apparatus"]> = [
   "All",
