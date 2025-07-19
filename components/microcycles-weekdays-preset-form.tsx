@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { createWeekdaysSessionsPreset } from "@/lib/actions/presets";
+import { createMicrocyclesWeekdaysPreset } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,12 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import type { NewWeekdayPreset, NewTrainingSessionPreset } from "@/lib/types";
+import type { NewMicrocyclePreset, NewWeekdayPreset } from "@/lib/types";
 
-interface WeekdaysSessionsPresetFormProps {
+interface MicrocyclesWeekdaysPresetFormProps {
   onSave?: () => Promise<void> | void;
+  availableMicrocycles: NewMicrocyclePreset[];
   availableWeekdays: NewWeekdayPreset[];
-  availableSessions: NewTrainingSessionPreset[];
   onCancel?: () => void;
 }
 
@@ -32,18 +32,18 @@ const WEEKDAYS = [
   "Domenica",
 ];
 
-export default function WeekdaysSessionsPresetForm({
+export default function MicrocyclesWeekdaysPresetForm({
   onSave,
+  availableMicrocycles,
   availableWeekdays,
-  availableSessions,
   onCancel,
-}: WeekdaysSessionsPresetFormProps) {
+}: MicrocyclesWeekdaysPresetFormProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [name, setName] = useState("");
+  const [microcycleId, setMicrocycleId] = useState("");
   const [weekdayId, setWeekdayId] = useState("");
-  const [sessionId, setSessionId] = useState("");
-  const [sessionNumber, setSessionNumber] = useState(1);
+  const [dayNumber, setDayNumber] = useState(1);
 
   // Handle ESC key to cancel
   useEffect(() => {
@@ -72,31 +72,31 @@ export default function WeekdaysSessionsPresetForm({
       return;
     }
 
+    if (!microcycleId) {
+      toast({ title: "Microciclo obbligatorio", variant: "destructive" });
+      return;
+    }
+
     if (!weekdayId) {
       toast({ title: "Giorno obbligatorio", variant: "destructive" });
       return;
     }
 
-    if (!sessionId) {
-      toast({ title: "Allenamento obbligatorio", variant: "destructive" });
-      return;
-    }
-
-    if (sessionNumber < 1) {
+    if (dayNumber < 1) {
       toast({
-        title: "Numero sessione deve essere almeno 1",
+        title: "Numero giorno deve essere almeno 1",
         variant: "destructive",
       });
       return;
     }
 
     startTransition(async () => {
-      const result = await createWeekdaysSessionsPreset([
+      const result = await createMicrocyclesWeekdaysPreset([
         {
           name: name.trim(),
+          microcycle_id: microcycleId,
           weekday_id: weekdayId,
-          session_id: sessionId,
-          session_number: sessionNumber,
+          day_number: dayNumber,
         },
       ]);
 
@@ -109,13 +109,13 @@ export default function WeekdaysSessionsPresetForm({
       } else {
         toast({
           title: "Successo",
-          description: "Associazione giorni-allenamenti salvata.",
+          description: "Associazione microciclo-giorni salvata.",
           duration: 1500,
         });
         setName("");
+        setMicrocycleId("");
         setWeekdayId("");
-        setSessionId("");
-        setSessionNumber(1);
+        setDayNumber(1);
         if (onSave) await onSave();
       }
     });
@@ -132,6 +132,26 @@ export default function WeekdaysSessionsPresetForm({
           disabled={isPending}
           placeholder="Inserisci nome associazione"
         />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium">Preset Microciclo</label>
+        <Select
+          value={microcycleId}
+          onValueChange={setMicrocycleId}
+          disabled={isPending}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Seleziona preset microciclo" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableMicrocycles.map((microcycle) => (
+              <SelectItem key={microcycle.id} value={microcycle.id}>
+                {microcycle.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div>
@@ -155,41 +175,21 @@ export default function WeekdaysSessionsPresetForm({
       </div>
 
       <div>
-        <label className="text-sm font-medium">Preset Allenamento</label>
-        <Select
-          value={sessionId}
-          onValueChange={setSessionId}
-          disabled={isPending}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Seleziona preset allenamento" />
-          </SelectTrigger>
-          <SelectContent>
-            {availableSessions.map((session) => (
-              <SelectItem key={session.id} value={session.id}>
-                {session.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <label className="text-sm font-medium">Numero Sessione</label>
+        <label className="text-sm font-medium">Numero Giorno</label>
         <Input
           type="number"
           min="1"
-          value={sessionNumber}
-          onChange={(e) => setSessionNumber(parseInt(e.target.value) || 1)}
+          value={dayNumber}
+          onChange={(e) => setDayNumber(parseInt(e.target.value) || 1)}
           onFocus={handleFocus}
           disabled={isPending}
-          placeholder="Numero sessione"
+          placeholder="Numero giorno"
         />
       </div>
 
       <Button
         onClick={handleSave}
-        disabled={isPending || !name.trim() || !weekdayId || !sessionId}
+        disabled={isPending || !name.trim() || !microcycleId || !weekdayId}
         className="w-full"
       >
         {isPending ? "Salvataggio..." : "Salva Associazione"}

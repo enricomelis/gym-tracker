@@ -438,3 +438,22 @@ export type NewWeekdaysSessionsPreset = {
   created_at?: string | null;
   updated_at?: string | null;
 };
+
+export type NewMicrocyclePreset = {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type NewMicrocyclesWeekdaysPreset = {
+  id: string;
+  name: string;
+  microcycle_id: string;
+  weekday_id: string;
+  day_number: number;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+};

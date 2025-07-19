@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { createWeekdayPreset } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,13 +27,36 @@ const WEEKDAYS = [
 
 export default function WeekdayPresetForm({
   onSave,
+  onCancel,
 }: {
   onSave?: () => Promise<void> | void;
+  onCancel?: () => void;
 }) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [name, setName] = useState("");
   const [weekdayNumber, setWeekdayNumber] = useState<number | null>(null);
+
+  // Handle ESC key to cancel
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (onCancel) {
+          onCancel();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onCancel]);
+
+  // Auto-select text on focus
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
+  };
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -83,6 +106,7 @@ export default function WeekdayPresetForm({
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onFocus={handleFocus}
           disabled={isPending}
           placeholder="Inserisci nome preset"
         />

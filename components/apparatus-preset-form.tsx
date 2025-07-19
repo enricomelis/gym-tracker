@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { createApparatusPreset } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +16,10 @@ import { APPARATUS_TYPES, EXECUTION_COEFF_TYPES } from "@/lib/types";
 
 export default function ApparatusPresetForm({
   onSave,
+  onCancel,
 }: {
   onSave?: () => Promise<void> | void;
+  onCancel?: () => void;
 }) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -25,6 +27,27 @@ export default function ApparatusPresetForm({
   const [apparatus, setApparatus] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [executionGrade, setExecutionGrade] = useState<string>("");
+
+  // Handle ESC key to cancel
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (onCancel) {
+          onCancel();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onCancel]);
+
+  // Auto-select text on focus
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
+  };
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -100,6 +123,7 @@ export default function ApparatusPresetForm({
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onFocus={handleFocus}
           disabled={isPending}
           placeholder="Inserisci nome preset"
         />
@@ -132,6 +156,7 @@ export default function ApparatusPresetForm({
           min="1"
           value={quantity}
           onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+          onFocus={handleFocus}
           disabled={isPending}
           placeholder="Quantità"
         />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { createSessionPreset } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,11 +17,13 @@ import type { NewApparatusPreset } from "@/lib/types";
 interface SessionPresetFormProps {
   onSave?: () => Promise<void> | void;
   availableApparatusPresets: NewApparatusPreset[];
+  onCancel?: () => void;
 }
 
 export default function SessionPresetForm({
   onSave,
   availableApparatusPresets,
+  onCancel,
 }: SessionPresetFormProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -29,13 +31,34 @@ export default function SessionPresetForm({
   const [selectedPresets, setSelectedPresets] = useState<
     Record<string, string>
   >({
-    fx_preset_id: "",
-    ph_preset_id: "",
-    sr_preset_id: "",
-    vt_preset_id: "",
-    pb_preset_id: "",
-    hb_preset_id: "",
+    fx_preset_id: "none",
+    ph_preset_id: "none",
+    sr_preset_id: "none",
+    vt_preset_id: "none",
+    pb_preset_id: "none",
+    hb_preset_id: "none",
   });
+
+  // Handle ESC key to cancel
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (onCancel) {
+          onCancel();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onCancel]);
+
+  // Auto-select text on focus
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
+  };
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -43,15 +66,33 @@ export default function SessionPresetForm({
       return;
     }
 
-    // Convert empty strings to null for the API
+    // Convert "none" values to null for the API
     const presetData = {
       name: name.trim(),
-      fx_preset_id: selectedPresets.fx_preset_id || null,
-      ph_preset_id: selectedPresets.ph_preset_id || null,
-      sr_preset_id: selectedPresets.sr_preset_id || null,
-      vt_preset_id: selectedPresets.vt_preset_id || null,
-      pb_preset_id: selectedPresets.pb_preset_id || null,
-      hb_preset_id: selectedPresets.hb_preset_id || null,
+      fx_preset_id:
+        selectedPresets.fx_preset_id === "none"
+          ? null
+          : selectedPresets.fx_preset_id,
+      ph_preset_id:
+        selectedPresets.ph_preset_id === "none"
+          ? null
+          : selectedPresets.ph_preset_id,
+      sr_preset_id:
+        selectedPresets.sr_preset_id === "none"
+          ? null
+          : selectedPresets.sr_preset_id,
+      vt_preset_id:
+        selectedPresets.vt_preset_id === "none"
+          ? null
+          : selectedPresets.vt_preset_id,
+      pb_preset_id:
+        selectedPresets.pb_preset_id === "none"
+          ? null
+          : selectedPresets.pb_preset_id,
+      hb_preset_id:
+        selectedPresets.hb_preset_id === "none"
+          ? null
+          : selectedPresets.hb_preset_id,
     };
 
     startTransition(async () => {
@@ -71,12 +112,12 @@ export default function SessionPresetForm({
         });
         setName("");
         setSelectedPresets({
-          fx_preset_id: "",
-          ph_preset_id: "",
-          sr_preset_id: "",
-          vt_preset_id: "",
-          pb_preset_id: "",
-          hb_preset_id: "",
+          fx_preset_id: "none",
+          ph_preset_id: "none",
+          sr_preset_id: "none",
+          vt_preset_id: "none",
+          pb_preset_id: "none",
+          hb_preset_id: "none",
         });
         if (onSave) await onSave();
       }
@@ -117,6 +158,7 @@ export default function SessionPresetForm({
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onFocus={handleFocus}
           disabled={isPending}
           placeholder="Inserisci nome preset"
         />
@@ -143,7 +185,7 @@ export default function SessionPresetForm({
                   <SelectValue placeholder="Nessun preset (opzionale)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nessun preset</SelectItem>
+                  <SelectItem value="none">Nessun preset</SelectItem>
                   {presets.map((preset) => (
                     <SelectItem key={preset.id} value={preset.id}>
                       {preset.name} (Q: {preset.quantity}, E:{" "}

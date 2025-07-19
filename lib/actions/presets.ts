@@ -12,6 +12,8 @@ import type {
   NewTrainingSessionPreset,
   NewWeekdayPreset,
   NewWeekdaysSessionsPreset,
+  NewMicrocyclePreset,
+  NewMicrocyclesWeekdaysPreset,
 } from "@/lib/types";
 import { z } from "zod";
 import { getAuthenticatedCoach } from "@/lib/utils/auth";
@@ -135,7 +137,7 @@ export async function createTrainingSessionPreset(
   return { success: true, data } as const;
 }
 
-export async function getMicrocyclePresets() {
+export async function getMicrocyclePresetsOld() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("microcycles_presets")
@@ -149,7 +151,7 @@ export async function getMicrocyclePresets() {
   return data as MicrocyclePreset[];
 }
 
-export async function createMicrocyclePreset(
+export async function createMicrocyclePresetOld(
   presets: Omit<
     MicrocyclePreset,
     "id" | "created_by" | "created_at" | "updated_at"
@@ -549,6 +551,112 @@ export async function getWeekdaysSessionsPresets() {
   return data as NewWeekdaysSessionsPreset[];
 }
 
+export async function createMicrocyclePreset(
+  presets: Omit<
+    NewMicrocyclePreset,
+    "id" | "created_by" | "created_at" | "updated_at"
+  >[],
+) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { coach, supabase } = authResult;
+
+  const baseSchema = z.object({
+    name: z.string().min(1),
+  });
+
+  const parsed = z.array(baseSchema).safeParse(presets);
+  if (!parsed.success) {
+    return { error: "Invalid microcycle preset data" } as const;
+  }
+
+  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
+
+  const { data, error } = await supabase
+    .from("presets_microcycles")
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error("Error creating microcycle preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data } as const;
+}
+
+export async function getMicrocyclePresets() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("presets_microcycles")
+    .select("*")
+    .order("name");
+
+  if (error) {
+    console.error("Error fetching microcycle presets:", error);
+    return [] as NewMicrocyclePreset[];
+  }
+  return data as NewMicrocyclePreset[];
+}
+
+export async function createMicrocyclesWeekdaysPreset(
+  presets: Omit<
+    NewMicrocyclesWeekdaysPreset,
+    "id" | "created_by" | "created_at" | "updated_at"
+  >[],
+) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { coach, supabase } = authResult;
+
+  const baseSchema = z.object({
+    name: z.string().min(1),
+    microcycle_id: z.string().uuid(),
+    weekday_id: z.string().uuid(),
+    day_number: z.number().int().min(1),
+  });
+
+  const parsed = z.array(baseSchema).safeParse(presets);
+  if (!parsed.success) {
+    return { error: "Invalid microcycles weekdays preset data" } as const;
+  }
+
+  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
+
+  const { data, error } = await supabase
+    .from("presets_microcycles_weekdays")
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error("Error creating microcycles weekdays preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data } as const;
+}
+
+export async function getMicrocyclesWeekdaysPresets() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("presets_microcycles_weekdays")
+    .select("*");
+
+  if (error) {
+    console.error("Error fetching microcycles weekdays presets:", error);
+    return [] as NewMicrocyclesWeekdaysPreset[];
+  }
+  return data as NewMicrocyclesWeekdaysPreset[];
+}
+
 // Unified function to get all four preset types efficiently
 export async function getUnifiedPresets() {
   const supabase = await createClient();
@@ -577,6 +685,8 @@ export async function getUnifiedPresets() {
     sessionPresets,
     weekdayPresets,
     weekdaysSessionsPresets,
+    microcyclePresets,
+    microcyclesWeekdaysPresets,
   ] = await Promise.all([
     supabase
       .from("presets_apparatus")
@@ -592,7 +702,17 @@ export async function getUnifiedPresets() {
       .from("presets_weekdays_sessions")
       .select("*")
       .eq("created_by", coach.id)
-      .order("weekday_id"),
+      .order("name"),
+    supabase
+      .from("presets_microcycles")
+      .select("*")
+      .eq("created_by", coach.id)
+      .order("name"),
+    supabase
+      .from("presets_microcycles_weekdays")
+      .select("*")
+      .eq("created_by", coach.id)
+      .order("name"),
   ]);
 
   return {
@@ -600,5 +720,7 @@ export async function getUnifiedPresets() {
     sessionPresets: sessionPresets.data || [],
     weekdayPresets: weekdayPresets.data || [],
     weekdaysSessionsPresets: weekdaysSessionsPresets.data || [],
+    microcyclePresets: microcyclePresets.data || [],
+    microcyclesWeekdaysPresets: microcyclesWeekdaysPresets.data || [],
   };
 }
