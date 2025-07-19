@@ -79,6 +79,7 @@ CREATE TABLE "presets_apparatus" (
 
 CREATE TABLE "presets_weekdays" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  "weekday_number" int NOT NULL,
   "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
@@ -150,21 +151,30 @@ CREATE TABLE "presets_weekdays_sessions" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "weekday_id" uuid REFERENCES presets_weekdays(id) ON DELETE SET NULL,
   "session_id" uuid REFERENCES presets_training_sessions(id) ON DELETE SET NULL,
-  "session_number" int NOT NULL DEFAULT 1
+  "session_number" int NOT NULL DEFAULT 1,
+  "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "presets_microcycles_weekdays" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "microcycle_id" uuid REFERENCES presets_microcycles(id) ON DELETE SET NULL,
   "weekday_id" uuid REFERENCES presets_weekdays(id) ON DELETE SET NULL,
-  "day_number" int NOT NULL DEFAULT 1
+  "day_number" int NOT NULL DEFAULT 1,
+  "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "presets_macrocycles_microcycles" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "macrocycle_id" uuid REFERENCES presets_macrocycles(id) ON DELETE SET NULL,
   "microcycle_id" uuid REFERENCES presets_microcycles(id) ON DELETE SET NULL,
-  "week_number" int NOT NULL DEFAULT 1
+  "week_number" int NOT NULL DEFAULT 1,
+  "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "planning_macrocycles" (
