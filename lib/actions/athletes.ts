@@ -173,7 +173,7 @@ export async function createAthlete(
     last_name,
     birth_date,
     registration_number: regNum,
-    registered_society_id: society_id ?? null,
+    society_id: society_id ?? null,
   };
 
   const category = getCategory(birth_date);
