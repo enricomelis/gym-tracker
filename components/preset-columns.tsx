@@ -23,12 +23,12 @@ import type {
 } from "@/lib/types";
 import ApparatusPresetForm from "@/components/apparatus-preset-form";
 import SessionPresetForm from "@/components/session-preset-form";
-import WeekdayPresetForm from "@/components/weekday-preset-form";
-import WeekdaysSessionsPresetForm from "@/components/weekdays-sessions-preset-form";
 import MicrocyclePresetForm from "@/components/microcycle-preset-form";
-import MicrocyclesWeekdaysPresetForm from "@/components/microcycles-weekdays-preset-form";
 import MacrocyclePresetForm from "@/components/macrocycle-preset-form";
-import MacrocyclesMicrocyclesPresetForm from "@/components/macrocycles-microcycles-preset-form";
+// import WeekdayPresetForm from "@/components/weekday-preset-form";
+// import WeekdaysSessionsPresetForm from "@/components/weekdays-sessions-preset-form";
+// import MicrocyclesWeekdaysPresetForm from "@/components/microcycles-weekdays-preset-form";
+// import MacrocyclesMicrocyclesPresetForm from "@/components/macrocycles-microcycles-preset-form";
 
 interface PresetColumnsProps {
   apparatusPresets: NewApparatusPreset[];
@@ -222,7 +222,7 @@ export default function PresetColumns({
       </Card>
 
       {/* Weekday Presets Column */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Preset Giorni</CardTitle>
           <CardDescription>
@@ -267,10 +267,10 @@ export default function PresetColumns({
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Weekdays Sessions Presets Column */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Preset Giorni-Allenamenti</CardTitle>
           <CardDescription>
@@ -327,7 +327,7 @@ export default function PresetColumns({
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Microcycle Presets Column */}
       <Card>
@@ -373,7 +373,7 @@ export default function PresetColumns({
       </Card>
 
       {/* Microcycles Weekdays Presets Column */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Preset Microcicli-Giorni</CardTitle>
           <CardDescription>
@@ -435,7 +435,7 @@ export default function PresetColumns({
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Macrocycle Presets Column */}
       <Card>
@@ -486,7 +486,7 @@ export default function PresetColumns({
       </Card>
 
       {/* Macrocycles Microcycles Presets Column */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Preset Macrocicli-Microcicli</CardTitle>
           <CardDescription>
@@ -549,7 +549,7 @@ export default function PresetColumns({
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }
