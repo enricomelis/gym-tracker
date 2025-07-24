@@ -25,10 +25,10 @@ import ApparatusPresetForm from "@/components/apparatus-preset-form";
 import SessionPresetForm from "@/components/session-preset-form";
 import MicrocyclePresetForm from "@/components/microcycle-preset-form";
 import MacrocyclePresetForm from "@/components/macrocycle-preset-form";
-// import WeekdayPresetForm from "@/components/weekday-preset-form";
-// import WeekdaysSessionsPresetForm from "@/components/weekdays-sessions-preset-form";
-// import MicrocyclesWeekdaysPresetForm from "@/components/microcycles-weekdays-preset-form";
-// import MacrocyclesMicrocyclesPresetForm from "@/components/macrocycles-microcycles-preset-form";
+import WeekdayPresetForm from "@/components/weekday-preset-form";
+import WeekdaysSessionsPresetForm from "@/components/weekdays-sessions-preset-form";
+import MicrocyclesWeekdaysPresetForm from "@/components/microcycles-weekdays-preset-form";
+import MacrocyclesMicrocyclesPresetForm from "@/components/macrocycles-microcycles-preset-form";
 
 interface PresetColumnsProps {
   apparatusPresets: NewApparatusPreset[];
@@ -222,9 +222,9 @@ export default function PresetColumns({
       </Card>
 
       {/* Weekday Presets Column */}
-      {/* <Card>
+      <Card>
         <CardHeader>
-          <CardTitle>Preset Giorni</CardTitle>
+          <CardTitle>Preset Giorni (da Rimuovere)</CardTitle>
           <CardDescription>
             Configurazioni per i giorni della settimana
           </CardDescription>
@@ -267,12 +267,12 @@ export default function PresetColumns({
             )}
           </div>
         </CardContent>
-      </Card> */}
+      </Card>
 
       {/* Weekdays Sessions Presets Column */}
-      {/* <Card>
+      <Card>
         <CardHeader>
-          <CardTitle>Preset Giorni-Allenamenti</CardTitle>
+          <CardTitle>Preset Giorni-Allenamenti (da Rimuovere)</CardTitle>
           <CardDescription>
             Associazioni tra giorni e allenamenti con numero sessioni
           </CardDescription>
@@ -327,7 +327,7 @@ export default function PresetColumns({
             )}
           </div>
         </CardContent>
-      </Card> */}
+      </Card>
 
       {/* Microcycle Presets Column */}
       <Card>
@@ -373,9 +373,9 @@ export default function PresetColumns({
       </Card>
 
       {/* Microcycles Weekdays Presets Column */}
-      {/* <Card>
+      <Card>
         <CardHeader>
-          <CardTitle>Preset Microcicli-Giorni</CardTitle>
+          <CardTitle>Preset Microcicli-Giorni (da Rimuovere)</CardTitle>
           <CardDescription>
             Associazioni tra microcicli e giorni con numero giorno
           </CardDescription>
@@ -435,7 +435,7 @@ export default function PresetColumns({
             )}
           </div>
         </CardContent>
-      </Card> */}
+      </Card>
 
       {/* Macrocycle Presets Column */}
       <Card>
@@ -486,9 +486,9 @@ export default function PresetColumns({
       </Card>
 
       {/* Macrocycles Microcycles Presets Column */}
-      {/* <Card>
+      <Card>
         <CardHeader>
-          <CardTitle>Preset Macrocicli-Microcicli</CardTitle>
+          <CardTitle>Preset Macrocicli-Microcicli (da Rimuovere)</CardTitle>
           <CardDescription>
             Associazioni tra macrocicli e microcicli con numero settimana
           </CardDescription>
@@ -549,7 +549,7 @@ export default function PresetColumns({
             )}
           </div>
         </CardContent>
-      </Card> */}
+      </Card>
     </div>
   );
 }

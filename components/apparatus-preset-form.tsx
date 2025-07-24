@@ -17,13 +17,14 @@ import {
   EXECUTION_COEFF_TYPES,
   type Apparatus,
   type ExecutionCoeff,
+  type NewApparatusPreset,
 } from "@/lib/types";
 
 export default function ApparatusPresetForm({
   onSave,
   onCancel,
 }: {
-  onSave?: (newPreset?: any) => Promise<void> | void;
+  onSave?: (newPreset?: NewApparatusPreset) => Promise<void> | void;
   onCancel?: () => void;
 }) {
   const { toast } = useToast();
