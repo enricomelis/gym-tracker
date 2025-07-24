@@ -79,6 +79,11 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
   - [x] Microciclo
   - [x] Macrociclo
 - [ ] Tecnico inserisce i preset in modo Top-Down
+  - [x] Creando un allenamento crea anche i preset all'attrezzo
+    - [ ] Inserimento dell'attrezzo "All" a livello DB e Server Actions
+  - [ ] Creando un giorno della settimana crea anche i preset degli allenamenti che lo costituiscono
+  - [ ] Creando un microciclo crea anche i giorni della settimana che lo costituiscono
+  - [ ] Creando un macrociclo crea anche i microcicli che lo costituiscono
 - [ ] Tecnico inserisce la programmazione generica (/programmazione)
 - [ ] Tecnico definisce la gara, chi partecipa e a quali attrezzi (/gestione-gare)
 - [ ] Tecnico collega la programmazione ai singoli atleti
@@ -96,7 +101,7 @@ In che modo cambia del flow attuale?
 #### Ristrutturazione della UI, bozza
 
 - Atleti: dove il tecnico inserisce i suoi atleti e i vari esercizi generici
-- Preset: dove il tecnico crea, bottom-up, i vari preset (Attrezzo?, Allenamento, Settimana/Microciclo, Periodo/Macrociclo)
+- Preset: dove il tecnico crea, top-down, i vari preset (Attrezzo, Allenamento, Settimana/Microciclo, Periodo/Macrociclo)
   - Attrezzo
   - Allenamento
   - Microciclo

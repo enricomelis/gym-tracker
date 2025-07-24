@@ -449,7 +449,9 @@ export async function getMacrocyclesMicrocyclesPresets() {
   return data as NewMacrocyclesMicrocyclesPreset[];
 }
 
-// Unified function to get all four preset types efficiently
+
+
+// Unified function to get all preset types efficiently
 export async function getUnifiedPresets() {
   const supabase = await createClient();
 

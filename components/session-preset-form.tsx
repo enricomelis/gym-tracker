@@ -13,6 +13,15 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import type { NewApparatusPreset } from "@/lib/types";
+import { Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import ApparatusPresetForm from "@/components/apparatus-preset-form";
 
 interface SessionPresetFormProps {
   onSave?: () => Promise<void> | void;
@@ -28,16 +37,43 @@ export default function SessionPresetForm({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [name, setName] = useState("");
+  // --- Apparatus-from-session: use the generic hook ---
+  const apparatusTypes = ["FX", "PH", "SR", "VT", "PB", "HB"];
+  const selectionKeys = apparatusTypes.map(
+    (a) => `${a.toLowerCase()}_preset_id`,
+  );
+  const getDiscriminator = (key: string) => key.split("_")[0].toUpperCase();
+  const [presets, setPresets] = useState<NewApparatusPreset[]>(
+    availableApparatusPresets,
+  );
   const [selectedPresets, setSelectedPresets] = useState<
     Record<string, string>
-  >({
-    fx_preset_id: "none",
-    ph_preset_id: "none",
-    sr_preset_id: "none",
-    vt_preset_id: "none",
-    pb_preset_id: "none",
-    hb_preset_id: "none",
-  });
+  >(Object.fromEntries(selectionKeys.map((k) => [k, "none"])));
+  const [showDialog, setShowDialog] = useState<null | string>(null);
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+
+  const handleAddPreset = (key: string) => {
+    setShowDialog(key);
+    setPendingKey(key);
+  };
+
+  const handlePresetCreated = (newPreset: NewApparatusPreset | undefined) => {
+    if (newPreset && pendingKey) {
+      setPresets((prev) => [...prev, newPreset]);
+      setSelectedPresets((prev) => ({
+        ...prev,
+        [pendingKey]: newPreset.id,
+      }));
+    }
+    setShowDialog(null);
+  };
+
+  const handlePresetChange = (key: string, presetId: string) => {
+    setSelectedPresets((prev) => ({
+      ...prev,
+      [key]: presetId,
+    }));
+  };
 
   // Handle ESC key to cancel
   useEffect(() => {
@@ -124,17 +160,8 @@ export default function SessionPresetForm({
     });
   };
 
-  const handlePresetChange = (apparatus: string, presetId: string) => {
-    setSelectedPresets((prev) => ({
-      ...prev,
-      [`${apparatus.toLowerCase()}_preset_id`]: presetId,
-    }));
-  };
-
   const getPresetsForApparatus = (apparatus: string) => {
-    return availableApparatusPresets.filter(
-      (preset) => preset.apparatus === apparatus,
-    );
+    return presets.filter((preset) => preset.apparatus === apparatus);
   };
 
   const formatApparatusName = (apparatus: string) => {
@@ -148,8 +175,6 @@ export default function SessionPresetForm({
     };
     return names[apparatus] || apparatus;
   };
-
-  const apparatusTypes = ["FX", "PH", "SR", "VT", "PB", "HB"];
 
   return (
     <div className="space-y-4">
@@ -166,38 +191,81 @@ export default function SessionPresetForm({
 
       <div className="space-y-3">
         <h4 className="text-sm font-medium">Preset per Attrezzo</h4>
-        {apparatusTypes.map((apparatus) => {
+        {selectionKeys.map((key) => {
+          const apparatus = getDiscriminator(key);
           const presets = getPresetsForApparatus(apparatus);
-          const selectedValue =
-            selectedPresets[`${apparatus.toLowerCase()}_preset_id`];
-
+          const selectedValue = selectedPresets[key];
           return (
-            <div key={apparatus}>
-              <label className="text-xs text-muted-foreground">
-                {formatApparatusName(apparatus)}
-              </label>
-              <Select
-                value={selectedValue}
-                onValueChange={(value) => handlePresetChange(apparatus, value)}
-                disabled={isPending}
+            <div key={key} className="flex items-end gap-2">
+              <div className="flex-1">
+                <label className="text-xs text-muted-foreground">
+                  {formatApparatusName(apparatus)}
+                </label>
+                <Select
+                  value={selectedValue}
+                  onValueChange={(value) => handlePresetChange(key, value)}
+                  disabled={isPending}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Nessun preset (opzionale)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nessun preset</SelectItem>
+                    {presets.map((preset) => (
+                      <SelectItem key={preset.id} value={preset.id}>
+                        {preset.name} (Q: {preset.quantity}, E:{" "}
+                        {preset.execution_grade})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="mb-1"
+                title={`Aggiungi nuovo preset per ${formatApparatusName(apparatus)}`}
+                onClick={() => handleAddPreset(key)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Nessun preset (opzionale)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nessun preset</SelectItem>
-                  {presets.map((preset) => (
-                    <SelectItem key={preset.id} value={preset.id}>
-                      {preset.name} (Q: {preset.quantity}, E:{" "}
-                      {preset.execution_grade})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
           );
         })}
       </div>
+
+      {/* Apparatus creation dialog */}
+      {showDialog && (
+        <Dialog
+          open={!!showDialog}
+          onOpenChange={(open) => {
+            if (!open) setShowDialog(null);
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Crea un nuovo Preset Attrezzo</DialogTitle>
+              <DialogDescription>
+                Il nuovo preset verrà selezionato automaticamente per
+                l&apos;allenamento corrente.
+              </DialogDescription>
+            </DialogHeader>
+            <ApparatusPresetForm
+              onSave={async (newPreset) => {
+                handlePresetCreated(newPreset);
+                if (newPreset) {
+                  toast({
+                    title: "Preset attrezzo aggiunto e selezionato!",
+                    duration: 1200,
+                  });
+                }
+              }}
+              onCancel={() => setShowDialog(null)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
 
       <Button
         onClick={handleSave}

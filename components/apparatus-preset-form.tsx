@@ -12,13 +12,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { APPARATUS_TYPES, EXECUTION_COEFF_TYPES, type Apparatus, type ExecutionCoeff } from "@/lib/types";
+import {
+  APPARATUS_TYPES,
+  EXECUTION_COEFF_TYPES,
+  type Apparatus,
+  type ExecutionCoeff,
+  type NewApparatusPreset,
+} from "@/lib/types";
 
 export default function ApparatusPresetForm({
   onSave,
   onCancel,
 }: {
-  onSave?: () => Promise<void> | void;
+  onSave?: (newPreset?: NewApparatusPreset) => Promise<void> | void;
   onCancel?: () => void;
 }) {
   const { toast } = useToast();
@@ -89,7 +95,7 @@ export default function ApparatusPresetForm({
           description: result.error,
           variant: "destructive",
         });
-      } else {
+      } else if (result && result.data && result.data[0]) {
         toast({
           title: "Successo",
           description: "Preset attrezzo salvato.",
@@ -99,6 +105,8 @@ export default function ApparatusPresetForm({
         setApparatus("");
         setQuantity(1);
         setExecutionGrade("");
+        if (onSave) await onSave(result.data[0]);
+      } else {
         if (onSave) await onSave();
       }
     });

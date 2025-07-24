@@ -5,6 +5,7 @@ import { createMicrocyclePreset } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { Plus } from "lucide-react";
 
 export default function MicrocyclePresetForm({
   onSave,
@@ -61,7 +62,7 @@ export default function MicrocyclePresetForm({
         toast({
           title: "Successo",
           description: "Preset microciclo salvato.",
-          duration: 1500,
+          duration: 1000,
         });
         setName("");
         if (onSave) await onSave();
@@ -81,6 +82,24 @@ export default function MicrocyclePresetForm({
           placeholder="Inserisci nome preset"
         />
       </div>
+
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        disabled={isPending}
+        onClick={() => {
+          toast({
+            title: "Funzionalità in sviluppo",
+            description:
+              "Aggiungi giorno al microciclo non ancora implementato.",
+            duration: 1200,
+          });
+        }}
+      >
+        Aggiungi giorno al microciclo
+        <Plus className="h-4 w-4" />
+      </Button>
 
       <Button
         onClick={handleSave}
