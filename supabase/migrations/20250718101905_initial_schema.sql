@@ -23,7 +23,8 @@ CREATE TYPE "apparatus_enum" AS ENUM (
   'SR',
   'VT',
   'PB',
-  'HB'
+  'HB',
+  'All'
 );
 
 CREATE TYPE "excel_execution_grades" AS ENUM (
@@ -79,15 +80,6 @@ CREATE TABLE "presets_apparatus" (
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "presets_weekdays" (
-  "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-  "weekday_number" int NOT NULL,
-  "name" text NOT NULL,
-  "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (now()),
-  "updated_at" timestamptz NOT NULL DEFAULT (now())
-);
-
 CREATE TABLE "presets_microcycles" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "name" text NOT NULL,
@@ -119,6 +111,7 @@ CREATE TABLE "competitions" (
 CREATE TABLE "presets_training_sessions" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "name" text NOT NULL,
+  -- "weekday_number" int NOT NULL,
   "fx_preset_id" uuid REFERENCES presets_apparatus(id) ON DELETE SET NULL,
   "ph_preset_id" uuid REFERENCES presets_apparatus(id) ON DELETE SET NULL,
   "sr_preset_id" uuid REFERENCES presets_apparatus(id) ON DELETE SET NULL,
@@ -151,22 +144,11 @@ CREATE TABLE "athletes_routines" (
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "presets_weekdays_sessions" (
-  "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-  "name" text NOT NULL,
-  "weekday_id" uuid REFERENCES presets_weekdays(id) ON DELETE SET NULL,
-  "session_id" uuid REFERENCES presets_training_sessions(id) ON DELETE SET NULL,
-  "session_number" int NOT NULL DEFAULT 1,
-  "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (now()),
-  "updated_at" timestamptz NOT NULL DEFAULT (now())
-);
-
-CREATE TABLE "presets_microcycles_weekdays" (
+CREATE TABLE "presets_microcycles_sessions" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "name" text NOT NULL,
   "microcycle_id" uuid REFERENCES presets_microcycles(id) ON DELETE SET NULL,
-  "weekday_id" uuid REFERENCES presets_weekdays(id) ON DELETE SET NULL,
+  "training_session_id" uuid REFERENCES presets_training_sessions(id) ON DELETE SET NULL,
   "day_number" int NOT NULL DEFAULT 1,
   "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
@@ -244,9 +226,7 @@ CREATE TABLE "athletes_competitions_routines_apparatus" (
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE UNIQUE INDEX ON "presets_weekdays_sessions" ("weekday_id", "session_number");
-
-CREATE UNIQUE INDEX ON "presets_microcycles_weekdays" ("microcycle_id", "day_number");
+CREATE UNIQUE INDEX ON "presets_microcycles_sessions" ("microcycle_id", "day_number");
 
 CREATE UNIQUE INDEX ON "presets_macrocycles_microcycles" ("macrocycle_id", "week_number");
 
