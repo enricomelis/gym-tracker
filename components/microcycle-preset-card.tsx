@@ -95,7 +95,7 @@ export default function MicrocyclePresetCard({
                 {totalDays} giorni
               </div>
               <div className="text-xs text-muted-foreground">
-                {totalSessions} sessioni
+                {totalSessions} allenamenti
               </div>
             </div>
           </div>

@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import type {
   NewApparatusPreset,
@@ -23,9 +22,21 @@ import type {
 import ApparatusPresetForm from "@/components/apparatus-preset-form";
 import SessionPresetForm from "@/components/session-preset-form";
 import MicrocyclePresetForm from "@/components/microcycle-preset-form";
-import MicrocyclePresetCard from "@/components/microcycle-preset-card";
 import MacrocyclePresetForm from "@/components/macrocycle-preset-form";
 import MacrocyclesMicrocyclesPresetForm from "@/components/macrocycles-microcycles-preset-form";
+import PresetCard from "@/components/preset-card";
+import ApparatusPresetEditForm from "@/components/apparatus-preset-edit-form";
+import SessionPresetEditForm from "@/components/session-preset-edit-form";
+import MicrocyclePresetEditForm from "@/components/microcycle-preset-edit-form";
+import MacrocyclePresetEditForm from "@/components/macrocycle-preset-edit-form";
+import {
+  deleteApparatusPreset,
+  deleteSessionPreset,
+  deleteMicrocyclePreset,
+  deleteMicrocyclesSessionsPreset,
+  deleteMacrocyclePreset,
+  deleteMacrocyclesMicrocyclesPreset,
+} from "@/lib/actions/presets";
 
 interface PresetColumnsProps {
   apparatusPresets: NewApparatusPreset[];
@@ -64,11 +75,24 @@ export default function PresetColumns({
   macrocyclesMicrocyclesPresets,
 }: PresetColumnsProps) {
   const [activeForm, setActiveForm] = useState<PresetType | null>(null);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
   const handleFormSave = () => {
     setActiveForm(null);
     // Force a page refresh to get updated data
     window.location.reload();
+  };
+
+  const toggleCardExpansion = (cardId: string) => {
+    setExpandedCards((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(cardId)) {
+        newSet.delete(cardId);
+      } else {
+        newSet.add(cardId);
+      }
+      return newSet;
+    });
   };
 
   const formatApparatusName = (apparatus: string) => {
@@ -79,12 +103,40 @@ export default function PresetColumns({
       VT: "Volteggio",
       PB: "Parallele",
       HB: "Sbarra",
+      All: "Tutti",
     };
     return names[apparatus] || apparatus;
   };
 
   const formatExecutionGrade = (grade: string) => {
     return grade;
+  };
+
+  const getApparatusCount = (session: NewTrainingSessionPreset) => {
+    const apparatuses = [
+      session.fx_preset_id,
+      session.ph_preset_id,
+      session.sr_preset_id,
+      session.vt_preset_id,
+      session.pb_preset_id,
+      session.hb_preset_id,
+    ];
+    return apparatuses.filter(Boolean).length;
+  };
+
+  const getApparatusList = (session: NewTrainingSessionPreset) => {
+    const apparatuses = [
+      { presetId: session.fx_preset_id, code: "FX" },
+      { presetId: session.ph_preset_id, code: "PH" },
+      { presetId: session.sr_preset_id, code: "SR" },
+      { presetId: session.vt_preset_id, code: "VT" },
+      { presetId: session.pb_preset_id, code: "PB" },
+      { presetId: session.hb_preset_id, code: "HB" },
+    ];
+
+    return apparatuses
+      .filter(({ presetId }) => presetId !== null)
+      .map(({ code }) => code);
   };
 
   return (
@@ -119,20 +171,29 @@ export default function PresetColumns({
 
           <div className="max-h-96 space-y-2 overflow-y-auto">
             {apparatusPresets.map((preset) => (
-              <div key={preset.id} className="rounded-lg border bg-card p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <h4 className="text-sm font-medium">{preset.name}</h4>
-                  <Badge variant="outline">
-                    {formatApparatusName(preset.apparatus)}
-                  </Badge>
-                </div>
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <div>Quantità: {preset.quantity}</div>
-                  <div>
-                    Esecuzione: {formatExecutionGrade(preset.execution_grade)}
-                  </div>
-                </div>
-              </div>
+              <PresetCard
+                key={preset.id}
+                id={preset.id}
+                name={preset.name}
+                badge={formatApparatusName(preset.apparatus)}
+                description={`Quantità: ${preset.quantity} | Esecuzione: ${formatExecutionGrade(preset.execution_grade)}`}
+                isExpanded={expandedCards.has(preset.id)}
+                onToggleExpand={() => toggleCardExpansion(preset.id)}
+                onDelete={async () => {
+                  const result = await deleteApparatusPreset(preset.id);
+                  if ("error" in result) {
+                    throw new Error(result.error);
+                  }
+                  window.location.reload();
+                }}
+                editForm={
+                  <ApparatusPresetEditForm
+                    preset={preset}
+                    onSave={handleFormSave}
+                    onCancel={() => {}} // Will be handled by dialog
+                  />
+                }
+              />
             ))}
             {apparatusPresets.length === 0 && (
               <p className="py-4 text-center text-sm text-muted-foreground">
@@ -173,36 +234,68 @@ export default function PresetColumns({
           )}
 
           <div className="max-h-96 space-y-2 overflow-y-auto">
-            {sessionPresets.map((preset) => (
-              <div key={preset.id} className="rounded-lg border bg-card p-3">
-                <h4 className="mb-2 text-sm font-medium">{preset.name}</h4>
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  {[
-                    { key: "fx_preset_id", label: "FX" },
-                    { key: "ph_preset_id", label: "PH" },
-                    { key: "sr_preset_id", label: "SR" },
-                    { key: "vt_preset_id", label: "VT" },
-                    { key: "pb_preset_id", label: "PB" },
-                    { key: "hb_preset_id", label: "HB" },
-                  ]
-                    .map(({ key, label }) => {
-                      const presetId = preset[key as keyof typeof preset] as
-                        | string
-                        | null;
-                      if (!presetId) return null;
-                      const apparatusPreset = apparatusPresets.find(
-                        (ap) => ap.id === presetId,
-                      );
-                      return (
-                        <div key={key}>
-                          {label}: {apparatusPreset?.name || "N/A"}
-                        </div>
-                      );
-                    })
-                    .filter(Boolean)}
-                </div>
-              </div>
-            ))}
+            {sessionPresets.map((preset) => {
+              const apparatusCount = getApparatusCount(preset);
+              const apparatusList = getApparatusList(preset);
+
+              return (
+                <PresetCard
+                  key={preset.id}
+                  id={preset.id}
+                  name={preset.name}
+                  badge={`${apparatusCount} attrezzi`}
+                  description={
+                    apparatusList.length > 0
+                      ? `Attrezzi: ${apparatusList.join(", ")}`
+                      : "Nessun attrezzo configurato"
+                  }
+                  isExpanded={expandedCards.has(preset.id)}
+                  onToggleExpand={() => toggleCardExpansion(preset.id)}
+                  onDelete={async () => {
+                    const result = await deleteSessionPreset(preset.id);
+                    if ("error" in result) {
+                      throw new Error(result.error);
+                    }
+                    window.location.reload();
+                  }}
+                  editForm={
+                    <SessionPresetEditForm
+                      preset={preset}
+                      availableApparatusPresets={apparatusPresets}
+                      onSave={handleFormSave}
+                      onCancel={() => {}} // Will be handled by dialog
+                    />
+                  }
+                  details={
+                    <div className="space-y-1 text-xs text-muted-foreground">
+                      {[
+                        { key: "fx_preset_id", label: "FX" },
+                        { key: "ph_preset_id", label: "PH" },
+                        { key: "sr_preset_id", label: "SR" },
+                        { key: "vt_preset_id", label: "VT" },
+                        { key: "pb_preset_id", label: "PB" },
+                        { key: "hb_preset_id", label: "HB" },
+                      ]
+                        .map(({ key, label }) => {
+                          const presetId = preset[
+                            key as keyof typeof preset
+                          ] as string | null;
+                          if (!presetId) return null;
+                          const apparatusPreset = apparatusPresets.find(
+                            (ap) => ap.id === presetId,
+                          );
+                          return (
+                            <div key={key}>
+                              {label}: {apparatusPreset?.name || "N/A"}
+                            </div>
+                          );
+                        })
+                        .filter(Boolean)}
+                    </div>
+                  }
+                />
+              );
+            })}
             {sessionPresets.length === 0 && (
               <p className="py-4 text-center text-sm text-muted-foreground">
                 Nessun preset allenamento salvato
@@ -243,9 +336,124 @@ export default function PresetColumns({
           )}
 
           <div className="max-h-96 space-y-2 overflow-y-auto">
-            {microcyclePresets.map((preset) => (
-              <MicrocyclePresetCard key={preset.id} microcycle={preset} />
-            ))}
+            {microcyclePresets.map((preset) => {
+              const totalDays = new Set(
+                preset.presets_microcycles_sessions.map((s) => s.day_number),
+              ).size;
+              const totalSessions = preset.presets_microcycles_sessions.length;
+
+              return (
+                <PresetCard
+                  key={preset.id}
+                  id={preset.id}
+                  name={preset.name}
+                  badge={`${totalDays} giorni, ${totalSessions} allenamenti`}
+                  description={
+                    preset.created_at
+                      ? new Date(preset.created_at).toLocaleDateString("it-IT")
+                      : "Data non disponibile"
+                  }
+                  isExpanded={expandedCards.has(preset.id)}
+                  onToggleExpand={() => toggleCardExpansion(preset.id)}
+                  onDelete={async () => {
+                    const result = await deleteMicrocyclePreset(preset.id);
+                    if ("error" in result) {
+                      throw new Error(result.error);
+                    }
+                    window.location.reload();
+                  }}
+                  editForm={
+                    <MicrocyclePresetEditForm
+                      preset={preset}
+                      availableSessionPresets={sessionPresets}
+                      availableApparatusPresets={apparatusPresets}
+                      onSave={handleFormSave}
+                      onCancel={() => {}} // Will be handled by dialog
+                    />
+                  }
+                  details={
+                    <div className="space-y-2">
+                      {Object.entries(
+                        preset.presets_microcycles_sessions.reduce(
+                          (acc, session) => {
+                            const dayNumber = session.day_number;
+                            if (!acc[dayNumber]) {
+                              acc[dayNumber] = [];
+                            }
+                            acc[dayNumber].push(session);
+                            return acc;
+                          },
+                          {} as Record<
+                            number,
+                            typeof preset.presets_microcycles_sessions
+                          >,
+                        ),
+                      )
+                        .sort(([a], [b]) => parseInt(a) - parseInt(b))
+                        .map(([dayNumber, sessions]) => {
+                          const dayLabel =
+                            WEEKDAYS[parseInt(dayNumber)] || `G${dayNumber}`;
+                          const sessionCount = sessions.length;
+
+                          return (
+                            <div key={dayNumber} className="text-xs">
+                              <div className="font-medium text-muted-foreground">
+                                {dayLabel} ({sessionCount} allenamento
+                                {sessionCount > 1 ? "i" : ""})
+                              </div>
+                              {sessions
+                                .sort(
+                                  (a, b) => a.session_order - b.session_order,
+                                )
+                                .map((session) => {
+                                  const trainingSession =
+                                    session.presets_training_sessions;
+                                  if (!trainingSession) return null;
+
+                                  // Count apparatuses based on available data
+                                  const apparatuses = [
+                                    trainingSession.fx_preset,
+                                    trainingSession.ph_preset,
+                                    trainingSession.sr_preset,
+                                    trainingSession.vt_preset,
+                                    trainingSession.pb_preset,
+                                    trainingSession.hb_preset,
+                                  ];
+                                  const apparatusCount =
+                                    apparatuses.filter(Boolean).length;
+                                  const apparatusList = apparatuses
+                                    .map((preset, index) => {
+                                      if (!preset) return null;
+                                      const codes = [
+                                        "FX",
+                                        "PH",
+                                        "SR",
+                                        "VT",
+                                        "PB",
+                                        "HB",
+                                      ];
+                                      return codes[index];
+                                    })
+                                    .filter(Boolean) as string[];
+
+                                  return (
+                                    <div
+                                      key={session.id}
+                                      className="ml-2 text-xs text-muted-foreground"
+                                    >
+                                      • {trainingSession.name} ({apparatusCount}{" "}
+                                      attrezzi: {apparatusList.join(", ")})
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  }
+                />
+              );
+            })}
             {microcyclePresets.length === 0 && (
               <p className="py-4 text-center text-sm text-muted-foreground">
                 Nessun preset microciclo salvato
@@ -293,18 +501,24 @@ export default function PresetColumns({
 
           <div className="max-h-96 space-y-2 overflow-y-auto">
             {microcyclesSessionsPresets.map((preset) => (
-              <div key={preset.id} className="rounded-lg border bg-card p-3">
-                <h4 className="mb-2 text-sm font-medium">{preset.name}</h4>
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <div>
-                    Microciclo:{" "}
-                    {microcyclePresets.find(
-                      (m) => m.id === preset.microcycle_id,
-                    )?.name || "N/A"}
-                  </div>
-                  <div>Giorno N°: {preset.day_number} </div>
-                </div>
-              </div>
+              <PresetCard
+                key={preset.id}
+                id={preset.id}
+                name={preset.name}
+                badge={`Giorno ${preset.day_number}`}
+                description={`Microciclo: ${microcyclePresets.find((m) => m.id === preset.microcycle_id)?.name || "N/A"}`}
+                isExpanded={expandedCards.has(preset.id)}
+                onToggleExpand={() => toggleCardExpansion(preset.id)}
+                onDelete={async () => {
+                  const result = await deleteMicrocyclesSessionsPreset(
+                    preset.id,
+                  );
+                  if ("error" in result) {
+                    throw new Error(result.error);
+                  }
+                  window.location.reload();
+                }}
+              />
             ))}
             {microcyclesSessionsPresets.length === 0 && (
               <p className="py-4 text-center text-sm text-muted-foreground">
@@ -345,14 +559,28 @@ export default function PresetColumns({
 
           <div className="max-h-96 space-y-2 overflow-y-auto">
             {macrocyclePresets.map((preset) => (
-              <div key={preset.id} className="rounded-lg border bg-card p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <h4 className="text-sm font-medium">{preset.name}</h4>
-                  <Badge variant="outline">
-                    {preset.length_in_weeks} sett.
-                  </Badge>
-                </div>
-              </div>
+              <PresetCard
+                key={preset.id}
+                id={preset.id}
+                name={preset.name}
+                badge={`${preset.length_in_weeks} sett.`}
+                isExpanded={expandedCards.has(preset.id)}
+                onToggleExpand={() => toggleCardExpansion(preset.id)}
+                onDelete={async () => {
+                  const result = await deleteMacrocyclePreset(preset.id);
+                  if ("error" in result) {
+                    throw new Error(result.error);
+                  }
+                  window.location.reload();
+                }}
+                editForm={
+                  <MacrocyclePresetEditForm
+                    preset={preset}
+                    onSave={handleFormSave}
+                    onCancel={() => {}} // Will be handled by dialog
+                  />
+                }
+              />
             ))}
             {macrocyclePresets.length === 0 && (
               <p className="py-4 text-center text-sm text-muted-foreground">
@@ -401,24 +629,24 @@ export default function PresetColumns({
 
           <div className="max-h-96 space-y-2 overflow-y-auto">
             {macrocyclesMicrocyclesPresets.map((preset) => (
-              <div key={preset.id} className="rounded-lg border bg-card p-3">
-                <h4 className="mb-2 text-sm font-medium">{preset.name}</h4>
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <div>
-                    Macrociclo:{" "}
-                    {macrocyclePresets.find(
-                      (m) => m.id === preset.macrocycle_id,
-                    )?.name || "N/A"}
-                  </div>
-                  <div>
-                    Microciclo:{" "}
-                    {microcyclePresets.find(
-                      (m) => m.id === preset.microcycle_id,
-                    )?.name || "N/A"}
-                  </div>
-                  <div>Settimana N°: {preset.week_number}</div>
-                </div>
-              </div>
+              <PresetCard
+                key={preset.id}
+                id={preset.id}
+                name={preset.name}
+                badge={`Settimana ${preset.week_number}`}
+                description={`Macrociclo: ${macrocyclePresets.find((m) => m.id === preset.macrocycle_id)?.name || "N/A"} | Microciclo: ${microcyclePresets.find((m) => m.id === preset.microcycle_id)?.name || "N/A"}`}
+                isExpanded={expandedCards.has(preset.id)}
+                onToggleExpand={() => toggleCardExpansion(preset.id)}
+                onDelete={async () => {
+                  const result = await deleteMacrocyclesMicrocyclesPreset(
+                    preset.id,
+                  );
+                  if ("error" in result) {
+                    throw new Error(result.error);
+                  }
+                  window.location.reload();
+                }}
+              />
             ))}
             {macrocyclesMicrocyclesPresets.length === 0 && (
               <p className="py-4 text-center text-sm text-muted-foreground">

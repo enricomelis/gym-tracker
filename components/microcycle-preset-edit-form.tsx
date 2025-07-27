@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import {
-  createCompleteMicrocyclePreset,
+  updateMicrocyclePreset,
   createSessionPreset,
 } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,11 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Plus, Trash2 } from "lucide-react";
-import type { NewTrainingSessionPreset, NewApparatusPreset } from "@/lib/types";
+import type {
+  NewTrainingSessionPreset,
+  NewApparatusPreset,
+  MicrocyclePresetWithDetails,
+} from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -409,21 +413,31 @@ function SessionCreationDialog({
   );
 }
 
-export default function MicrocyclePresetForm({
-  onSave,
-  onCancel,
-  availableSessionPresets,
-  availableApparatusPresets,
-}: {
-  onSave?: () => Promise<void> | void;
-  onCancel?: () => void;
+interface MicrocyclePresetEditFormProps {
+  preset: MicrocyclePresetWithDetails;
   availableSessionPresets: NewTrainingSessionPreset[];
   availableApparatusPresets: NewApparatusPreset[];
-}) {
+  onSave?: () => Promise<void> | void;
+  onCancel?: () => void;
+}
+
+export default function MicrocyclePresetEditForm({
+  preset,
+  availableSessionPresets,
+  availableApparatusPresets,
+  onSave,
+  onCancel,
+}: MicrocyclePresetEditFormProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [name, setName] = useState("");
-  const [sessions, setSessions] = useState<MicrocycleSession[]>([]);
+  const [name, setName] = useState(preset.name);
+  const [sessions, setSessions] = useState<MicrocycleSession[]>(
+    preset.presets_microcycles_sessions.map((session) => ({
+      id: session.id,
+      day_number: session.day_number,
+      training_session_id: session.presets_training_sessions?.id || null,
+    })),
+  );
   const [showSessionDialog, setShowSessionDialog] = useState(false);
   const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
   const [pendingDayNumber, setPendingDayNumber] = useState<number>(1);
@@ -534,7 +548,7 @@ export default function MicrocyclePresetForm({
     }
 
     startTransition(async () => {
-      const result = await createCompleteMicrocyclePreset({
+      const result = await updateMicrocyclePreset(preset.id, {
         name: name.trim(),
         sessions: validSessions.map((session) => ({
           day_number: session.day_number,
@@ -551,11 +565,9 @@ export default function MicrocyclePresetForm({
       } else {
         toast({
           title: "Successo",
-          description: "Preset microciclo salvato con successo.",
+          description: "Preset microciclo aggiornato con successo.",
           duration: 1500,
         });
-        setName("");
-        setSessions([]);
         if (onSave) await onSave();
       }
     });
@@ -691,13 +703,17 @@ export default function MicrocyclePresetForm({
         ))}
       </div>
 
-      <Button
-        onClick={handleSave}
-        disabled={isPending || !name.trim() || sessions.length === 0}
-        className="w-full"
-      >
-        {isPending ? "Salvataggio..." : "Salva Preset Microciclo"}
-      </Button>
+      <div className="flex justify-end space-x-2">
+        <Button variant="outline" onClick={onCancel} disabled={isPending}>
+          Annulla
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={isPending || !name.trim() || sessions.length === 0}
+        >
+          {isPending ? "Aggiornamento..." : "Aggiorna Preset Microciclo"}
+        </Button>
+      </div>
 
       {/* Session Creation Dialog */}
       <SessionCreationDialog
@@ -706,8 +722,8 @@ export default function MicrocyclePresetForm({
         onSessionCreated={handleSessionCreated}
         availableApparatusPresets={apparatusPresets}
         onApparatusPresetCreated={handleApparatusPresetCreated}
-        microcycleName={name} // Pass the current microcycle name
-        dayNumber={pendingDayNumber} // This will be updated by the useEffect in SessionCreationDialog
+        microcycleName={name}
+        dayNumber={pendingDayNumber}
       />
     </div>
   );
