@@ -15,9 +15,7 @@ import type {
   NewApparatusPreset,
   NewMicrocyclePreset,
   NewTrainingSessionPreset,
-  NewWeekdayPreset,
-  NewWeekdaysSessionsPreset,
-  NewMicrocyclesWeekdaysPreset,
+  NewMicrocyclesSessionsPreset,
   NewMacrocyclePreset,
   NewMacrocyclesMicrocyclesPreset,
 } from "@/lib/types";
@@ -25,18 +23,13 @@ import ApparatusPresetForm from "@/components/apparatus-preset-form";
 import SessionPresetForm from "@/components/session-preset-form";
 import MicrocyclePresetForm from "@/components/microcycle-preset-form";
 import MacrocyclePresetForm from "@/components/macrocycle-preset-form";
-import WeekdayPresetForm from "@/components/weekday-preset-form";
-import WeekdaysSessionsPresetForm from "@/components/weekdays-sessions-preset-form";
-import MicrocyclesWeekdaysPresetForm from "@/components/microcycles-weekdays-preset-form";
 import MacrocyclesMicrocyclesPresetForm from "@/components/macrocycles-microcycles-preset-form";
 
 interface PresetColumnsProps {
   apparatusPresets: NewApparatusPreset[];
   sessionPresets: NewTrainingSessionPreset[];
-  weekdayPresets: NewWeekdayPreset[];
-  weekdaysSessionsPresets: NewWeekdaysSessionsPreset[];
   microcyclePresets: NewMicrocyclePreset[];
-  microcyclesWeekdaysPresets: NewMicrocyclesWeekdaysPreset[];
+  microcyclesSessionsPresets: NewMicrocyclesSessionsPreset[];
   macrocyclePresets: NewMacrocyclePreset[];
   macrocyclesMicrocyclesPresets: NewMacrocyclesMicrocyclesPreset[];
 }
@@ -44,10 +37,8 @@ interface PresetColumnsProps {
 type PresetType =
   | "apparatus"
   | "session"
-  | "weekday"
-  | "weekdaysessions"
   | "microcycle"
-  | "microcyclesweekdays"
+  | "microcyclessessions"
   | "macrocycle"
   | "macrocyclesmicrocycles";
 
@@ -65,10 +56,8 @@ const WEEKDAYS = [
 export default function PresetColumns({
   apparatusPresets,
   sessionPresets,
-  weekdayPresets,
-  weekdaysSessionsPresets,
   microcyclePresets,
-  microcyclesWeekdaysPresets,
+  microcyclesSessionsPresets,
   macrocyclePresets,
   macrocyclesMicrocyclesPresets,
 }: PresetColumnsProps) {
@@ -221,114 +210,6 @@ export default function PresetColumns({
         </CardContent>
       </Card>
 
-      {/* Weekday Presets Column */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Preset Giorni (da Rimuovere)</CardTitle>
-          <CardDescription>
-            Configurazioni per i giorni della settimana
-          </CardDescription>
-          <Button
-            onClick={() =>
-              setActiveForm(activeForm === "weekday" ? null : "weekday")
-            }
-            variant={activeForm === "weekday" ? "secondary" : "outline"}
-            size="sm"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Aggiungi Preset Giorno
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {activeForm === "weekday" && (
-            <div className="rounded-lg border bg-muted/50 p-4">
-              <WeekdayPresetForm
-                onSave={handleFormSave}
-                onCancel={() => setActiveForm(null)}
-              />
-            </div>
-          )}
-
-          <div className="max-h-96 space-y-2 overflow-y-auto">
-            {weekdayPresets.map((preset) => (
-              <div key={preset.id} className="rounded-lg border bg-card p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <h4 className="text-sm font-medium">{preset.name}</h4>
-                  <Badge variant="outline">
-                    {WEEKDAYS[preset.weekday_number]}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-            {weekdayPresets.length === 0 && (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                Nessun preset giorno salvato
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Weekdays Sessions Presets Column */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Preset Giorni-Allenamenti (da Rimuovere)</CardTitle>
-          <CardDescription>
-            Associazioni tra giorni e allenamenti con numero sessioni
-          </CardDescription>
-          <Button
-            onClick={() =>
-              setActiveForm(
-                activeForm === "weekdaysessions" ? null : "weekdaysessions",
-              )
-            }
-            variant={activeForm === "weekdaysessions" ? "secondary" : "outline"}
-            size="sm"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Aggiungi Associazione
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {activeForm === "weekdaysessions" && (
-            <div className="rounded-lg border bg-muted/50 p-4">
-              <WeekdaysSessionsPresetForm
-                onSave={handleFormSave}
-                onCancel={() => setActiveForm(null)}
-                availableWeekdays={weekdayPresets}
-                availableSessions={sessionPresets}
-              />
-            </div>
-          )}
-
-          <div className="max-h-96 space-y-2 overflow-y-auto">
-            {weekdaysSessionsPresets.map((preset) => (
-              <div key={preset.id} className="rounded-lg border bg-card p-3">
-                <h4 className="mb-2 text-sm font-medium">{preset.name}</h4>
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <div>
-                    Giorno:{" "}
-                    {weekdayPresets.find((w) => w.id === preset.weekday_id)
-                      ?.name || "N/A"}
-                  </div>
-                  <div>
-                    Allenamento:{" "}
-                    {sessionPresets.find((s) => s.id === preset.session_id)
-                      ?.name || "N/A"}
-                  </div>
-                  <div>Sessione N°: {preset.session_number}</div>
-                </div>
-              </div>
-            ))}
-            {weekdaysSessionsPresets.length === 0 && (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                Nessuna associazione salvata
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Microcycle Presets Column */}
       <Card>
         <CardHeader>
@@ -372,23 +253,23 @@ export default function PresetColumns({
         </CardContent>
       </Card>
 
-      {/* Microcycles Weekdays Presets Column */}
+      {/* Microcycles Sessions Presets Column */}
       <Card>
         <CardHeader>
-          <CardTitle>Preset Microcicli-Giorni (da Rimuovere)</CardTitle>
+          <CardTitle>Preset Microcicli-Allenamenti (da Rimuovere)</CardTitle>
           <CardDescription>
-            Associazioni tra microcicli e giorni con numero giorno
+            Associazioni tra microcicli e Allenamenti con numero giorno
           </CardDescription>
           <Button
             onClick={() =>
               setActiveForm(
-                activeForm === "microcyclesweekdays"
+                activeForm === "microcyclessessions"
                   ? null
-                  : "microcyclesweekdays",
+                  : "microcyclessessions",
               )
             }
             variant={
-              activeForm === "microcyclesweekdays" ? "secondary" : "outline"
+              activeForm === "microcyclessessions" ? "secondary" : "outline"
             }
             size="sm"
           >
@@ -397,19 +278,19 @@ export default function PresetColumns({
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {activeForm === "microcyclesweekdays" && (
+          {activeForm === "microcyclessessions" && (
             <div className="rounded-lg border bg-muted/50 p-4">
-              <MicrocyclesWeekdaysPresetForm
+              {/* <MicrocyclesWeekdaysPresetForm
                 onSave={handleFormSave}
                 onCancel={() => setActiveForm(null)}
                 availableMicrocycles={microcyclePresets}
-                availableWeekdays={weekdayPresets}
-              />
+                availableWeekdays={[]}
+              /> */}
             </div>
           )}
 
           <div className="max-h-96 space-y-2 overflow-y-auto">
-            {microcyclesWeekdaysPresets.map((preset) => (
+            {microcyclesSessionsPresets.map((preset) => (
               <div key={preset.id} className="rounded-lg border bg-card p-3">
                 <h4 className="mb-2 text-sm font-medium">{preset.name}</h4>
                 <div className="space-y-1 text-xs text-muted-foreground">
@@ -419,16 +300,12 @@ export default function PresetColumns({
                       (m) => m.id === preset.microcycle_id,
                     )?.name || "N/A"}
                   </div>
-                  <div>
-                    Giorno:{" "}
-                    {weekdayPresets.find((w) => w.id === preset.weekday_id)
-                      ?.name || "N/A"}
-                  </div>
+                  <div>Giorno: </div>
                   <div>Giorno N°: {preset.day_number}</div>
                 </div>
               </div>
             ))}
-            {microcyclesWeekdaysPresets.length === 0 && (
+            {microcyclesSessionsPresets.length === 0 && (
               <p className="py-4 text-center text-sm text-muted-foreground">
                 Nessuna associazione salvata
               </p>
