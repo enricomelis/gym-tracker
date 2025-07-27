@@ -199,7 +199,7 @@ export async function createMicrocyclesSessionsPreset(
     name: z.string().min(1),
     microcycle_id: z.string().uuid(),
     training_session_id: z.string().uuid(),
-    day_number: z.number().int().min(1),
+    day_number: z.number().int().min(1).max(7),
   });
 
   const parsed = z.array(baseSchema).safeParse(presets);
@@ -215,7 +215,7 @@ export async function createMicrocyclesSessionsPreset(
     .select();
 
   if (error) {
-    console.error("Error creating microcycles weekdays preset:", error);
+    console.error("Error creating microcycles sessions preset:", error);
     return { error: error.message } as const;
   }
 
@@ -223,14 +223,14 @@ export async function createMicrocyclesSessionsPreset(
   return { success: true, data } as const;
 }
 
-export async function getMicrocyclesWeekdaysPresets() {
+export async function getMicrocyclesSessionsPresets() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("presets_microcycles_weekdays")
+    .from("presets_microcycles_sessions")
     .select("*");
 
   if (error) {
-    console.error("Error fetching microcycles weekdays presets:", error);
+    console.error("Error fetching microcycles sessions presets:", error);
     return [] as NewMicrocyclesSessionsPreset[];
   }
   return data as NewMicrocyclesSessionsPreset[];
