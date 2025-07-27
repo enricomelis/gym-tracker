@@ -19,13 +19,21 @@ import {
   type ExecutionCoeff,
   type NewApparatusPreset,
 } from "@/lib/types";
+import {
+  generatePresetName,
+  formatApparatusName,
+} from "@/lib/utils/preset-naming";
 
 export default function ApparatusPresetForm({
   onSave,
   onCancel,
+  sessionName,
+  apparatusType,
 }: {
   onSave?: (newPreset?: NewApparatusPreset) => Promise<void> | void;
   onCancel?: () => void;
+  sessionName?: string;
+  apparatusType?: string;
 }) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -33,6 +41,16 @@ export default function ApparatusPresetForm({
   const [apparatus, setApparatus] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [executionGrade, setExecutionGrade] = useState<string>("");
+
+  // Generate automatic name when sessionName and apparatusType are provided
+  useEffect(() => {
+    if (sessionName && apparatusType) {
+      const apparatusName = formatApparatusName(apparatusType);
+      const autoName = generatePresetName.apparatus(sessionName, apparatusName);
+      setName(autoName);
+      setApparatus(apparatusType);
+    }
+  }, [sessionName, apparatusType]);
 
   // Handle ESC key to cancel
   useEffect(() => {
@@ -110,18 +128,6 @@ export default function ApparatusPresetForm({
         if (onSave) await onSave();
       }
     });
-  };
-
-  const formatApparatusName = (apparatus: string) => {
-    const names: Record<string, string> = {
-      FX: "Corpo Libero",
-      PH: "Cavallo",
-      SR: "Anelli",
-      VT: "Volteggio",
-      PB: "Parallele",
-      HB: "Sbarra",
-    };
-    return names[apparatus] || apparatus;
   };
 
   return (

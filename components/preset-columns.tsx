@@ -14,6 +14,7 @@ import { Plus } from "lucide-react";
 import type {
   NewApparatusPreset,
   NewMicrocyclePreset,
+  MicrocyclePresetWithDetails,
   NewTrainingSessionPreset,
   NewMicrocyclesSessionsPreset,
   NewMacrocyclePreset,
@@ -22,13 +23,14 @@ import type {
 import ApparatusPresetForm from "@/components/apparatus-preset-form";
 import SessionPresetForm from "@/components/session-preset-form";
 import MicrocyclePresetForm from "@/components/microcycle-preset-form";
+import MicrocyclePresetCard from "@/components/microcycle-preset-card";
 import MacrocyclePresetForm from "@/components/macrocycle-preset-form";
 import MacrocyclesMicrocyclesPresetForm from "@/components/macrocycles-microcycles-preset-form";
 
 interface PresetColumnsProps {
   apparatusPresets: NewApparatusPreset[];
   sessionPresets: NewTrainingSessionPreset[];
-  microcyclePresets: NewMicrocyclePreset[];
+  microcyclePresets: MicrocyclePresetWithDetails[];
   microcyclesSessionsPresets: NewMicrocyclesSessionsPreset[];
   macrocyclePresets: NewMacrocyclePreset[];
   macrocyclesMicrocyclesPresets: NewMacrocyclesMicrocyclesPreset[];
@@ -234,15 +236,15 @@ export default function PresetColumns({
               <MicrocyclePresetForm
                 onSave={handleFormSave}
                 onCancel={() => setActiveForm(null)}
+                availableSessionPresets={sessionPresets}
+                availableApparatusPresets={apparatusPresets}
               />
             </div>
           )}
 
           <div className="max-h-96 space-y-2 overflow-y-auto">
             {microcyclePresets.map((preset) => (
-              <div key={preset.id} className="rounded-lg border bg-card p-3">
-                <h4 className="text-sm font-medium">{preset.name}</h4>
-              </div>
+              <MicrocyclePresetCard key={preset.id} microcycle={preset} />
             ))}
             {microcyclePresets.length === 0 && (
               <p className="py-4 text-center text-sm text-muted-foreground">
@@ -300,8 +302,7 @@ export default function PresetColumns({
                       (m) => m.id === preset.microcycle_id,
                     )?.name || "N/A"}
                   </div>
-                  <div>Giorno: </div>
-                  <div>Giorno N°: {preset.day_number}</div>
+                  <div>Giorno N°: {preset.day_number} </div>
                 </div>
               </div>
             ))}

@@ -22,6 +22,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import ApparatusPresetForm from "@/components/apparatus-preset-form";
+import {
+  generatePresetName,
+  formatApparatusName,
+} from "@/lib/utils/preset-naming";
 
 interface SessionPresetFormProps {
   onSave?: () => Promise<void> | void;
@@ -72,6 +76,17 @@ export default function SessionPresetForm({
     setSelectedPresets((prev) => ({
       ...prev,
       [key]: presetId,
+    }));
+  };
+
+  const handleApplyToAllApparatus = (presetId: string) => {
+    setSelectedPresets((prev) => ({
+      fx_preset_id: presetId,
+      ph_preset_id: presetId,
+      sr_preset_id: presetId,
+      vt_preset_id: presetId,
+      pb_preset_id: presetId,
+      hb_preset_id: presetId,
     }));
   };
 
@@ -161,19 +176,14 @@ export default function SessionPresetForm({
   };
 
   const getPresetsForApparatus = (apparatus: string) => {
-    return presets.filter((preset) => preset.apparatus === apparatus);
-  };
-
-  const formatApparatusName = (apparatus: string) => {
-    const names: Record<string, string> = {
-      FX: "Corpo Libero",
-      PH: "Cavallo",
-      SR: "Anelli",
-      VT: "Volteggio",
-      PB: "Parallele",
-      HB: "Sbarra",
-    };
-    return names[apparatus] || apparatus;
+    const filteredPresets = presets.filter(
+      (preset) => preset.apparatus === apparatus || preset.apparatus === "All",
+    );
+    // Remove duplicates based on id to avoid React key conflicts
+    const uniquePresets = Array.from(
+      new Map(filteredPresets.map((preset) => [preset.id, preset])).values(),
+    );
+    return uniquePresets;
   };
 
   return (
@@ -188,6 +198,55 @@ export default function SessionPresetForm({
           placeholder="Inserisci nome preset"
         />
       </div>
+
+      {/* Apply to all apparatus section - show only when "All" preset is newly selected */}
+      {(() => {
+        // Get all selected preset IDs
+        const selectedPresetIds = Object.values(selectedPresets).filter(
+          (value) => value !== "none",
+        );
+        const uniqueSelectedPresetIds = Array.from(new Set(selectedPresetIds));
+
+        // Find "All" presets that are newly selected (not already applied to all)
+        const allPresets = uniqueSelectedPresetIds
+          .map((presetId) => presets.find((p) => p.id === presetId))
+          .filter(
+            (preset): preset is NewApparatusPreset =>
+              preset?.apparatus === "All",
+          );
+
+        // Check if any "All" preset is not already applied to all apparatus
+        const newlySelectedAllPresets = allPresets.filter((allPreset) => {
+          const isAppliedToAll = Object.values(selectedPresets).every(
+            (value) => value === allPreset.id || value === "none",
+          );
+          return !isAppliedToAll;
+        });
+
+        if (newlySelectedAllPresets.length > 0) {
+          return (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Azioni Rapide</h4>
+              <div className="flex flex-wrap gap-2">
+                {newlySelectedAllPresets.map((preset) => (
+                  <Button
+                    key={preset.id}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleApplyToAllApparatus(preset.id)}
+                    disabled={isPending}
+                    className="text-xs"
+                  >
+                    Applica "{preset.name}" a tutti gli attrezzi
+                  </Button>
+                ))}
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       <div className="space-y-3">
         <h4 className="text-sm font-medium">Preset per Attrezzo</h4>
@@ -262,6 +321,10 @@ export default function SessionPresetForm({
                 }
               }}
               onCancel={() => setShowDialog(null)}
+              sessionName={name}
+              apparatusType={
+                showDialog ? showDialog.split("_")[0].toUpperCase() : ""
+              }
             />
           </DialogContent>
         </Dialog>

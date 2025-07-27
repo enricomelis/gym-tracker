@@ -150,6 +150,7 @@ CREATE TABLE "presets_microcycles_sessions" (
   "microcycle_id" uuid REFERENCES presets_microcycles(id) ON DELETE SET NULL,
   "training_session_id" uuid REFERENCES presets_training_sessions(id) ON DELETE SET NULL,
   "day_number" int NOT NULL DEFAULT 1,
+  "session_order" int NOT NULL DEFAULT 1,
   "created_by" uuid REFERENCES coaches(id) ON DELETE SET NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
@@ -226,7 +227,7 @@ CREATE TABLE "athletes_competitions_routines_apparatus" (
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE UNIQUE INDEX ON "presets_microcycles_sessions" ("microcycle_id", "day_number");
+CREATE INDEX ON "presets_microcycles_sessions" ("microcycle_id", "day_number", "session_order");
 
 CREATE UNIQUE INDEX ON "presets_macrocycles_microcycles" ("macrocycle_id", "week_number");
 

@@ -348,12 +348,36 @@ export type NewMicrocyclePreset = {
   updated_at?: string | null;
 };
 
+export type MicrocyclePresetWithDetails = {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+  presets_microcycles_sessions: Array<{
+    id: string;
+    day_number: number;
+    session_order: number;
+    presets_training_sessions: {
+      id: string;
+      name: string;
+      fx_preset: { name: string; apparatus: string } | null;
+      ph_preset: { name: string; apparatus: string } | null;
+      sr_preset: { name: string; apparatus: string } | null;
+      vt_preset: { name: string; apparatus: string } | null;
+      pb_preset: { name: string; apparatus: string } | null;
+      hb_preset: { name: string; apparatus: string } | null;
+    } | null;
+  }>;
+};
+
 export type NewMicrocyclesSessionsPreset = {
   id: string;
   name: string;
   microcycle_id: string;
   training_session_id: string;
   day_number: number;
+  session_order: number;
   created_by: string;
   created_at?: string | null;
   updated_at?: string | null;
