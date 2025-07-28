@@ -141,21 +141,30 @@ export default function SessionPresetEditForm({
     };
 
     startTransition(async () => {
-      const result = await updateSessionPreset(preset.id, presetData);
+      try {
+        const result = await updateSessionPreset(preset.id, presetData);
 
-      if (result && "error" in result) {
+        if (result && "error" in result) {
+          toast({
+            title: "Errore",
+            description: result.error,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Successo",
+            description: "Preset allenamento aggiornato con successo.",
+            duration: 1500,
+          });
+          if (onSave) await onSave();
+        }
+      } catch (error) {
+        console.error("Error updating session preset:", error);
         toast({
           title: "Errore",
-          description: result.error,
+          description: "Errore durante l'aggiornamento del preset allenamento.",
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Successo",
-          description: "Preset allenamento aggiornato con successo.",
-          duration: 1500,
-        });
-        if (onSave) await onSave();
       }
     });
   };

@@ -187,33 +187,42 @@ function SessionCreationDialog({
     };
 
     startTransition(async () => {
-      const result = await createSessionPreset([presetData]);
+      try {
+        const result = await createSessionPreset([presetData]);
 
-      if (result && "error" in result) {
+        if (result && "error" in result) {
+          toast({
+            title: "Errore",
+            description: result.error,
+            variant: "destructive",
+          });
+        } else if (result && "success" in result && result.data) {
+          const newSession = result.data[0] as NewTrainingSessionPreset;
+          onSessionCreated(newSession);
+          toast({
+            title: "Successo",
+            description: "Preset allenamento creato.",
+            duration: 1500,
+          });
+          // Reset form
+          setName("");
+          setSelectedPresets({
+            fx_preset_id: "none",
+            ph_preset_id: "none",
+            sr_preset_id: "none",
+            vt_preset_id: "none",
+            pb_preset_id: "none",
+            hb_preset_id: "none",
+          });
+          onOpenChange(false);
+        }
+      } catch (error) {
+        console.error("Error creating session preset:", error);
         toast({
           title: "Errore",
-          description: result.error,
+          description: "Errore durante la creazione del preset allenamento.",
           variant: "destructive",
         });
-      } else if (result && "success" in result && result.data) {
-        const newSession = result.data[0] as NewTrainingSessionPreset;
-        onSessionCreated(newSession);
-        toast({
-          title: "Successo",
-          description: "Preset allenamento creato.",
-          duration: 1500,
-        });
-        // Reset form
-        setName("");
-        setSelectedPresets({
-          fx_preset_id: "none",
-          ph_preset_id: "none",
-          sr_preset_id: "none",
-          vt_preset_id: "none",
-          pb_preset_id: "none",
-          hb_preset_id: "none",
-        });
-        onOpenChange(false);
       }
     });
   };
@@ -571,29 +580,38 @@ export default function MicrocyclePresetForm({
     }
 
     startTransition(async () => {
-      const result = await createCompleteMicrocyclePreset({
-        name: name.trim(),
-        sessions: validSessions.map((session) => ({
-          day_number: session.day_number,
-          training_session_id: session.training_session_id,
-        })),
-      });
+      try {
+        const result = await createCompleteMicrocyclePreset({
+          name: name.trim(),
+          sessions: validSessions.map((session) => ({
+            day_number: session.day_number,
+            training_session_id: session.training_session_id,
+          })),
+        });
 
-      if (result && "error" in result) {
+        if (result && "error" in result) {
+          toast({
+            title: "Errore",
+            description: result.error,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Successo",
+            description: "Preset microciclo salvato con successo.",
+            duration: 1500,
+          });
+          setName("");
+          setSessions([]);
+          if (onSave) await onSave();
+        }
+      } catch (error) {
+        console.error("Error creating microcycle preset:", error);
         toast({
           title: "Errore",
-          description: result.error,
+          description: "Errore durante il salvataggio del preset microciclo.",
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Successo",
-          description: "Preset microciclo salvato con successo.",
-          duration: 1500,
-        });
-        setName("");
-        setSessions([]);
-        if (onSave) await onSave();
       }
     });
   };
