@@ -30,10 +30,8 @@ export default async function PresetsPage() {
   const {
     apparatusPresets,
     sessionPresets,
-    weekdayPresets,
-    weekdaysSessionsPresets,
     microcyclePresets,
-    microcyclesWeekdaysPresets,
+    microcyclesSessionsPresets,
     macrocyclePresets,
     macrocyclesMicrocyclesPresets,
   } = presetsResult;
@@ -45,10 +43,8 @@ export default async function PresetsPage() {
       <PresetColumns
         apparatusPresets={apparatusPresets}
         sessionPresets={sessionPresets}
-        weekdayPresets={weekdayPresets}
-        weekdaysSessionsPresets={weekdaysSessionsPresets}
         microcyclePresets={microcyclePresets}
-        microcyclesWeekdaysPresets={microcyclesWeekdaysPresets}
+        microcyclesSessionsPresets={microcyclesSessionsPresets}
         macrocyclePresets={macrocyclePresets}
         macrocyclesMicrocyclesPresets={macrocyclesMicrocyclesPresets}
       />

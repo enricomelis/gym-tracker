@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { createSessionPreset } from "@/lib/actions/presets";
+import { updateSessionPreset } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,8 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import type { NewApparatusPreset } from "@/lib/types";
 import { Plus } from "lucide-react";
+import type { NewTrainingSessionPreset, NewApparatusPreset } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -24,34 +24,53 @@ import {
 import ApparatusPresetForm from "@/components/apparatus-preset-form";
 import { formatApparatusName } from "@/lib/utils/preset-naming";
 
-interface SessionPresetFormProps {
-  onSave?: () => Promise<void> | void;
+interface SessionPresetEditFormProps {
+  preset: NewTrainingSessionPreset;
   availableApparatusPresets: NewApparatusPreset[];
+  onSave?: () => Promise<void> | void;
   onCancel?: () => void;
 }
 
-export default function SessionPresetForm({
-  onSave,
+export default function SessionPresetEditForm({
+  preset,
   availableApparatusPresets,
+  onSave,
   onCancel,
-}: SessionPresetFormProps) {
+}: SessionPresetEditFormProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [name, setName] = useState("");
-  // --- Apparatus-from-session: use the generic hook ---
-  const apparatusTypes = ["FX", "PH", "SR", "VT", "PB", "HB"];
-  const selectionKeys = apparatusTypes.map(
-    (a) => `${a.toLowerCase()}_preset_id`,
-  );
-  const getDiscriminator = (key: string) => key.split("_")[0].toUpperCase();
+  const [name, setName] = useState(preset.name);
+  const [selectedPresets, setSelectedPresets] = useState<
+    Record<string, string>
+  >({
+    fx_preset_id: preset.fx_preset_id || "none",
+    ph_preset_id: preset.ph_preset_id || "none",
+    sr_preset_id: preset.sr_preset_id || "none",
+    vt_preset_id: preset.vt_preset_id || "none",
+    pb_preset_id: preset.pb_preset_id || "none",
+    hb_preset_id: preset.hb_preset_id || "none",
+  });
   const [presets, setPresets] = useState<NewApparatusPreset[]>(
     availableApparatusPresets,
   );
-  const [selectedPresets, setSelectedPresets] = useState<
-    Record<string, string>
-  >(Object.fromEntries(selectionKeys.map((k) => [k, "none"])));
   const [showDialog, setShowDialog] = useState<null | string>(null);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
+
+  // Handle ESC key to cancel
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (onCancel) {
+          onCancel();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onCancel]);
 
   const handleAddPreset = (key: string) => {
     setShowDialog(key);
@@ -87,34 +106,12 @@ export default function SessionPresetForm({
     }));
   };
 
-  // Handle ESC key to cancel
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        if (onCancel) {
-          onCancel();
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [onCancel]);
-
-  // Auto-select text on focus
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.select();
-  };
-
   const handleSave = () => {
     if (!name.trim()) {
       toast({ title: "Nome Preset obbligatorio", variant: "destructive" });
       return;
     }
 
-    // Convert "none" values to null for the API
     const presetData = {
       name: name.trim(),
       fx_preset_id:
@@ -144,7 +141,7 @@ export default function SessionPresetForm({
     };
 
     startTransition(async () => {
-      const result = await createSessionPreset([presetData]);
+      const result = await updateSessionPreset(preset.id, presetData);
 
       if (result && "error" in result) {
         toast({
@@ -155,17 +152,8 @@ export default function SessionPresetForm({
       } else {
         toast({
           title: "Successo",
-          description: "Preset allenamento salvato.",
+          description: "Preset allenamento aggiornato con successo.",
           duration: 1500,
-        });
-        setName("");
-        setSelectedPresets({
-          fx_preset_id: "none",
-          ph_preset_id: "none",
-          sr_preset_id: "none",
-          vt_preset_id: "none",
-          pb_preset_id: "none",
-          hb_preset_id: "none",
         });
         if (onSave) await onSave();
       }
@@ -190,7 +178,6 @@ export default function SessionPresetForm({
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          onFocus={handleFocus}
           disabled={isPending}
           placeholder="Inserisci nome preset"
         />
@@ -247,55 +234,91 @@ export default function SessionPresetForm({
 
       <div className="space-y-3">
         <h4 className="text-sm font-medium">Preset per Attrezzo</h4>
-        {selectionKeys.map((key) => {
-          const apparatus = getDiscriminator(key);
+        {Object.entries(selectedPresets).map(([key, value]) => {
+          const apparatus = key.split("_")[0].toUpperCase();
           const presets = getPresetsForApparatus(apparatus);
-          const selectedValue = selectedPresets[key];
+
           return (
-            <div key={key} className="flex items-end gap-2">
-              <div className="flex-1">
-                <label className="text-xs text-muted-foreground">
-                  {formatApparatusName(apparatus)}
-                </label>
-                <Select
-                  value={selectedValue}
-                  onValueChange={(value) => handlePresetChange(key, value)}
-                  disabled={isPending}
-                >
-                  <SelectTrigger className="w-full min-w-0">
-                    <SelectValue
-                      placeholder="Nessun preset (opzionale)"
-                      className="truncate"
-                    />
-                  </SelectTrigger>
-                  <SelectContent className="max-w-[300px]">
-                    <SelectItem value="none">Nessun preset</SelectItem>
-                    {presets.map((preset) => (
-                      <SelectItem
-                        key={preset.id}
-                        value={preset.id}
+            <div key={key} className="space-y-2">
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    {formatApparatusName(apparatus)}
+                  </label>
+                  <Select
+                    value={value}
+                    onValueChange={(newValue) =>
+                      handlePresetChange(key, newValue)
+                    }
+                    disabled={isPending}
+                  >
+                    <SelectTrigger className="w-full min-w-0">
+                      <SelectValue
+                        placeholder="Seleziona preset"
                         className="truncate"
-                      >
-                        {preset.name} (Q: {preset.quantity}, E:{" "}
-                        {preset.execution_grade})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="max-w-[300px]">
+                      <SelectItem value="none">Nessuno</SelectItem>
+                      {presets.map((preset) => (
+                        <SelectItem
+                          key={preset.id}
+                          value={preset.id}
+                          className="truncate"
+                        >
+                          {preset.name} (Q: {preset.quantity}, G:{" "}
+                          {preset.execution_grade})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="mb-1"
+                  title={`Aggiungi nuovo preset per ${formatApparatusName(apparatus)}`}
+                  onClick={() => handleAddPreset(key)}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
               </div>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="mb-1"
-                title={`Aggiungi nuovo preset per ${formatApparatusName(apparatus)}`}
-                onClick={() => handleAddPreset(key)}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+
+              {/* Show apply to all button when a preset "All" is selected */}
+              {value !== "none" &&
+                (() => {
+                  const selectedPreset = presets.find((p) => p.id === value);
+                  if (selectedPreset?.apparatus === "All") {
+                    return (
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleApplyToAllApparatus(value)}
+                          disabled={isPending}
+                          className="text-xs"
+                        >
+                          Applica a tutti gli attrezzi
+                        </Button>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
             </div>
           );
         })}
+      </div>
+
+      <div className="flex justify-end space-x-2">
+        <Button variant="outline" onClick={onCancel} disabled={isPending}>
+          Annulla
+        </Button>
+        <Button onClick={handleSave} disabled={isPending || !name.trim()}>
+          {isPending ? "Aggiornamento..." : "Aggiorna Preset"}
+        </Button>
       </div>
 
       {/* Apparatus creation dialog */}
@@ -327,20 +350,12 @@ export default function SessionPresetForm({
               onCancel={() => setShowDialog(null)}
               sessionName={name}
               apparatusType={
-                showDialog ? showDialog.split("_")[0].toUpperCase() : ""
+                pendingKey ? pendingKey.split("_")[0].toUpperCase() : ""
               }
             />
           </DialogContent>
         </Dialog>
       )}
-
-      <Button
-        onClick={handleSave}
-        disabled={isPending || !name.trim()}
-        className="w-full"
-      >
-        {isPending ? "Salvataggio..." : "Salva Preset Allenamento"}
-      </Button>
     </div>
   );
 }

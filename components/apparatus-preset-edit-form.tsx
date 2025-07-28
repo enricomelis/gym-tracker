@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { createApparatusPreset } from "@/lib/actions/presets";
+import { updateApparatusPreset } from "@/lib/actions/presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,38 +19,26 @@ import {
   type ExecutionCoeff,
   type NewApparatusPreset,
 } from "@/lib/types";
-import {
-  generatePresetName,
-  formatApparatusName,
-} from "@/lib/utils/preset-naming";
 
-export default function ApparatusPresetForm({
+interface ApparatusPresetEditFormProps {
+  preset: NewApparatusPreset;
+  onSave?: () => Promise<void> | void;
+  onCancel?: () => void;
+}
+
+export default function ApparatusPresetEditForm({
+  preset,
   onSave,
   onCancel,
-  sessionName,
-  apparatusType,
-}: {
-  onSave?: (newPreset?: NewApparatusPreset) => Promise<void> | void;
-  onCancel?: () => void;
-  sessionName?: string;
-  apparatusType?: string;
-}) {
+}: ApparatusPresetEditFormProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [name, setName] = useState("");
-  const [apparatus, setApparatus] = useState<string>("");
-  const [quantity, setQuantity] = useState(1);
-  const [executionGrade, setExecutionGrade] = useState<string>("");
-
-  // Generate automatic name when sessionName and apparatusType are provided
-  useEffect(() => {
-    if (sessionName && apparatusType) {
-      const apparatusName = formatApparatusName(apparatusType);
-      const autoName = generatePresetName.apparatus(sessionName, apparatusName);
-      setName(autoName);
-      setApparatus(apparatusType);
-    }
-  }, [sessionName, apparatusType]);
+  const [name, setName] = useState(preset.name);
+  const [apparatus, setApparatus] = useState<string>(preset.apparatus);
+  const [quantity, setQuantity] = useState(preset.quantity);
+  const [executionGrade, setExecutionGrade] = useState<string>(
+    preset.execution_grade,
+  );
 
   // Handle ESC key to cancel
   useEffect(() => {
@@ -92,20 +80,13 @@ export default function ApparatusPresetForm({
       return;
     }
 
-    if (quantity < 1) {
-      toast({ title: "Quantità deve essere almeno 1", variant: "destructive" });
-      return;
-    }
-
     startTransition(async () => {
-      const result = await createApparatusPreset([
-        {
-          name: name.trim(),
-          apparatus: apparatus as Apparatus,
-          quantity,
-          execution_grade: executionGrade as ExecutionCoeff,
-        },
-      ]);
+      const result = await updateApparatusPreset(preset.id, {
+        name: name.trim(),
+        apparatus: apparatus as Apparatus,
+        quantity,
+        execution_grade: executionGrade as ExecutionCoeff,
+      });
 
       if (result && "error" in result) {
         toast({
@@ -113,18 +94,12 @@ export default function ApparatusPresetForm({
           description: result.error,
           variant: "destructive",
         });
-      } else if (result && result.data && result.data[0]) {
+      } else {
         toast({
           title: "Successo",
-          description: "Preset attrezzo salvato.",
+          description: "Preset attrezzo aggiornato con successo.",
           duration: 1500,
         });
-        setName("");
-        setApparatus("");
-        setQuantity(1);
-        setExecutionGrade("");
-        if (onSave) await onSave(result.data[0]);
-      } else {
         if (onSave) await onSave();
       }
     });
@@ -154,9 +129,15 @@ export default function ApparatusPresetForm({
             <SelectValue placeholder="Seleziona attrezzo" />
           </SelectTrigger>
           <SelectContent>
-            {APPARATUS_TYPES.map((app) => (
-              <SelectItem key={app} value={app}>
-                {formatApparatusName(app)}
+            {APPARATUS_TYPES.map((type) => (
+              <SelectItem key={type} value={type}>
+                {type === "FX" && "Corpo Libero"}
+                {type === "PH" && "Cavallo"}
+                {type === "SR" && "Anelli"}
+                {type === "VT" && "Volteggio"}
+                {type === "PB" && "Parallele"}
+                {type === "HB" && "Sbarra"}
+                {type === "All" && "Tutti gli attrezzi"}
               </SelectItem>
             ))}
           </SelectContent>
@@ -170,9 +151,8 @@ export default function ApparatusPresetForm({
           min="1"
           value={quantity}
           onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-          onFocus={handleFocus}
           disabled={isPending}
-          placeholder="Quantità"
+          placeholder="Inserisci quantità"
         />
       </div>
 
@@ -184,7 +164,7 @@ export default function ApparatusPresetForm({
           disabled={isPending}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Seleziona grado esecuzione" />
+            <SelectValue placeholder="Seleziona grado" />
           </SelectTrigger>
           <SelectContent>
             {EXECUTION_COEFF_TYPES.map((grade) => (
@@ -196,13 +176,17 @@ export default function ApparatusPresetForm({
         </Select>
       </div>
 
-      <Button
-        onClick={handleSave}
-        disabled={isPending || !name.trim() || !apparatus || !executionGrade}
-        className="w-full"
-      >
-        {isPending ? "Salvataggio..." : "Salva Preset Attrezzo"}
-      </Button>
+      <div className="flex justify-end space-x-2">
+        <Button variant="outline" onClick={onCancel} disabled={isPending}>
+          Annulla
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={isPending || !name.trim() || !apparatus || !executionGrade}
+        >
+          {isPending ? "Aggiornamento..." : "Aggiorna Preset"}
+        </Button>
+      </div>
     </div>
   );
 }

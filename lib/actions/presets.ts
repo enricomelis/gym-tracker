@@ -5,15 +5,14 @@ import { revalidatePath } from "next/cache";
 import type {
   NewApparatusPreset,
   NewTrainingSessionPreset,
-  NewWeekdayPreset,
-  NewWeekdaysSessionsPreset,
   NewMicrocyclePreset,
-  NewMicrocyclesWeekdaysPreset,
+  NewMicrocyclesSessionsPreset,
   NewMacrocyclePreset,
   NewMacrocyclesMicrocyclesPreset,
 } from "@/lib/types";
 import { z } from "zod";
 import { getAuthenticatedCoach } from "@/lib/utils/auth";
+import type { Apparatus, ExecutionCoeff } from "@/lib/types";
 
 /**
  * Insert multiple weekly goal preset rows (one per apparatus) sharing the same preset name.
@@ -35,7 +34,7 @@ export async function createApparatusPreset(
 
   const baseSchema = z.object({
     name: z.string().min(1),
-    apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"]),
+    apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB", "All"]),
     quantity: z.number().int().min(1),
     execution_grade: z.enum(["A+", "A", "B+", "B", "C+", "C"]),
   });
@@ -132,110 +131,6 @@ export async function getSessionPresets() {
   return data as NewTrainingSessionPreset[];
 }
 
-export async function createWeekdayPreset(
-  presets: Omit<
-    NewWeekdayPreset,
-    "id" | "created_by" | "created_at" | "updated_at"
-  >[],
-) {
-  const authResult = await getAuthenticatedCoach();
-  if ("error" in authResult) {
-    return { error: authResult.error } as const;
-  }
-
-  const { coach, supabase } = authResult;
-
-  const baseSchema = z.object({
-    weekday_number: z.number().int().min(0).max(7),
-    name: z.string().min(1),
-  });
-
-  const parsed = z.array(baseSchema).safeParse(presets);
-  if (!parsed.success) {
-    return { error: "Invalid weekday preset data" } as const;
-  }
-
-  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
-
-  const { data, error } = await supabase
-    .from("presets_weekdays")
-    .insert(rows)
-    .select();
-
-  if (error) {
-    console.error("Error creating weekday preset:", error);
-    return { error: error.message } as const;
-  }
-
-  revalidatePath("/presets");
-  return { success: true, data } as const;
-}
-
-export async function getWeekdayPresets() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("presets_weekdays").select("*");
-
-  if (error) {
-    console.error("Error fetching weekday presets:", error);
-    return [] as NewWeekdayPreset[];
-  }
-  return data as NewWeekdayPreset[];
-}
-
-export async function createWeekdaysSessionsPreset(
-  presets: Omit<
-    NewWeekdaysSessionsPreset,
-    "id" | "created_by" | "created_at" | "updated_at"
-  >[],
-) {
-  const authResult = await getAuthenticatedCoach();
-  if ("error" in authResult) {
-    return { error: authResult.error } as const;
-  }
-
-  const { coach, supabase } = authResult;
-
-  const baseSchema = z.object({
-    name: z.string().min(1),
-    weekday_id: z.string().uuid(),
-    session_id: z.string().uuid(),
-    session_number: z.number().int().min(1),
-  });
-
-  const parsed = z.array(baseSchema).safeParse(presets);
-  if (!parsed.success) {
-    return { error: "Invalid weekdays sessions preset data" } as const;
-  }
-
-  const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
-
-  const { data, error } = await supabase
-    .from("presets_weekdays_sessions")
-    .insert(rows)
-    .select();
-
-  if (error) {
-    console.error("Error creating weekdays sessions preset:", error);
-    return { error: error.message } as const;
-  }
-
-  revalidatePath("/presets");
-  return { success: true, data } as const;
-}
-
-export async function getWeekdaysSessionsPresets() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("presets_weekdays_sessions")
-    .select("*");
-
-  if (error) {
-    console.error("Error fetching weekdays sessions presets:", error);
-    return [] as NewWeekdaysSessionsPreset[];
-  }
-  return data as NewWeekdaysSessionsPreset[];
-}
-
 export async function createMicrocyclePreset(
   presets: Omit<
     NewMicrocyclePreset,
@@ -288,9 +183,41 @@ export async function getMicrocyclePresets() {
   return data as NewMicrocyclePreset[];
 }
 
-export async function createMicrocyclesWeekdaysPreset(
+export async function getMicrocyclePresetsWithDetails() {
+  const supabase = await createClient();
+
+  // Get microcycle presets with their sessions and training session details
+  const { data, error } = await supabase
+    .from("presets_microcycles")
+    .select(
+      `
+      *,
+      presets_microcycles_sessions (
+        *,
+        presets_training_sessions (
+          *,
+          fx_preset:presets_apparatus!fx_preset_id (name, apparatus),
+          ph_preset:presets_apparatus!ph_preset_id (name, apparatus),
+          sr_preset:presets_apparatus!sr_preset_id (name, apparatus),
+          vt_preset:presets_apparatus!vt_preset_id (name, apparatus),
+          pb_preset:presets_apparatus!pb_preset_id (name, apparatus),
+          hb_preset:presets_apparatus!hb_preset_id (name, apparatus)
+        )
+      )
+    `,
+    )
+    .order("name");
+
+  if (error) {
+    console.error("Error fetching microcycle presets with details:", error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function createMicrocyclesSessionsPreset(
   presets: Omit<
-    NewMicrocyclesWeekdaysPreset,
+    NewMicrocyclesSessionsPreset,
     "id" | "created_by" | "created_at" | "updated_at"
   >[],
 ) {
@@ -304,8 +231,8 @@ export async function createMicrocyclesWeekdaysPreset(
   const baseSchema = z.object({
     name: z.string().min(1),
     microcycle_id: z.string().uuid(),
-    weekday_id: z.string().uuid(),
-    day_number: z.number().int().min(1),
+    training_session_id: z.string().uuid(),
+    day_number: z.number().int().min(1).max(7),
   });
 
   const parsed = z.array(baseSchema).safeParse(presets);
@@ -316,12 +243,12 @@ export async function createMicrocyclesWeekdaysPreset(
   const rows = parsed.data.map((p) => ({ ...p, created_by: coach.id }));
 
   const { data, error } = await supabase
-    .from("presets_microcycles_weekdays")
+    .from("presets_microcycles_sessions")
     .insert(rows)
     .select();
 
   if (error) {
-    console.error("Error creating microcycles weekdays preset:", error);
+    console.error("Error creating microcycles sessions preset:", error);
     return { error: error.message } as const;
   }
 
@@ -329,17 +256,17 @@ export async function createMicrocyclesWeekdaysPreset(
   return { success: true, data } as const;
 }
 
-export async function getMicrocyclesWeekdaysPresets() {
+export async function getMicrocyclesSessionsPresets() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("presets_microcycles_weekdays")
+    .from("presets_microcycles_sessions")
     .select("*");
 
   if (error) {
-    console.error("Error fetching microcycles weekdays presets:", error);
-    return [] as NewMicrocyclesWeekdaysPreset[];
+    console.error("Error fetching microcycles sessions presets:", error);
+    return [] as NewMicrocyclesSessionsPreset[];
   }
-  return data as NewMicrocyclesWeekdaysPreset[];
+  return data as NewMicrocyclesSessionsPreset[];
 }
 
 export async function createMacrocyclePreset(
@@ -449,7 +376,90 @@ export async function getMacrocyclesMicrocyclesPresets() {
   return data as NewMacrocyclesMicrocyclesPreset[];
 }
 
+export async function createCompleteMicrocyclePreset(microcycleData: {
+  name: string;
+  sessions: Array<{
+    day_number: number;
+    training_session_id: string | null;
+  }>;
+}) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
 
+  const { coach, supabase } = authResult;
+
+  // Validate input
+  const schema = z.object({
+    name: z.string().min(1),
+    sessions: z
+      .array(
+        z.object({
+          day_number: z.number().int().min(1).max(7),
+          training_session_id: z.string().uuid().nullable(),
+        }),
+      )
+      .min(1),
+  });
+
+  const parsed = schema.safeParse(microcycleData);
+  if (!parsed.success) {
+    return { error: "Invalid microcycle data" } as const;
+  }
+
+  // Filter out sessions with null training_session_id (empty sessions)
+  const validSessions = parsed.data.sessions.filter(
+    (session) => session.training_session_id !== null,
+  );
+
+  if (validSessions.length === 0) {
+    return {
+      error: "Almeno una sessione di allenamento deve essere selezionata",
+    } as const;
+  }
+
+  // Use a transaction to create both microcycle and sessions
+  const { data: microcycle, error: microcycleError } = await supabase
+    .from("presets_microcycles")
+    .insert({
+      name: parsed.data.name,
+      created_by: coach.id,
+    })
+    .select()
+    .single();
+
+  if (microcycleError) {
+    console.error("Error creating microcycle preset:", microcycleError);
+    return { error: microcycleError.message } as const;
+  }
+
+  // Group sessions by day and create session associations with order
+  const sessionRows = validSessions.map((session, index) => ({
+    name: `${parsed.data.name} - Giorno ${session.day_number}`,
+    microcycle_id: microcycle.id,
+    training_session_id: session.training_session_id,
+    day_number: session.day_number,
+    session_order: index + 1,
+    created_by: coach.id,
+  }));
+
+  const { data: sessions, error: sessionsError } = await supabase
+    .from("presets_microcycles_sessions")
+    .insert(sessionRows)
+    .select();
+
+  if (sessionsError) {
+    console.error("Error creating microcycle sessions:", sessionsError);
+    return { error: sessionsError.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return {
+    success: true,
+    data: { microcycle, sessions },
+  } as const;
+}
 
 // Unified function to get all preset types efficiently
 export async function getUnifiedPresets() {
@@ -477,10 +487,8 @@ export async function getUnifiedPresets() {
   const [
     apparatusPresets,
     sessionPresets,
-    weekdayPresets,
-    weekdaysSessionsPresets,
     microcyclePresets,
-    microcyclesWeekdaysPresets,
+    microcyclesSessionsPresets,
     macrocyclePresets,
     macrocyclesMicrocyclesPresets,
   ] = await Promise.all([
@@ -493,19 +501,29 @@ export async function getUnifiedPresets() {
       .from("presets_training_sessions")
       .select("*")
       .eq("created_by", coach.id),
-    supabase.from("presets_weekdays").select("*").eq("created_by", coach.id),
-    supabase
-      .from("presets_weekdays_sessions")
-      .select("*")
-      .eq("created_by", coach.id)
-      .order("name"),
     supabase
       .from("presets_microcycles")
-      .select("*")
+      .select(
+        `
+        *,
+        presets_microcycles_sessions (
+          *,
+          presets_training_sessions (
+            *,
+            fx_preset:presets_apparatus!fx_preset_id (name, apparatus),
+            ph_preset:presets_apparatus!ph_preset_id (name, apparatus),
+            sr_preset:presets_apparatus!sr_preset_id (name, apparatus),
+            vt_preset:presets_apparatus!vt_preset_id (name, apparatus),
+            pb_preset:presets_apparatus!pb_preset_id (name, apparatus),
+            hb_preset:presets_apparatus!hb_preset_id (name, apparatus)
+          )
+        )
+      `,
+      )
       .eq("created_by", coach.id)
       .order("name"),
     supabase
-      .from("presets_microcycles_weekdays")
+      .from("presets_microcycles_sessions")
       .select("*")
       .eq("created_by", coach.id)
       .order("name"),
@@ -524,11 +542,389 @@ export async function getUnifiedPresets() {
   return {
     apparatusPresets: apparatusPresets.data || [],
     sessionPresets: sessionPresets.data || [],
-    weekdayPresets: weekdayPresets.data || [],
-    weekdaysSessionsPresets: weekdaysSessionsPresets.data || [],
     microcyclePresets: microcyclePresets.data || [],
-    microcyclesWeekdaysPresets: microcyclesWeekdaysPresets.data || [],
+    microcyclesSessionsPresets: microcyclesSessionsPresets.data || [],
     macrocyclePresets: macrocyclePresets.data || [],
     macrocyclesMicrocyclesPresets: macrocyclesMicrocyclesPresets.data || [],
   };
+}
+
+// Delete functions for all preset types
+export async function deleteApparatusPreset(presetId: string) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { supabase } = authResult;
+
+  const { error } = await supabase
+    .from("presets_apparatus")
+    .delete()
+    .eq("id", presetId);
+
+  if (error) {
+    console.error("Error deleting apparatus preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true } as const;
+}
+
+export async function updateApparatusPreset(
+  presetId: string,
+  updates: {
+    name: string;
+    apparatus: Apparatus;
+    quantity: number;
+    execution_grade: ExecutionCoeff;
+  },
+) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { supabase } = authResult;
+
+  const schema = z.object({
+    name: z.string().min(1),
+    apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB", "All"]),
+    quantity: z.number().int().min(1),
+    execution_grade: z.enum(["A+", "A", "B+", "B", "C+", "C"]),
+  });
+
+  const parsed = schema.safeParse(updates);
+  if (!parsed.success) {
+    return { error: "Invalid apparatus preset data" } as const;
+  }
+
+  const { data, error } = await supabase
+    .from("presets_apparatus")
+    .update(parsed.data)
+    .eq("id", presetId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating apparatus preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data } as const;
+}
+
+export async function updateSessionPreset(
+  presetId: string,
+  updates: {
+    name: string;
+    fx_preset_id: string | null;
+    ph_preset_id: string | null;
+    sr_preset_id: string | null;
+    vt_preset_id: string | null;
+    pb_preset_id: string | null;
+    hb_preset_id: string | null;
+  },
+) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { supabase } = authResult;
+
+  const schema = z.object({
+    name: z.string().min(1),
+    fx_preset_id: z.string().uuid().nullable(),
+    ph_preset_id: z.string().uuid().nullable(),
+    sr_preset_id: z.string().uuid().nullable(),
+    vt_preset_id: z.string().uuid().nullable(),
+    pb_preset_id: z.string().uuid().nullable(),
+    hb_preset_id: z.string().uuid().nullable(),
+  });
+
+  const parsed = schema.safeParse(updates);
+  if (!parsed.success) {
+    return { error: "Invalid training session preset data" } as const;
+  }
+
+  const { data, error } = await supabase
+    .from("presets_training_sessions")
+    .update(parsed.data)
+    .eq("id", presetId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating training session preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data } as const;
+}
+
+export async function updateMicrocyclePreset(
+  presetId: string,
+  updates: {
+    name: string;
+    sessions: Array<{
+      day_number: number;
+      training_session_id: string | null;
+    }>;
+  },
+) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { supabase } = authResult;
+
+  // Validate input
+  const schema = z.object({
+    name: z.string().min(1),
+    sessions: z
+      .array(
+        z.object({
+          day_number: z.number().int().min(1).max(7),
+          training_session_id: z.string().uuid().nullable(),
+        }),
+      )
+      .min(1),
+  });
+
+  const parsed = schema.safeParse(updates);
+  if (!parsed.success) {
+    return { error: "Invalid microcycle data" } as const;
+  }
+
+  // Filter out sessions with null training_session_id (empty sessions)
+  const validSessions = parsed.data.sessions.filter(
+    (session) => session.training_session_id !== null,
+  );
+
+  if (validSessions.length === 0) {
+    return {
+      error: "Almeno una sessione di allenamento deve essere selezionata",
+    } as const;
+  }
+
+  // Update microcycle name
+  const { error: microcycleError } = await supabase
+    .from("presets_microcycles")
+    .update({ name: parsed.data.name })
+    .eq("id", presetId);
+
+  if (microcycleError) {
+    console.error("Error updating microcycle preset:", microcycleError);
+    return { error: microcycleError.message } as const;
+  }
+
+  // Delete existing sessions
+  const { error: deleteError } = await supabase
+    .from("presets_microcycles_sessions")
+    .delete()
+    .eq("microcycle_id", presetId);
+
+  if (deleteError) {
+    console.error("Error deleting existing sessions:", deleteError);
+    return { error: deleteError.message } as const;
+  }
+
+  // Create new sessions
+  const sessionRows = validSessions.map((session, index) => ({
+    name: `${parsed.data.name} - Giorno ${session.day_number}`,
+    microcycle_id: presetId,
+    training_session_id: session.training_session_id,
+    day_number: session.day_number,
+    session_order: index + 1,
+    created_by: authResult.coach.id,
+  }));
+
+  const { error: sessionsError } = await supabase
+    .from("presets_microcycles_sessions")
+    .insert(sessionRows);
+
+  if (sessionsError) {
+    console.error("Error creating microcycle sessions:", sessionsError);
+    return { error: sessionsError.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true } as const;
+}
+
+export async function updateMacrocyclePreset(
+  presetId: string,
+  updates: {
+    name: string;
+    length_in_weeks: number;
+  },
+) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { supabase } = authResult;
+
+  const schema = z.object({
+    name: z.string().min(1),
+    length_in_weeks: z.number().int().min(1),
+  });
+
+  const parsed = schema.safeParse(updates);
+  if (!parsed.success) {
+    return { error: "Invalid macrocycle preset data" } as const;
+  }
+
+  const { data, error } = await supabase
+    .from("presets_macrocycles")
+    .update(parsed.data)
+    .eq("id", presetId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating macrocycle preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data } as const;
+}
+
+export async function deleteSessionPreset(presetId: string) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { supabase } = authResult;
+
+  const { error } = await supabase
+    .from("presets_training_sessions")
+    .delete()
+    .eq("id", presetId);
+
+  if (error) {
+    console.error("Error deleting session preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true } as const;
+}
+
+export async function deleteMicrocyclePreset(presetId: string) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { supabase } = authResult;
+
+  // Delete in transaction: first delete related sessions, then the microcycle
+  const { error: sessionsError } = await supabase
+    .from("presets_microcycles_sessions")
+    .delete()
+    .eq("microcycle_id", presetId);
+
+  if (sessionsError) {
+    console.error("Error deleting microcycle sessions:", sessionsError);
+    return { error: sessionsError.message } as const;
+  }
+
+  const { error } = await supabase
+    .from("presets_microcycles")
+    .delete()
+    .eq("id", presetId);
+
+  if (error) {
+    console.error("Error deleting microcycle preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true } as const;
+}
+
+export async function deleteMicrocyclesSessionsPreset(presetId: string) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { supabase } = authResult;
+
+  const { error } = await supabase
+    .from("presets_microcycles_sessions")
+    .delete()
+    .eq("id", presetId);
+
+  if (error) {
+    console.error("Error deleting microcycles sessions preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true } as const;
+}
+
+export async function deleteMacrocyclePreset(presetId: string) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { supabase } = authResult;
+
+  // Delete in transaction: first delete related microcycles, then the macrocycle
+  const { error: microcyclesError } = await supabase
+    .from("presets_macrocycles_microcycles")
+    .delete()
+    .eq("macrocycle_id", presetId);
+
+  if (microcyclesError) {
+    console.error("Error deleting macrocycle microcycles:", microcyclesError);
+    return { error: microcyclesError.message } as const;
+  }
+
+  const { error } = await supabase
+    .from("presets_macrocycles")
+    .delete()
+    .eq("id", presetId);
+
+  if (error) {
+    console.error("Error deleting macrocycle preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true } as const;
+}
+
+export async function deleteMacrocyclesMicrocyclesPreset(presetId: string) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { supabase } = authResult;
+
+  const { error } = await supabase
+    .from("presets_macrocycles_microcycles")
+    .delete()
+    .eq("id", presetId);
+
+  if (error) {
+    console.error("Error deleting macrocycles microcycles preset:", error);
+    return { error: error.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true } as const;
 }

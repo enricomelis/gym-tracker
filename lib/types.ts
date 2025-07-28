@@ -6,7 +6,7 @@ import { z } from "zod";
 // TIPI FONDAMENTALI (mantenuti per compatibilità con sistema allenamenti)
 // ============================================================================
 
-export type Apparatus = "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
+export type Apparatus = "FX" | "PH" | "SR" | "VT" | "PB" | "HB" | "All";
 export const APPARATUS_TYPES: Apparatus[] = [
   "FX",
   "PH",
@@ -14,6 +14,7 @@ export const APPARATUS_TYPES: Apparatus[] = [
   "VT",
   "PB",
   "HB",
+  "All",
 ];
 
 export type ExecutionCoeff = "A+" | "A" | "B+" | "B" | "C+" | "C";
@@ -81,6 +82,8 @@ export const ExecutionPenaltyMap: Record<ExecutionCoeff, number> = {
 // TIPI PER GESTIONE ATLETI E COACH
 // ============================================================================
 
+export type AthleteCategory = "Allievi" | "Junior" | "Senior";
+
 export type Competition = {
   id: string;
   location: string;
@@ -101,7 +104,7 @@ export type Athlete = {
   last_name: string;
   birth_date: string | null;
   registration_number: number;
-  category: "Allievi" | "Junior" | "Senior";
+  category: AthleteCategory;
   current_coach_id: string;
   registered_society_id: string | null;
   created_at: string;
@@ -294,7 +297,7 @@ export const NewCreateRoutineSchema = z.object({
     .min(0, "Il volume deve essere un numero positivo")
     .max(1000, "Il volume non può superare 1000"),
   notes: z.string().optional(),
-  apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"], {
+  apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB", "All"], {
     errorMap: () => ({ message: "Apparato non valido" }),
   }),
   type: z.enum(["I+", "Int", "Par", "Com", "Usc", "Std", "G", "S", "B", "D"], {
@@ -337,26 +340,6 @@ export type NewTrainingSessionPreset = {
   updated_at?: string | null;
 };
 
-export type NewWeekdayPreset = {
-  id: string;
-  weekday_number: number;
-  name: string;
-  created_by: string;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
-
-export type NewWeekdaysSessionsPreset = {
-  id: string;
-  name: string;
-  weekday_id: string;
-  session_id: string;
-  session_number: number;
-  created_by: string;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
-
 export type NewMicrocyclePreset = {
   id: string;
   name: string;
@@ -365,12 +348,36 @@ export type NewMicrocyclePreset = {
   updated_at?: string | null;
 };
 
-export type NewMicrocyclesWeekdaysPreset = {
+export type MicrocyclePresetWithDetails = {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+  presets_microcycles_sessions: Array<{
+    id: string;
+    day_number: number;
+    session_order: number;
+    presets_training_sessions: {
+      id: string;
+      name: string;
+      fx_preset: { name: string; apparatus: string } | null;
+      ph_preset: { name: string; apparatus: string } | null;
+      sr_preset: { name: string; apparatus: string } | null;
+      vt_preset: { name: string; apparatus: string } | null;
+      pb_preset: { name: string; apparatus: string } | null;
+      hb_preset: { name: string; apparatus: string } | null;
+    } | null;
+  }>;
+};
+
+export type NewMicrocyclesSessionsPreset = {
   id: string;
   name: string;
   microcycle_id: string;
-  weekday_id: string;
+  training_session_id: string;
   day_number: number;
+  session_order: number;
   created_by: string;
   created_at?: string | null;
   updated_at?: string | null;
