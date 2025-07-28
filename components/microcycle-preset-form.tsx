@@ -37,6 +37,30 @@ type MicrocycleSession = {
   training_session_id: string | null;
 };
 
+// Funzione per abbreviare i nomi dei preset
+const truncatePresetName = (name: string, maxLength: number = 20) => {
+  if (name.length <= maxLength) return name;
+  return name.substring(0, maxLength) + "...";
+};
+
+// Funzione per ottenere il nome del preset selezionato
+const getSelectedPresetName = (
+  presetId: string,
+  presets: NewTrainingSessionPreset[],
+) => {
+  const preset = presets.find((p) => p.id === presetId);
+  return preset ? preset.name : "";
+};
+
+// Funzione per ottenere il nome dell'apparatus preset selezionato
+const getSelectedApparatusPresetName = (
+  presetId: string,
+  presets: NewApparatusPreset[],
+) => {
+  const preset = presets.find((p) => p.id === presetId);
+  return preset ? preset.name : "";
+};
+
 const weekDays = [
   { value: 1, label: "Lunedì" },
   { value: 2, label: "Martedì" },
@@ -300,13 +324,26 @@ function SessionCreationDialog({
                         }
                         disabled={isPending}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleziona preset" />
+                        <SelectTrigger className="w-full min-w-0">
+                          <SelectValue placeholder="Seleziona preset">
+                            {value && value !== "none"
+                              ? truncatePresetName(
+                                  getSelectedApparatusPresetName(
+                                    value,
+                                    presets,
+                                  ),
+                                )
+                              : "Seleziona preset"}
+                          </SelectValue>
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-w-[300px]">
                           <SelectItem value="none">Nessuno</SelectItem>
                           {presets.map((preset) => (
-                            <SelectItem key={preset.id} value={preset.id}>
+                            <SelectItem
+                              key={preset.id}
+                              value={preset.id}
+                              className="truncate"
+                            >
                               {preset.name} (Q: {preset.quantity}, G:{" "}
                               {preset.execution_grade})
                             </SelectItem>
@@ -674,13 +711,27 @@ export default function MicrocyclePresetForm({
                 }
                 disabled={isPending}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleziona preset allenamento" />
+                <SelectTrigger className="w-full min-w-0">
+                  <SelectValue placeholder="Seleziona preset allenamento">
+                    {session.training_session_id &&
+                    session.training_session_id !== "none"
+                      ? truncatePresetName(
+                          getSelectedPresetName(
+                            session.training_session_id,
+                            sessionPresets,
+                          ),
+                        )
+                      : "Seleziona preset allenamento"}
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-w-[300px]">
                   <SelectItem value="none">Nessun preset</SelectItem>
                   {sessionPresets.map((sessionPreset) => (
-                    <SelectItem key={sessionPreset.id} value={sessionPreset.id}>
+                    <SelectItem
+                      key={sessionPreset.id}
+                      value={sessionPreset.id}
+                      className="truncate"
+                    >
                       {sessionPreset.name}
                     </SelectItem>
                   ))}

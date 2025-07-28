@@ -265,13 +265,20 @@ export default function SessionPresetForm({
                   onValueChange={(value) => handlePresetChange(key, value)}
                   disabled={isPending}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Nessun preset (opzionale)" />
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue
+                      placeholder="Nessun preset (opzionale)"
+                      className="truncate"
+                    />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-w-[300px]">
                     <SelectItem value="none">Nessun preset</SelectItem>
                     {presets.map((preset) => (
-                      <SelectItem key={preset.id} value={preset.id}>
+                      <SelectItem
+                        key={preset.id}
+                        value={preset.id}
+                        className="truncate"
+                      >
                         {preset.name} (Q: {preset.quantity}, E:{" "}
                         {preset.execution_grade})
                       </SelectItem>

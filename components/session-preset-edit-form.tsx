@@ -257,13 +257,20 @@ export default function SessionPresetEditForm({
                     }
                     disabled={isPending}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleziona preset" />
+                    <SelectTrigger className="w-full min-w-0">
+                      <SelectValue
+                        placeholder="Seleziona preset"
+                        className="truncate"
+                      />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-w-[300px]">
                       <SelectItem value="none">Nessuno</SelectItem>
                       {presets.map((preset) => (
-                        <SelectItem key={preset.id} value={preset.id}>
+                        <SelectItem
+                          key={preset.id}
+                          value={preset.id}
+                          className="truncate"
+                        >
                           {preset.name} (Q: {preset.quantity}, G:{" "}
                           {preset.execution_grade})
                         </SelectItem>

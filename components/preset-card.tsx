@@ -95,8 +95,10 @@ export default function PresetCard({
             {/* Header */}
             <div className="flex items-start justify-between">
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h4 className="truncate text-sm font-medium">{name}</h4>
+                <div className="mb-2 flex items-center gap-2">
+                  <h3 className="truncate text-base font-semibold text-foreground">
+                    {name}
+                  </h3>
                   {badge && (
                     <Badge variant="outline" className="shrink-0">
                       {badge}
@@ -104,7 +106,7 @@ export default function PresetCard({
                   )}
                 </div>
                 {description && (
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="text-sm leading-relaxed text-muted-foreground">
                     {description}
                   </p>
                 )}
@@ -155,7 +157,7 @@ export default function PresetCard({
 
             {/* Expanded content */}
             {isExpanded && details && (
-              <div className="border-t pt-2">{details}</div>
+              <div className="border-t pt-3">{details}</div>
             )}
           </div>
         </CardContent>

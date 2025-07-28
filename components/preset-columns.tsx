@@ -347,12 +347,7 @@ export default function PresetColumns({
                   key={preset.id}
                   id={preset.id}
                   name={preset.name}
-                  badge={`${totalDays} giorni, ${totalSessions} allenamenti`}
-                  description={
-                    preset.created_at
-                      ? new Date(preset.created_at).toLocaleDateString("it-IT")
-                      : "Data non disponibile"
-                  }
+                  description={`${totalDays} giorni, ${totalSessions} allenamenti`}
                   isExpanded={expandedCards.has(preset.id)}
                   onToggleExpand={() => toggleCardExpansion(preset.id)}
                   onDelete={async () => {
