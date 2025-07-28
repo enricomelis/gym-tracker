@@ -144,30 +144,39 @@ export default function SessionPresetForm({
     };
 
     startTransition(async () => {
-      const result = await createSessionPreset([presetData]);
+      try {
+        const result = await createSessionPreset([presetData]);
 
-      if (result && "error" in result) {
+        if (result && "error" in result) {
+          toast({
+            title: "Errore",
+            description: result.error,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Successo",
+            description: "Preset allenamento salvato.",
+            duration: 1500,
+          });
+          setName("");
+          setSelectedPresets({
+            fx_preset_id: "none",
+            ph_preset_id: "none",
+            sr_preset_id: "none",
+            vt_preset_id: "none",
+            pb_preset_id: "none",
+            hb_preset_id: "none",
+          });
+          if (onSave) await onSave();
+        }
+      } catch (error) {
+        console.error("Error creating session preset:", error);
         toast({
           title: "Errore",
-          description: result.error,
+          description: "Errore durante il salvataggio del preset allenamento.",
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Successo",
-          description: "Preset allenamento salvato.",
-          duration: 1500,
-        });
-        setName("");
-        setSelectedPresets({
-          fx_preset_id: "none",
-          ph_preset_id: "none",
-          sr_preset_id: "none",
-          vt_preset_id: "none",
-          pb_preset_id: "none",
-          hb_preset_id: "none",
-        });
-        if (onSave) await onSave();
       }
     });
   };

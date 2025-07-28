@@ -79,7 +79,13 @@ export default function PresetColumns({
   const handleFormSave = () => {
     setActiveForm(null);
     // Force a page refresh to get updated data
-    window.location.reload();
+    try {
+      window.location.reload();
+    } catch (error) {
+      console.error("Error reloading page:", error);
+      // Fallback: just close the form
+      setActiveForm(null);
+    }
   };
 
   const toggleCardExpansion = (cardId: string) => {
@@ -179,11 +185,17 @@ export default function PresetColumns({
                 isExpanded={expandedCards.has(preset.id)}
                 onToggleExpand={() => toggleCardExpansion(preset.id)}
                 onDelete={async () => {
-                  const result = await deleteApparatusPreset(preset.id);
-                  if ("error" in result) {
-                    throw new Error(result.error);
+                  try {
+                    const result = await deleteApparatusPreset(preset.id);
+                    if ("error" in result) {
+                      throw new Error(result.error);
+                    }
+                    // Use router.push instead of window.location.reload()
+                    window.location.reload();
+                  } catch (error) {
+                    console.error("Error deleting apparatus preset:", error);
+                    throw error;
                   }
-                  window.location.reload();
                 }}
                 editForm={
                   <ApparatusPresetEditForm
@@ -251,11 +263,17 @@ export default function PresetColumns({
                   isExpanded={expandedCards.has(preset.id)}
                   onToggleExpand={() => toggleCardExpansion(preset.id)}
                   onDelete={async () => {
-                    const result = await deleteSessionPreset(preset.id);
-                    if ("error" in result) {
-                      throw new Error(result.error);
+                    try {
+                      const result = await deleteSessionPreset(preset.id);
+                      if ("error" in result) {
+                        throw new Error(result.error);
+                      }
+                      // Use router.push instead of window.location.reload()
+                      window.location.reload();
+                    } catch (error) {
+                      console.error("Error deleting session preset:", error);
+                      throw error;
                     }
-                    window.location.reload();
                   }}
                   editForm={
                     <SessionPresetEditForm
@@ -350,11 +368,17 @@ export default function PresetColumns({
                   isExpanded={expandedCards.has(preset.id)}
                   onToggleExpand={() => toggleCardExpansion(preset.id)}
                   onDelete={async () => {
-                    const result = await deleteMicrocyclePreset(preset.id);
-                    if ("error" in result) {
-                      throw new Error(result.error);
+                    try {
+                      const result = await deleteMicrocyclePreset(preset.id);
+                      if ("error" in result) {
+                        throw new Error(result.error);
+                      }
+                      // Use router.push instead of window.location.reload()
+                      window.location.reload();
+                    } catch (error) {
+                      console.error("Error deleting microcycle preset:", error);
+                      throw error;
                     }
-                    window.location.reload();
                   }}
                   editForm={
                     <MicrocyclePresetEditForm
