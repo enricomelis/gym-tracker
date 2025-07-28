@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import type {
   NewApparatusPreset,
-  NewMicrocyclePreset,
   MicrocyclePresetWithDetails,
   NewTrainingSessionPreset,
   NewMicrocyclesSessionsPreset,

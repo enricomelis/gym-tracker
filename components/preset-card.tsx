@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { ChevronDown, ChevronUp, Edit, Trash2, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 
 interface PresetCardProps {
-  id: string;
+  id?: string;
   name: string;
   description?: string;
   badge?: string;
@@ -38,7 +38,6 @@ interface PresetCardProps {
 }
 
 export default function PresetCard({
-  id,
   name,
   description,
   badge,
@@ -67,7 +66,7 @@ export default function PresetCard({
         duration: 1500,
       });
       setShowDeleteDialog(false);
-    } catch (error) {
+    } catch {
       toast({
         title: "Errore",
         description: "Errore durante l'eliminazione del preset.",
@@ -169,7 +168,7 @@ export default function PresetCard({
           <AlertDialogHeader>
             <AlertDialogTitle>Conferma eliminazione</AlertDialogTitle>
             <AlertDialogDescription>
-              Sei sicuro di voler eliminare il preset "{name}"? Questa azione
+              Sei sicuro di voler eliminare il preset &quot;{name}&quot;? Questa azione
               non può essere annullata.
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -22,10 +22,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import ApparatusPresetForm from "@/components/apparatus-preset-form";
-import {
-  generatePresetName,
-  formatApparatusName,
-} from "@/lib/utils/preset-naming";
+import { formatApparatusName } from "@/lib/utils/preset-naming";
 
 interface SessionPresetFormProps {
   onSave?: () => Promise<void> | void;
@@ -64,8 +61,8 @@ export default function SessionPresetForm({
   const handlePresetCreated = (newPreset: NewApparatusPreset | undefined) => {
     if (newPreset && pendingKey) {
       setPresets((prev) => [...prev, newPreset]);
-      setSelectedPresets((prev) => ({
-        ...prev,
+      setSelectedPresets((prevState) => ({
+        ...prevState,
         [pendingKey]: newPreset.id,
       }));
     }
@@ -80,7 +77,7 @@ export default function SessionPresetForm({
   };
 
   const handleApplyToAllApparatus = (presetId: string) => {
-    setSelectedPresets((prev) => ({
+    setSelectedPresets(() => ({
       fx_preset_id: presetId,
       ph_preset_id: presetId,
       sr_preset_id: presetId,
@@ -238,7 +235,7 @@ export default function SessionPresetForm({
                     disabled={isPending}
                     className="text-xs"
                   >
-                    Applica "{preset.name}" a tutti gli attrezzi
+                    Applica &quot;{preset.name}&quot; a tutti gli attrezzi
                   </Button>
                 ))}
               </div>

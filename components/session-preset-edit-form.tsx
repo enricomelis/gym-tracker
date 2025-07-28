@@ -72,11 +72,6 @@ export default function SessionPresetEditForm({
     };
   }, [onCancel]);
 
-  // Auto-select text on focus
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.select();
-  };
-
   const handleAddPreset = (key: string) => {
     setShowDialog(key);
     setPendingKey(key);
@@ -85,8 +80,8 @@ export default function SessionPresetEditForm({
   const handlePresetCreated = (newPreset: NewApparatusPreset | undefined) => {
     if (newPreset && pendingKey) {
       setPresets((prev) => [...prev, newPreset]);
-      setSelectedPresets((prev) => ({
-        ...prev,
+      setSelectedPresets((prevState) => ({
+        ...prevState,
         [pendingKey]: newPreset.id,
       }));
     }
@@ -101,7 +96,7 @@ export default function SessionPresetEditForm({
   };
 
   const handleApplyToAllApparatus = (presetId: string) => {
-    setSelectedPresets((prev) => ({
+    setSelectedPresets(() => ({
       fx_preset_id: presetId,
       ph_preset_id: presetId,
       sr_preset_id: presetId,
@@ -227,7 +222,7 @@ export default function SessionPresetEditForm({
                     disabled={isPending}
                     className="text-xs"
                   >
-                    Applica "{preset.name}" a tutti gli attrezzi
+                    Applica &quot;{preset.name}&quot; a tutti gli attrezzi
                   </Button>
                 ))}
               </div>

@@ -129,8 +129,8 @@ function SessionCreationDialog({
   const handlePresetCreated = (newPreset: NewApparatusPreset | undefined) => {
     if (newPreset && pendingKey) {
       setPresets((prev) => [...prev, newPreset]);
-      setSelectedPresets((prev) => ({
-        ...prev,
+      setSelectedPresets((prevState) => ({
+        ...prevState,
         [pendingKey]: newPreset.id,
       }));
       onApparatusPresetCreated(newPreset);
@@ -146,7 +146,7 @@ function SessionCreationDialog({
   };
 
   const handleApplyToAllApparatus = (presetId: string) => {
-    setSelectedPresets((prev) => ({
+    setSelectedPresets(() => ({
       fx_preset_id: presetId,
       ph_preset_id: presetId,
       sr_preset_id: presetId,
@@ -298,7 +298,7 @@ function SessionCreationDialog({
                         disabled={isPending}
                         className="text-xs"
                       >
-                        Applica "{preset.name}" a tutti gli attrezzi
+                        Applica &quot;{preset.name}&quot; a tutti gli attrezzi
                       </Button>
                     ))}
                   </div>
@@ -641,7 +641,7 @@ export default function MicrocyclePresetEditForm({
         {sessions.length === 0 && (
           <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 p-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Nessun allenamento aggiunto. Clicca "Aggiungi Giorno" per
+              Nessun allenamento aggiunto. Clicca &quot;Aggiungi Giorno&quot; per
               iniziare.
             </p>
           </div>

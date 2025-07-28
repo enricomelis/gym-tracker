@@ -297,7 +297,7 @@ export const NewCreateRoutineSchema = z.object({
     .min(0, "Il volume deve essere un numero positivo")
     .max(1000, "Il volume non può superare 1000"),
   notes: z.string().optional(),
-  apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB"], {
+  apparatus: z.enum(["FX", "PH", "SR", "VT", "PB", "HB", "All"], {
     errorMap: () => ({ message: "Apparato non valido" }),
   }),
   type: z.enum(["I+", "Int", "Par", "Com", "Usc", "Std", "G", "S", "B", "D"], {

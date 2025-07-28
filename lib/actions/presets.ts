@@ -210,7 +210,7 @@ export async function getMicrocyclePresetsWithDetails() {
 
   if (error) {
     console.error("Error fetching microcycle presets with details:", error);
-    return [] as any[];
+    return [];
   }
   return data || [];
 }
