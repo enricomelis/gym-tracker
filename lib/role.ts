@@ -50,7 +50,7 @@ export async function getUserRoleWithProfile(
   userId: string,
 ): Promise<{
   role: UserRole;
-  profile: { id: string; [key: string]: any } | null;
+  profile: { id: string; [key: string]: unknown } | null;
 }> {
   const [coachResult, athleteResult] = await Promise.all([
     supabase
