@@ -1,21 +1,17 @@
-import { getServerClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import CoachDashboard from "@/components/coach-dashboard";
 import AthleteDashboard from "@/components/athlete-dashboard";
-import { getUserRole } from "@/lib/role";
+import { useAuthData } from "@/lib/context/auth-context";
 
-export default async function DashboardPage() {
-  const supabase = await getServerClient();
+export default function DashboardPage() {
+  const { role, loading } = useAuthData();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/auth/login");
+  if (loading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <p>Caricamento dashboard...</p>
+      </div>
+    );
   }
-
-  const role = await getUserRole(supabase, user.id);
 
   if (role === "coach") {
     return <CoachDashboard />;
@@ -25,6 +21,7 @@ export default async function DashboardPage() {
     return <AthleteDashboard />;
   }
 
+  // This should never happen since layout validates role
   return (
     <div>
       Il tuo utente non ha un ruolo assegnato (né tecnico, né atleta). Contatta
