@@ -1,3 +1,5 @@
+"use client";
+
 import CoachDashboard from "@/components/coach-dashboard";
 import AthleteDashboard from "@/components/athlete-dashboard";
 import { useAuthData } from "@/lib/context/auth-context";
@@ -21,7 +23,6 @@ export default function DashboardPage() {
     return <AthleteDashboard />;
   }
 
-  // This should never happen since layout validates role
   return (
     <div>
       Il tuo utente non ha un ruolo assegnato (né tecnico, né atleta). Contatta
