@@ -1,8 +1,8 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import {
-  type UpdateApparatusSessionPayload,
-  type AddTrainingSetPayload,
+  type OldUpdateApparatusSessionPayload,
+  type OldAddTrainingSetPayload,
 } from "@/lib/types";
 import { z } from "zod";
 
@@ -44,7 +44,7 @@ export async function updateApparatusSession({
   total_volume,
   average_intensity,
   max_intensity,
-}: UpdateApparatusSessionPayload) {
+}: OldUpdateApparatusSessionPayload) {
   const supabase = await createClient();
   const updateObj: Record<string, unknown> = { base_volume, total_time };
   if (typeof density === "number") updateObj.density = density;
@@ -67,8 +67,7 @@ export async function updateApparatusSession({
   return { session: data };
 }
 
-export async function addTrainingSet(payload: AddTrainingSetPayload) {
-  // Validate payload using Zod
+export async function addTrainingSet(payload: OldAddTrainingSetPayload) {
   const setSchema = z.object({
     apparatus_session_id: z.string().uuid(),
     set_number: z.number().int().min(1),

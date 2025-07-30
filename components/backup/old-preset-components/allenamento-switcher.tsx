@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import type { TrainingSession } from "@/lib/types";
+import type { OldTrainingSession } from "@/lib/types";
 
 type AllenamentoSwitcherProps = {
-  sessions: TrainingSession[];
+  sessions: OldTrainingSession[];
   selectedSessionId: string;
   onChange: (sessionId: string) => void;
 };
