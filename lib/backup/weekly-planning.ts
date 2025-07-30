@@ -1,14 +1,14 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { type WeeklyGoal } from "@/lib/types";
+import { type OldWeeklyGoal } from "@/lib/types";
 import { z } from "zod";
 
 export async function getWeeklyGoals(
   athleteId: string,
   weekNumber: number,
   year: number,
-): Promise<WeeklyGoal[]> {
+): Promise<OldWeeklyGoal[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("apparatus_weekly_goals")
@@ -25,7 +25,7 @@ export async function getWeeklyGoals(
   return data;
 }
 
-export async function upsertWeeklyGoals(goals: Omit<WeeklyGoal, "id">[]) {
+export async function upsertWeeklyGoals(goals: Omit<OldWeeklyGoal, "id">[]) {
   const supabase = await createClient();
 
   const goalSchema = z.object({
@@ -92,7 +92,7 @@ export async function getGroupedWeeklyGoals(athleteId: string, year: number) {
       acc[week].push(goal);
       return acc;
     },
-    {} as Record<number, WeeklyGoal[]>,
+    {} as Record<number, OldWeeklyGoal[]>,
   );
 
   return groupedByWeek;

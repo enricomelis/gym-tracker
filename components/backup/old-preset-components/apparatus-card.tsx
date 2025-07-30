@@ -9,11 +9,11 @@ import {
   updateApparatusSession,
   addTrainingSet,
   deleteTrainingSet,
-} from "@/lib/actions/apparatus";
+} from "@/lib/backup/apparatus";
 import TrainingSetForm from "@/components/training-set-form";
 import React from "react";
-import { getWeeklyGoalForApparatus } from "@/lib/actions/weekly-planning";
-import type { ApparatusSession, TrainingSet } from "@/lib/types";
+import { getWeeklyGoalForApparatus } from "@/lib/backup/weekly-planning";
+import type { OldApparatusSession, OldTrainingSet } from "@/lib/types";
 
 export default function ApparatusCard({
   apparatus,
@@ -25,21 +25,21 @@ export default function ApparatusCard({
   year,
 }: {
   apparatus: string;
-  session: ApparatusSession | null;
-  sets: TrainingSet[];
+  session: OldApparatusSession | null;
+  sets: OldTrainingSet[];
   trainingSessionId: string;
   athleteId: string;
   weekNumber: number;
   year: number;
 }) {
-  const [session, setSession] = useState<ApparatusSession | null>(
+  const [session, setSession] = useState<OldApparatusSession | null>(
     initialSession,
   );
-  const [sets, setSets] = useState<TrainingSet[]>(initialSets);
+  const [sets, setSets] = useState<OldTrainingSet[]>(initialSets);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showSetForm, setShowSetForm] = useState(false);
-  const [editingSet, setEditingSet] = useState<TrainingSet | null>(null);
+  const [editingSet, setEditingSet] = useState<OldTrainingSet | null>(null);
 
   // Editable session values
   const [baseVolume, setBaseVolume] = useState<string>(
@@ -175,7 +175,7 @@ export default function ApparatusCard({
     setIsSavingSession(false);
   }
 
-  async function handleAddSet(data: TrainingSet) {
+  async function handleAddSet(data: OldTrainingSet) {
     if (!session) return;
     const res = await addTrainingSet({
       ...data,
@@ -379,7 +379,7 @@ export default function ApparatusCard({
                 </div>
               ) : (
                 <ul className="space-y-1">
-                  {sets.map((set: TrainingSet) => (
+                  {sets.map((set: OldTrainingSet) => (
                     <li
                       key={set.id}
                       className="flex cursor-pointer items-center justify-between rounded bg-muted px-2 py-1 hover:bg-accent"
