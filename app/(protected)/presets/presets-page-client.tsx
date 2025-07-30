@@ -2,15 +2,23 @@
 
 import PresetColumns from "@/components/preset-columns";
 import { useAuthData } from "@/lib/context/auth-context";
+import type {
+  NewApparatusPreset,
+  MicrocyclePresetWithDetails,
+  NewTrainingSessionPreset,
+  NewMacrocyclePreset,
+  NewMacrocyclesMicrocyclesPreset,
+  NewMicrocyclesSessionsPreset,
+} from "@/lib/types";
 
 interface PresetsPageClientProps {
   presetsData: {
-    apparatusPresets: any[];
-    sessionPresets: any[];
-    microcyclePresets: any[];
-    microcyclesSessionsPresets: any[];
-    macrocyclePresets: any[];
-    macrocyclesMicrocyclesPresets: any[];
+    apparatusPresets: NewApparatusPreset[];
+    sessionPresets: NewTrainingSessionPreset[];
+    microcyclePresets: MicrocyclePresetWithDetails[];
+    microcyclesSessionsPresets: NewMicrocyclesSessionsPreset[];
+    macrocyclePresets: NewMacrocyclePreset[];
+    macrocyclesMicrocyclesPresets: NewMacrocyclesMicrocyclesPreset[];
   };
 }
 
