@@ -84,7 +84,7 @@ export const ExecutionPenaltyMap: Record<ExecutionCoeff, number> = {
 
 export type AthleteCategory = "Allievi" | "Junior" | "Senior";
 
-export type Competition = {
+export type OldCompetition = {
   id: string;
   location: string;
   date: string;
@@ -117,7 +117,7 @@ export type Athlete = {
 // TIPI PER SESSIONI DI ALLENAMENTO (sistema attivo)
 // ============================================================================
 
-export type UpdateApparatusSessionPayload = {
+export type OldUpdateApparatusSessionPayload = {
   id: string;
   base_volume: number;
   total_time: number;
@@ -128,7 +128,7 @@ export type UpdateApparatusSessionPayload = {
   max_intensity?: number;
 };
 
-export type AddTrainingSetPayload = {
+export type OldAddTrainingSetPayload = {
   apparatus_session_id: string;
   set_number: number;
   volume_done: number;
@@ -139,7 +139,7 @@ export type AddTrainingSetPayload = {
   intensity: number;
 };
 
-export type ApparatusSession = {
+export type OldApparatusSession = {
   id: string;
   apparatus: string;
   base_volume: number;
@@ -151,7 +151,7 @@ export type ApparatusSession = {
   max_intensity: number | null;
 };
 
-export type TrainingSet = {
+export type OldTrainingSet = {
   id?: string;
   set_number: number;
   volume_done: number;
@@ -166,7 +166,7 @@ export type TrainingSet = {
 // TIPI PER SISTEMA GIORNALIERO E SETTIMANALE (temporaneamente mantenuti per compatibilità)
 // ============================================================================
 
-export type DailyRoutine = {
+export type OldDailyRoutine = {
   id?: string;
   session_id: string;
   apparatus: "FX" | "PH" | "SR" | "VT" | "PB" | "HB";
@@ -176,24 +176,24 @@ export type DailyRoutine = {
   target_execution: "A+" | "A" | "B+" | "B" | "C+" | "C";
 };
 
-export type TrainingSession = {
+export type OldTrainingSession = {
   id: string;
   date: string;
   session_number: number;
-  daily_routines: DailyRoutine[];
+  daily_routines: OldDailyRoutine[];
 };
 
-export type EnrichedTrainingSession = {
+export type OldEnrichedTrainingSession = {
   id: string;
   date: string;
   session_number: number;
   week_number: number;
   total_volume: number;
   average_intensity: number;
-  routines: DailyRoutine[];
+  routines: OldDailyRoutine[];
 };
 
-export type WeeklyGoal = {
+export type OldWeeklyGoal = {
   id?: string;
   athlete_id: string;
   week_number: number;
