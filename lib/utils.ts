@@ -22,7 +22,18 @@ export function formatDate(dateString: string | null): string {
     return "Non specificata";
   }
 
-  const date = new Date(dateString);
+  // Handle YYYYMMDD format
+  let date: Date;
+  if (dateString.length === 8 && /^\d{8}$/.test(dateString)) {
+    // YYYYMMDD format
+    const year = parseInt(dateString.substring(0, 4));
+    const month = parseInt(dateString.substring(4, 6)) - 1; // Month is 0-indexed
+    const day = parseInt(dateString.substring(6, 8));
+    date = new Date(year, month, day);
+  } else {
+    // Assume YYYY-MM-DD format or other standard format
+    date = new Date(dateString);
+  }
 
   // Check if the date is valid
   if (isNaN(date.getTime())) {

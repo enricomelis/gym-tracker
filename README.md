@@ -80,9 +80,9 @@ Le fasi letterali non sono ordinate, sono semplicemente buttate giù e verranno 
   - [x] Macrociclo
 - [ ] Tecnico inserisce i preset in modo Top-Down
   - [x] Creando un allenamento crea anche i preset all'attrezzo
-    - [ ] Inserimento dell'attrezzo "All" a livello DB e Server Actions
-  - [ ] Creando un giorno della settimana crea anche i preset degli allenamenti che lo costituiscono
-  - [ ] Creando un microciclo crea anche i giorni della settimana che lo costituiscono
+    - [x] Inserimento dell'attrezzo "All" a livello DB e Server Actions
+  - [x] Creando un giorno della settimana crea anche i preset degli allenamenti che lo costituiscono
+  - [x] Creando un microciclo crea anche i giorni della settimana che lo costituiscono
   - [ ] Creando un macrociclo crea anche i microcicli che lo costituiscono
 - [ ] Tecnico inserisce la programmazione generica (/programmazione)
 - [ ] Tecnico definisce la gara, chi partecipa e a quali attrezzi (/gestione-gare)

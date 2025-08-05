@@ -66,7 +66,20 @@ function getCategory(
   if (!birthDate) {
     return "Senior";
   }
-  const birthDateObj = new Date(birthDate);
+
+  // Handle YYYYMMDD format
+  let birthDateObj: Date;
+  if (birthDate.length === 8 && /^\d{8}$/.test(birthDate)) {
+    // YYYYMMDD format
+    const year = parseInt(birthDate.substring(0, 4));
+    const month = parseInt(birthDate.substring(4, 6)) - 1; // Month is 0-indexed
+    const day = parseInt(birthDate.substring(6, 8));
+    birthDateObj = new Date(year, month, day);
+  } else {
+    // Assume YYYY-MM-DD format or other standard format
+    birthDateObj = new Date(birthDate);
+  }
+
   const today = new Date();
   let age = today.getFullYear() - birthDateObj.getFullYear();
   const m = today.getMonth() - birthDateObj.getMonth();
@@ -151,6 +164,9 @@ export async function createAthlete(
     society_id,
   } = parsed.data;
 
+  // Convert birth_date from YYYY-MM-DD to YYYYMMDD format
+  const formattedBirthDate = birth_date.replace(/-/g, "");
+
   // Check for duplicate registration number
   const { data: existingAthlete } = await supabase
     .from("athletes")
@@ -171,7 +187,7 @@ export async function createAthlete(
   const rawFormData = {
     first_name,
     last_name,
-    birth_date,
+    birth_date: formattedBirthDate,
     registration_number: regNum,
     society_id: society_id ?? null,
   };
