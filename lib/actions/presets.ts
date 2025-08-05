@@ -461,6 +461,101 @@ export async function createCompleteMicrocyclePreset(microcycleData: {
   } as const;
 }
 
+export async function createCompleteMacrocyclePreset(macrocycleData: {
+  name: string;
+  length_in_weeks: number;
+  microcycles: Array<{
+    name: string;
+    sessions: Array<{
+      day_number: number;
+      training_session_id: string | null;
+    }>;
+  }>;
+}) {
+  const authResult = await getAuthenticatedCoach();
+  if ("error" in authResult) {
+    return { error: authResult.error } as const;
+  }
+
+  const { coach, supabase } = authResult;
+
+  const baseSchema = z.object({
+    name: z.string().min(1),
+    length_in_weeks: z.number().int().min(1),
+    microcycles: z.array(
+      z.object({
+        name: z.string().min(1),
+        sessions: z.array(
+          z.object({
+            day_number: z.number().int().min(1).max(7),
+            training_session_id: z.string().uuid().nullable(),
+          }),
+        ),
+      }),
+    ),
+  });
+
+  const parsed = baseSchema.safeParse(macrocycleData);
+  if (!parsed.success) {
+    return { error: "Invalid macrocycle data" } as const;
+  }
+
+  const { data: macrocycle, error: macrocycleError } = await supabase
+    .from("presets_macrocycles")
+    .insert({
+      name: parsed.data.name,
+      created_by: coach.id,
+      length_in_weeks: parsed.data.length_in_weeks,
+    })
+    .select()
+    .single();
+
+  if (macrocycleError) {
+    console.error("Error creating macrocycle preset:", macrocycleError);
+    return { error: macrocycleError.message } as const;
+  }
+
+  const microcycleRows = parsed.data.microcycles.map((microcycle) => ({
+    name: microcycle.name,
+    macrocycle_id: macrocycle.id,
+    created_by: coach.id,
+  }));
+
+  const { data: microcycles, error: microcyclesError } = await supabase
+    .from("presets_microcycles")
+    .insert(microcycleRows)
+    .select();
+
+  if (microcyclesError) {
+    console.error("Error creating microcycles:", microcyclesError);
+    return { error: microcyclesError.message } as const;
+  }
+
+  const sessionRows = parsed.data.microcycles.flatMap((microcycle) =>
+    microcycle.sessions.map((session) => ({
+      name: `${microcycle.name} - Giorno ${session.day_number}`,
+      microcycle_id: microcycles.find((m) => m.name === microcycle.name)?.id,
+      training_session_id: session.training_session_id,
+      day_number: session.day_number,
+      session_order: session.day_number,
+      created_by: coach.id,
+    })),
+  );
+
+  const { data: sessions, error: sessionsError } = await supabase
+    .from("presets_microcycles_sessions")
+    .insert(sessionRows)
+    .select();
+
+  if (sessionsError) {
+    console.error("Error creating microcycle sessions:", sessionsError);
+    return { error: sessionsError.message } as const;
+  }
+
+  revalidatePath("/presets");
+  return { success: true, data: { macrocycle, microcycles } } as const;
+}
+
 // Unified function to get all preset types efficiently
 export async function getUnifiedPresets() {
   const supabase = await createClient();
